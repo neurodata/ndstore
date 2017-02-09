@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data Model &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Data Model &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Administrator Console" href="console.html"/>
         <link rel="prev" title="Introduction" href="introduction.html"/> 
 
@@ -52,12 +52,12 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> open-connectome
+            <a href="../index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="../_static/ocp_main.png" class="logo" />
+            <img src="../_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -94,7 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dataset-attributes">Dataset Attributes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#project-attributes">Project Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#token">Token</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Token</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#channel-attributes">Channel Attributes</a></li>
 </ul>
 </li>
@@ -109,19 +109,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -138,7 +137,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connectome</a>
+        <a href="../index.html">ndstore</a>
       </nav>
 
 
@@ -178,11 +177,19 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>Our data model for image datasets is composed of the following components:</p>
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+.. _dataset:</p>
 <ul class="simple">
-<li>Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects.</li>
-<li>Project: is a database storing a collection of channels</li>
-<li>Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)</li>
-<li>Channel: is a collection of tables, including the actual images, as well as metadata</li>
+<li>Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects. The user does not interact with dataset objects other than to define them.</li>
+</ul>
+<ul class="simple" id="project">
+<li>Project: is a database storing a collection of channels. This object is primarly for backend use.</li>
+</ul>
+<ul class="simple" id="token">
+<li>Token: a unique identifier for a project. A project can have multiple tokens, each with different permissions (eg, read vs. write). This is the object that a user will be interacting with the most.</li>
+</ul>
+<ul class="simple" id="channel">
+<li>Channel: is where the data is actually stored in a collection of tables, including the actual images and associated metadata.</li>
 </ul>
 <p>To understand the relationship between the above 4 different components of the data model, consider the following example.</p>
 <ul class="simple">
@@ -191,11 +198,11 @@
 <li>Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.</li>
 <li>The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.</li>
 </ul>
-<div class="figure align-center" id="id1">
+<div class="figure align-center" id="id2">
 <a class="reference internal image-reference" href="../_images/datamodel_simple.png"><img alt="../_images/datamodel_simple.png" src="../_images/datamodel_simple.png" style="width: 500px; height: 200px;" /></a>
 <p class="caption"><span class="caption-text">This is a simple example of the data model, consisting of one example of each component.</span></p>
 </div>
-<div class="figure align-center" id="id2">
+<div class="figure align-center" id="id3">
 <a class="reference internal image-reference" href="../_images/datamodel_complex.png"><img alt="../_images/datamodel_complex.png" src="../_images/datamodel_complex.png" style="width: 800px; height: 400px;" /></a>
 <p class="caption"><span class="caption-text">This is a complex example of the data model, consisting of multiple projects, tokens, and databases.</span></p>
 </div>
@@ -223,7 +230,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Image Size</code></dt>
-<dd><p>Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100 slices each 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100).</p>
+<dd><p>Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100 slices each 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100). A common mistake here is to mix up the X and Y dimensions of the data. X is the width of the image and Y is the length of the image.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -242,7 +249,7 @@
 <dt>
 <code class="descname">Voxel Resolution</code></dt>
 <dd><blockquote>
-<div>Voxel Resolution is the voxel scale in nanometer per unit pixel. We store X,Y,Z voxel resolution separately.</div></blockquote>
+<div>Voxel Resolution is the voxel scale in microns per unit pixel. We store X,Y,Z voxel resolution separately.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -274,7 +281,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Time Range</code></dt>
-<dd><p>Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop.</p>
+<dd><p>Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop. Not that for the dataset you can add data that actually has less time slices than are specified, but not more. For example if you said the end time step was 12, you can add datasets with 11 time step, but not 13.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -407,8 +414,8 @@
 </dd></dl>
 
 </div>
-<div class="section" id="token">
-<h2>Token<a class="headerlink" href="#token" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>Token<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt>
 <code class="descname">Token Name</code></dt>
@@ -515,7 +522,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Base Resolution</code></dt>
-<dd><p>Resolution is the starting resolution of the data being uploaded to the channel.</p>
+<dd><p>Resolution is the starting resolution of the data being uploaded to the channel. NeuroData builds a multi-resolution hierarchy for each project where each higher resolution is scaled down by a factor of 2 in the x and y dimensions (the number of z slices remain the same for non-isotropic data).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -600,7 +607,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Project Info API &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Project Info API &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Public Token API" href="public_api.html"/>
         <link rel="prev" title="NeuroData Types" href="nd_types.html"/> 
 
@@ -52,12 +52,12 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> open-connectome
+            <a href="../index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="../_static/ocp_main.png" class="logo" />
+            <img src="../_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -111,19 +111,18 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -140,7 +139,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connectome</a>
+        <a href="../index.html">ndstore</a>
       </nav>
 
 
@@ -178,8 +177,8 @@
 <div class="section" id="get">
 <span id="jsoninfo-get"></span><h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-info-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/info/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-info-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-sd-(string-token_name)-info-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/sd/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/info/</code><a class="headerlink" href="#get-(string-server_name)-nd-sd-(string-token_name)-info-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -188,22 +187,23 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/ocp/ca/kasthuri11/info/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/sd/kasthuri11/info/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
@@ -440,8 +440,8 @@
 <div class="section" id="id1">
 <h3>GET<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-projinfo-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/projinfo/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-projinfo-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-sd-(string-token_name)-projinfo-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/sd/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/projinfo/</code><a class="headerlink" href="#get-(string-server_name)-nd-sd-(string-token_name)-projinfo-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -450,22 +450,23 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/ocp/ca/kasthuri11/projinfo/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/sd/kasthuri11/projinfo/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
@@ -498,7 +499,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

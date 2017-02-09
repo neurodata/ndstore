@@ -1,0 +1,527 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Resources API &mdash; ndstore v0.7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
+        <link rel="next" title="Tile API" href="tile_api.html"/>
+        <link rel="prev" title="Auto-Ingest API" href="autoingest_api.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ndstore
+          
+
+          
+            
+            <img src="../_static/neurodata_main.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">NeuroData Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/datamodel.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Administrator Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Resources API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dataset">Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#channel">Channel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deletechannel">deleteChannel</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Further Reading</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">NeuroData Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">ndstore</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Resources API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/resource_api.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="resources-api">
+<h1>Resources API<a class="headerlink" href="#resources-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="json-createdataset"></span><dl class="post">
+<dt id="post-(string-server_name)-nd-resource-dataset-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a dataset</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2">201 Created</a> &#8211; Resource created</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>POST /nd/resource/kasthuri11/ HTTPS/1.1
+Host: cloud.neurodata.io
+Content-Type: application/json
+
+{
+  &quot;dataset_name&quot; : &quot;kasthuri11&quot;,
+  &quot;ximagesize&quot; : 2000,
+  &quot;yimagesize&quot; : 2000,
+  &quot;zimagesize&quot; : 100,
+  &quot;xvoxelres&quot; : 5.0,
+  &quot;yvoxelres&quot; : 5.0,
+  &quot;zvoxelres&quot; : 10.0,
+  &quot;public&quot; : 1
+}
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 201 Created
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
+Content-Type: text/plain
+</pre></div>
+</div>
+</dd></dl>
+
+<span class="target" id="json-listdataset"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-resource-dataset-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">List all datasets</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; OK. List of datasets returned</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>GET /nd/resource/kasthuri11/ HTTPS/1.1
+Host: cloud.neurodata.io
+Content-Type: text/plain
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 200 OK
+Content-Type: application/json
+
+{
+  &#39;kasthuri11&#39;
+  &#39;bock11&#39;
+  &#39;lee15&#39;
+}
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
+Content-Type: text/plain
+</pre></div>
+</div>
+</dd></dl>
+
+<span class="target" id="json-deletedataset"></span><dl class="delete">
+<dt id="delete-(string-server_name)-nd-resource-dataset-">
+<code class="descname">DELETE </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><a class="headerlink" href="#delete-(string-server_name)-nd-resource-dataset-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Delete a dataset</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5">204 No Content</a> &#8211; No content. Resource deleted</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>POST /nd/resource/kasthuri11/ HTTPS/1.1
+Host: cloud.neurodata.io
+Content-Type: application/json
+
+{
+  &quot;dataset_name&quot; : &quot;kasthuri11&quot;,
+}
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 204 No Content
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
+Content-Type: text/plain
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="channel">
+<span id="json-createchannel"></span><h2>Channel<a class="headerlink" href="#channel" title="Permalink to this headline">¶</a></h2>
+<dl class="post">
+<dt id="post-(string-server_name)-nd-sd-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/sd/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/token/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-nd-sd-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a list of channels for an existing project using the project token and JSON file.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if <a class="reference internal" href="../sphinx/datamodel.html#channel"><span>channel</span></a> already exists</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>POST /nd/ca/test_kat1/ HTTPS/1.1
+Host: openconnecto.me
+Content-Type: application/json
+
+{
+  &quot;channels&quot;: {
+    &quot;CHAN1&quot;: {
+      &quot;channel_name&quot;: &quot;CHAN1&quot;,
+      &quot;channel_type&quot;: &quot;image&quot;,
+      &quot;datatype&quot;: &quot;uint8&quot;,
+      &quot;readonly&quot;: 0
+    },
+    &quot;CHAN2&quot;: {
+      &quot;channel_name&quot;: &quot;CHAN2&quot;,
+      &quot;channel_type&quot;: &quot;image&quot;,
+      &quot;datatype&quot;: &quot;uint8&quot;,
+      &quot;readonly&quot;: 0
+    }
+  }
+}
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 201 Created
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
+Content-Type: text/plain
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
+Content-Type: text/plain
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="deletechannel">
+<span id="json-deletechannel"></span><h2>deleteChannel<a class="headerlink" href="#deletechannel" title="Permalink to this headline">¶</a></h2>
+<dl class="post">
+<dt id="post-(string-server_name)-nd-ca-(string-token_name)-deleteChannel-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/deleteChannel/</code><a class="headerlink" href="#post-(string-server_name)-nd-ca-(string-token_name)-deleteChannel-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Delete a list of channels for an existing project using the project token and a JSON file.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if <a class="reference internal" href="../sphinx/datamodel.html#channel"><span>channel</span></a> does not exist</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>POST /nd/ca/test_kat1/ HTTPS/1.1
+Host: openconnecto.me
+Content-Type: application/json
+
+{
+  &quot;channels&quot;: [
+             &quot;CHAN2&quot;,
+             &quot;CHAN3&quot;
+  ]
+}
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 200 OK
+Content-Type: text/plain
+
+Success. Channels deleted.
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
+Content-Type: text/plain
+
+Missing. Required fields.
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
+Content-Type: text/plain
+
+Error saving models. The channels were not deleted.
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tile_api.html" class="btn btn-neutral float-right" title="Tile API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="autoingest_api.html" class="btn btn-neutral" title="Auto-Ingest API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, NeuroData Project.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v0.7.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

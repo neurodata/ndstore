@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; ndstore v0.7.0 documentation</title>
+  <title>Authentication &mdash; ndstore v0.7.0 documentation</title>
   
 
   
@@ -32,9 +32,7 @@
   
 
   
-    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="Frequently Asked Questions (FAQ)" href="faq.html"/>
-        <link rel="prev" title="How to Ingest Data" href="ingesting.html"/> 
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -87,12 +85,12 @@
             
             
                 <p class="caption"><span class="caption-text">NeuroData Documentation</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
@@ -146,11 +144,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Configuration</li>
+    <li>Authentication</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/sphinx/config.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/sphinx/authentication.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -160,27 +158,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="configuration">
-<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
-<p>You can install ndstore on a fresh Ubuntu 14.04 node using the install script in the setup folder.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">sudo ./ndstore_install.sh</span>
-</pre></div>
-</div>
+  <div class="section" id="authentication">
+<h1>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h1>
+<p><strong>Overview</strong>
+The security authentication for ndstore applies to any endpoint that is specified as secured for non-public data. The docs are broken into three parts; user access, endpoint security and tests. If you are a user of the service you should only need to deal with the first section. If you are writing endpoints for ndstore then you should review the later two sections as well.</p>
+<p><strong>Interacting with the Endpoints</strong>
+In order to access certain endpoints and datasets, you need to provide the security token associated with your account. To do this add a header to your request called Authorization with a value of &#8220;Token {}&#8221; where your security token is added in place of the {}. For python requests this can be done with: requests.get(url, headers={&#8216;Authorization&#8217;: &#8216;Token {}&#8217;.format( TOKEN_SUPER )}). You may additionally need to add a verify=False to the request if the server is not HTTPS registered/secured. Your token can be downloaded from the website, or fi you are a neurodata partner you may be able to programatically obtain it.</p>
+<p><strong>Securing an Endpoint</strong>
+In order to secure an endpoint there are a number of decorators that should be added to the views method. First is the &#64;api_view([&#8216;GET&#8217;,&#8217;POST&#8217;]) decorator, which specifies what types of HTTP requests can be sent to this endpoint. For example if the decorator &#64;api_view([&#8216;GET&#8217;]) is added above the method then only GET requests can be made to this endpoint. Next is the &#64;authentication_classes((SessionAuthentication, TokenAuthentication)) decorator, which specifies the types of authentication that are required when using a specific endpoint. In this example case above, the endpoint can be accessed using both token based authentication and session based authentication. However if desired only a single type of authentication can be specified, which is recommended for endpoints that should only be accessed with token based authentication. Finally, adding the &#64;permission_classes((PublicAuthentication,)) decorator will add the user authentication for the endpoint. Specifically it will use the permission class created for the backend that allows access if the data is public or owned by the user requesting it (or the user is a super user). Alternatively if you wish to use a different permission class (for example allowing any users that identify themselves) simply specify that instead.</p>
+<p><strong>Security Testing</strong>
+As outlined above, in order to access non-private data the user must send a token with the request to identify themselves to the backend. In order to test that users do not have the ability to view datasets they do not own, two users are created in the backend during set up of the server, a super user with full permissions to every dataset and a &#8220;temporary&#8221; user that only has access to one dataset. When the tests are run the tests read the files that hold the tokens for the two users and make sample calls to the backend.</p>
 </div>
 
 
            </div>
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions (FAQ)" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="ingesting.html" class="btn btn-neutral" title="How to Ingest Data" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

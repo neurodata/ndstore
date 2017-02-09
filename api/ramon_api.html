@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>RAMON API &mdash; open-connectome v0.7.0 documentation</title>
+  <title>RAMON API &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,9 +32,9 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Propagate API" href="propagate_api.html"/>
-        <link rel="prev" title="Data API" href="data_api.html"/> 
+        <link rel="prev" title="Slice API" href="slice_api.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -52,12 +52,12 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> open-connectome
+            <a href="../index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="../_static/ocp_main.png" class="logo" />
+            <img src="../_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -101,39 +101,45 @@
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">RAMON API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#ramon-field-service">RAMON Field Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#json-service">JSON Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#getjsonobject">getJSONObject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getboundingbox">getBoundingBox</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#query-by-key">Query by Key</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#query">query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topkeys">topKeys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topkeysbytype">topKeysByType</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#field-service">Field Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#setfield">setField</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#getfield">getField</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#query-object-service">Query Object Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#get">GET</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#annotation-service">Annotation Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get">GET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#post">POST</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#merge-service">Merge Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">GET</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -150,7 +156,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connectome</a>
+        <a href="../index.html">ndstore</a>
       </nav>
 
 
@@ -183,13 +189,229 @@
             
   <div class="section" id="ramon-api">
 <h1>RAMON API<a class="headerlink" href="#ramon-api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="ramon-field-service">
-<h2>RAMON Field Service<a class="headerlink" href="#ramon-field-service" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="json-service">
+<h2>JSON Service<a class="headerlink" href="#json-service" title="Permalink to this headline">¶</a></h2>
+<p>The RAMON JSON service retrieves RAMON objects from the database and returns them in JSON format.</p>
+<div class="section" id="getjsonobject">
+<h3>getJSONObject<a class="headerlink" href="#getjsonobject" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-(int-id)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ramon/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>id</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-(int-id)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve the RAMON object specified by ID as a JSON object.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically cloud.neurodata.io</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+<li><strong>id</strong> (<em>int</em>) &#8211; An integer identifier for the request RAMON object.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; RAMON object returned as JSON.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; RAMON object not found or error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Return</strong>:</p>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+   <span class="nt">&quot;21&quot;</span><span class="p">:</span> <span class="p">{</span>
+         <span class="nt">&quot;syn_weight&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+         <span class="nt">&quot;ann_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+         <span class="nt">&quot;syn_type&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="nt">&quot;ann_status&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="nt">&quot;postgaba&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;ann_confidence&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+         <span class="nt">&quot;ann_id&quot;</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span>
+         <span class="nt">&quot;syn_centroid&quot;</span><span class="p">:</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;ann_author&quot;</span><span class="p">:</span> <span class="s2">&quot;Randal Burns&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;gaba&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;display&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;syn_segments&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+      <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="getboundingbox">
+<h3>getBoundingBox<a class="headerlink" href="#getboundingbox" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><dl class="get">
+<dt id="get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-(int-id)-boundingbox-(int-res)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ramon/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>id</em><span class="sig-paren">)</span><code class="descname">/boundingbox/</code><span class="sig-paren">(</span><em class="property">int: </em><em>res</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-(int-id)-boundingbox-(int-res)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve the bounding box around the specified RAMON object along with the rest of the RAMON metadata and return it as a JSON object.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically cloud.neurodata.io</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+<li><strong>id</strong> (<em>int</em>) &#8211; An integer identifier for the request RAMON object.</li>
+<li><strong>res</strong> (<em>int</em>) &#8211; Resolution for Bounding Box Coordinates</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; RAMON object and bounding box returned as JSON.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; RAMON object not found or error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Return</strong>:</p>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+   <span class="nt">&quot;21&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;syn_weight&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+      <span class="nt">&quot;ann_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+      <span class="nt">&quot;syn_type&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="nt">&quot;ann_status&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="nt">&quot;postgaba&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;ann_confidence&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+      <span class="nt">&quot;ann_id&quot;</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span>
+      <span class="nt">&quot;syn_centroid&quot;</span><span class="p">:</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;bbcorner&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1549</span><span class="p">,</span> <span class="mi">2940</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+      <span class="nt">&quot;ann_author&quot;</span><span class="p">:</span> <span class="s2">&quot;Forrest Collman&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;bbdim&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">112</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+      <span class="nt">&quot;gaba&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;display&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;syn_segments&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Bounding Box</strong>:</p>
+<p>The bounding box is described by the <cite>bbcorner</cite> and <cite>bbdim</cite> keys:</p>
+<ul class="simple">
+<li><cite>bbcorner</cite>: The lower corner of the bounding box.</li>
+<li><cite>bbdim</cite>: The dimensions of the bounding box.</li>
+</ul>
+<p>To reconstruct the upper corner of the bounding box, add <cite>bbcorner</cite> and <cite>bbdim</cite>.</p>
+</dd></dl>
+
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="query-by-key">
+<h2>Query by Key<a class="headerlink" href="#query-by-key" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="query">
+<h3>query<a class="headerlink" href="#query" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-query-(string-int-float-key)-(string-int-float-value)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ramon/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/query/</code><span class="sig-paren">(</span><em class="property">string/int/float: </em><em>key</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string/int/float: </em><em>value</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-query-(string-int-float-key)-(string-int-float-value)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve a list of RAMON objects with the specified key/value combination.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically cloud.neurodata.io</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+<li><strong>key</strong> (<em>string/int/float</em>) &#8211; The RAMON object key to search on.</li>
+<li><strong>value</strong> (<em>string/int/float</em>) &#8211; The RAMON object value to match for the specified key.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; RAMON object list returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1">500 Internal Server Error</a> &#8211; Server Error (text returned).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>:</p>
+<p>In the RAMON data model all standard RAMON attributes are also keys. So, finding all synapses would amount to using the query interface with a key of <cite>ann_type</cite> and a value of <cite>2</cite>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="topkeys">
+<h3>topKeys<a class="headerlink" href="#topkeys" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-topkeys-(int-num_results)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ramon/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/topkeys/</code><span class="sig-paren">(</span><em class="property">int: </em><em>num_results</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-topkeys-(int-num_results)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve a list of the top RAMON keys for the specified project.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically cloud.neurodata.io</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+<li><strong>num_results</strong> (<em>int</em>) &#8211; The number of keys to return.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; List of RAMON keys returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1">500 Internal Server Error</a> &#8211; Server Error (error text returned).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="topkeysbytype">
+<h3>topKeysByType<a class="headerlink" href="#topkeysbytype" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-topkeys-(int-num_results)-type-(int-ramon_type)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ramon/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/topkeys/</code><span class="sig-paren">(</span><em class="property">int: </em><em>num_results</em><span class="sig-paren">)</span><code class="descname">/type/</code><span class="sig-paren">(</span><em class="property">int: </em><em>ramon_type</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-topkeys-(int-num_results)-type-(int-ramon_type)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve a list of the top RAMON keys for the specified project restricted to a certain type of RAMON object.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically cloud.neurodata.io</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+<li><strong>num_results</strong> (<em>int</em>) &#8211; The number of keys to return.</li>
+<li><strong>ramon_type</strong> (<em>int</em>) &#8211; Restrict the top keys list to this type of RAMON object.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; List of RAMON keys returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1">500 Internal Server Error</a> &#8211; Server Error (error text returned).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="field-service">
+<h2>Field Service<a class="headerlink" href="#field-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="setfield">
 <h3>setField<a class="headerlink" href="#setfield" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setField-(string-ramon_field)-(string-int-float-ramon_value)">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/setField/</code><span class="sig-paren">(</span><em class="property">string: </em><em>ramon_field</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string/int/float: </em><em>ramon_value</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setField-(string-ramon_field)-(string-int-float-ramon_value)" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-setField-(string-ramon_field)-(string-int-float-ramon_value)">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/setField/</code><span class="sig-paren">(</span><em class="property">string: </em><em>ramon_field</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string/int/float: </em><em>ramon_value</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-setField-(string-ramon_field)-(string-int-float-ramon_value)" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -198,7 +420,7 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
 <li><strong>ramon_field</strong> (<em>string</em>) &#8211; RAMON field. For more details look at the RAMON documents.</li>
@@ -220,8 +442,8 @@
 <div class="section" id="getfield">
 <h3>getField<a class="headerlink" href="#getfield" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getField-(string-ramon_field)-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getField/</code><span class="sig-paren">(</span><em class="property">string: </em><em>ramon_field</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getField-(string-ramon_field)-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getField-(string-ramon_field)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getField/</code><span class="sig-paren">(</span><em class="property">string: </em><em>ramon_field</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getField-(string-ramon_field)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -230,7 +452,7 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
 <li><strong>ramon_field</strong> (<em>string</em>) &#8211; RAMON field. For more details look at the RAMON documents.</li>
@@ -249,19 +471,13 @@
 
 </div>
 </div>
-<div class="section" id="query-object-service">
-<h2>Query Object Service<a class="headerlink" href="#query-object-service" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="get">
-<h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
 <div class="section" id="annotation-service">
 <h2>Annotation Service<a class="headerlink" href="#annotation-service" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>GET<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="get">
+<h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>annotation_id</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>annotation_id</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -270,7 +486,7 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
 <li><strong>annotation_id</strong> (<em>int</em>) &#8211; Id of the annotation to be cut from the database.</li>
@@ -293,8 +509,8 @@
 <div class="section" id="post">
 <h3>POST<a class="headerlink" href="#post" title="Permalink to this headline">¶</a></h3>
 <dl class="post">
-<dt id="post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(string-option_args)-">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(string-option_args)-" title="Permalink to this definition">¶</a></dt>
+<dt id="post-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(string-option_args)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(string-option_args)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -303,7 +519,7 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
 <li><strong>options_args</strong> (<em>string</em>) &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
@@ -324,11 +540,11 @@
 </div>
 <div class="section" id="merge-service">
 <h2>Merge Service<a class="headerlink" href="#merge-service" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>GET<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>GET<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/merge/</code><span class="sig-paren">(</span><em class="property">string: </em><em>listofids</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/merge/</code><span class="sig-paren">(</span><em class="property">string: </em><em>listofids</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -337,7 +553,7 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
 <li><strong>options_args</strong> (<em>string</em>) &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
@@ -369,7 +585,7 @@
         <a href="propagate_api.html" class="btn btn-neutral float-right" title="Propagate API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="data_api.html" class="btn btn-neutral" title="Data API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="slice_api.html" class="btn btn-neutral" title="Slice API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -378,7 +594,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

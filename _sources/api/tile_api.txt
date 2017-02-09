@@ -1,25 +1,25 @@
 Tile API
 **********
 
-You can also view the `Tilecache API's <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
+You can also view the `Tilecache APIs <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
 
-.. _simple-tile:
+**NOTE**: These APIs do not return the orginal data. If you want the orginal raw data then please use the :ref:`Data APIs <data-api>`.
 
-getSimpleTile
--------------
+.. _simple-tile-xy:
 
-.. http:get:: (string:server_name)/ocp/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+getSimpleTileXY
+---------------
 
-   :synopsis: Get a 512x512 tile from the database
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/xy/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+   
+   :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
    :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
-   :param slice_type: Type of Slice cutout. Can be xy/yz/xz
-   :type slice_type: string
    :param time: Time value. *Optional*. Only possible in timeseries datasets.
    :type time: int
    :param zvalue: Zslice value.
@@ -32,13 +32,14 @@ getSimpleTile
    :type resolution: int
 
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
    **Example Request**:
 
    .. sourcecode:: http
-
-      GET  /ocp/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
+   
+      GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
@@ -53,16 +54,75 @@ getSimpleTile
     :width: 512px
     :height: 512px
 
+.. _simple-tile-yz:
+
+getSimpleTileYZ
+---------------
+
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/yz/(int:time)/(int:xvalue)/(int:ztile)_(int:ytile)_(int:resolution).png
+   
+   :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
+
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param token_name: Token Name in NeuroData.
+   :type token_name: string
+   :param channel_name: Channel Name in NeuroData.
+   :type channel_name: string
+   :param time: Time value. *Optional*. Only possible in timeseries datasets.
+   :type time: int
+   :param ztile: Z-Tile value. Each tile is 512x512
+   :type ztile: int
+   :param ytile: Y-Tile value. Each tile is 512x512.
+   :type ytile: int
+   :param xvalue: Xslice value
+   :type xvalue: int
+   :param resolution: Resolution value.
+   :type resolution: int
+
+   :statuscode 200: No error
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax or file format
+
+.. _simple-tile-xz:
+
+getSimpleTileXZ
+---------------
+
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/xz/(int:time)/(int:yvalue)/(int:ztile)_(int:xtile)_(int:resolution).png
+   
+   :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
+
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param token_name: Token Name in NeuroData.
+   :type token_name: string
+   :param channel_name: Channel Name in NeuroData.
+   :type channel_name: string
+   :param time: Time value. *Optional*. Only possible in timeseries datasets.
+   :type time: int
+   :param yvalue: Yslice value.
+   :type yvalue: int
+   :param ytile: Y-Tile value. Each tile is 512x512.
+   :type ytile: int
+   :param ztile: Z-Tile value. Each tile is 512x512.
+   :type ztile: int
+   :param resolution: Resolution value.
+   :type resolution: int
+
+   :statuscode 200: No error
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax or file format
 .. _mcfc-tile:
 
 getMcfcTile
 -----------
 
-.. http:get:: (string:server_name)/ocp/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+.. http:get:: (string:server_name)/nd/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+   
+   :synopsis: Get a 512x512 color tile from the database. This returns a color tile based on the requested color.
 
-   :synopsis: Get a 512x512 tile from the database
-
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -84,13 +144,14 @@ getMcfcTile
    :type resolution: int
 
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
    **Example Request**:
 
    .. sourcecode:: http
-
-      GET  /ocp/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
+   
+      GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
@@ -110,11 +171,11 @@ getMcfcTile
 getVikingTile
 -------------
 
-.. http:get:: (string:server_name)/ocp/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
+.. http:get:: (string:server_name)/nd/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
+   
+   :synopsis: Get a 512x512 `Viking <https://connectomes.utah.edu/>`_ tile from the database
 
-   :synopsis: Get a 512x512 tile from the database
-
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -130,13 +191,14 @@ getVikingTile
    :type zvalue: int
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
 
    .. sourcecode:: http
-
-      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
+   
+      GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:

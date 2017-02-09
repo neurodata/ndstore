@@ -5,7 +5,7 @@ NeuroData provides a scalable database cluster for the spatial analysis and anno
 
 The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems—reads to parallel disk arrays and writes to solid-state storage—to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.
 
-.. figure:: ../images/nd_cluster.png
+.. figure:: ../images/neurodata_cluster.png
     :align: center
     :width: 1000px
     :height: 500px

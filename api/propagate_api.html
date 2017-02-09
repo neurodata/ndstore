@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Propagate API &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Propagate API &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,8 +32,8 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="Statistics API" href="stats_api.html"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
+        <link rel="next" title="Auto-Ingest API" href="autoingest_api.html"/>
         <link rel="prev" title="RAMON API" href="ramon_api.html"/> 
 
   
@@ -52,12 +52,12 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> open-connectome
+            <a href="../index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="../_static/ocp_main.png" class="logo" />
+            <img src="../_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -101,6 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Propagate API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#propagation-service">Propagation Service</a><ul>
@@ -110,17 +111,15 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -137,7 +136,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connectome</a>
+        <a href="../index.html">ndstore</a>
       </nav>
 
 
@@ -172,8 +171,8 @@
 <h1>Propagate API<a class="headerlink" href="#propagate-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="propagation-service">
 <span id="nd-propagation"></span><h2>Propagation Service<a class="headerlink" href="#propagation-service" title="Permalink to this headline">¶</a></h2>
-<p>NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="#propagate-set"><span>set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="#propagate-get"><span>get propagation service</span></a>. Both these services return values which have signfies something. You can use the value reference table below to idenitfy the propgation state of your project. Any extra terms are enumerated in the <a class="reference internal" href="../sphinx/datamodel.html#datamodel"><span>data model</span></a>.
-<em>WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.</em></p>
+<p>NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="#propagate-set"><span>set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="#propagate-get"><span>get propagation service</span></a>. Both these services return values which signify something. You can use the value reference table below to identify the propgation state of your project. The propagation service only runs when the project is marked not read-only. This is done to ensure that read-only projects are not accidently propagated. Please ensure that your project is marked not read-only before calling this service. Any extra terms are enumerated in the <a class="reference internal" href="../sphinx/datamodel.html#datamodel"><span>data model</span></a>.</p>
+<p><em>WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.</em></p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="56%" />
@@ -199,8 +198,8 @@
 <div class="section" id="getpropagate">
 <span id="propagate-get"></span><h3>getPropagate<a class="headerlink" href="#getpropagate" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getPropagate/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getPropagate-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getPropagate/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getPropagate-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -229,8 +228,8 @@
 <div class="section" id="setpropagate">
 <span id="propagate-set"></span><h3>setPropagate<a class="headerlink" href="#setpropagate" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/setPropagate/</code><span class="sig-paren">(</span><em class="property">int: </em><em>propagate_value</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/setPropagate/</code><span class="sig-paren">(</span><em class="property">int: </em><em>propagate_value</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -267,7 +266,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="stats_api.html" class="btn btn-neutral float-right" title="Statistics API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="autoingest_api.html" class="btn btn-neutral float-right" title="Auto-Ingest API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="ramon_api.html" class="btn btn-neutral" title="RAMON API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -279,7 +278,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

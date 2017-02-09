@@ -5,17 +5,17 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta content="Official documentation for NeuroData Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data" name="description" />
+  <meta content="Official documentation for NeuroData Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data" name="description" />
 <meta content="annotation, tracing, neuroscience, object detection" name="keywords" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>NeuroData &mdash; open-connectome v0.7.0 documentation</title>
+  <title>NeuroData &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="_static/neurodata_favicon.ico"/>
   
 
   
@@ -34,7 +34,7 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="#"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="#"/>
         <link rel="next" title="Introduction" href="sphinx/introduction.html"/> 
 
   
@@ -53,12 +53,12 @@
           
 
           
-            <a href="#" class="icon icon-home"> open-connectome
+            <a href="#" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="_static/ocp_main.png" class="logo" />
+            <img src="_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -102,19 +102,18 @@
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -131,7 +130,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="#">open-connectome</a>
+        <a href="#">ndstore</a>
       </nav>
 
 
@@ -162,12 +161,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>NeuroData Project Web Services (ndstore): Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
+  <h1>NeuroData Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
 <br><p>NeuroData provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3D image stacks, time-series and multi-channel data (e.g., electron microscopy, array tomography, CLARITY, histology, and multimodal MRI data). The system is designed primarily for workloads that build connectomes&#8212;neural connectivity maps of the brain&#8212;using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open science data sets are publicly available at neurodata.io.</p>
 <p>The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems&#8212;reads to parallel disk arrays and writes to solid-state storage&#8212;to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.</p>
 <div class="figure align-center" id="id2">
-<a class="reference internal image-reference" href="_images/nd_example.png"><img alt="Spatially Registered Databases in the NeuroData Project." src="_images/nd_example.png" style="width: 1000px; height: 500px;" /></a>
-<p class="caption"><span class="caption-text">Spatially Registered Databases in the NeuroData Project</span></p>
+<a class="reference internal image-reference" href="_images/neurodata_example.png"><img alt="Spatially Registered Databases in NeuroData." src="_images/neurodata_example.png" style="width: 1000px; height: 500px;" /></a>
+<p class="caption"><span class="caption-text">Spatially Registered Databases in NeuroData</span></p>
 <div class="legend">
 Electron microscopy images of a mouse somatosensory cortex (left), a probability map output by a computer vision algorithm that detects membranes (center), and an annotation database that describes axons and dendrites (right).</div>
 </div>
@@ -198,13 +197,12 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/swc_api.html">SWC API</a></li>
 </ul>
@@ -212,7 +210,7 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <div class="toctree-wrapper compound" id="further-reading">
 <p class="caption"><span class="caption-text">Further Reading</span><a class="headerlink" href="#further-reading" title="Permalink to this toctree">¶</a></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -243,7 +241,7 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

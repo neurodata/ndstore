@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Slice API &mdash; ndstore v0.7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
+        <link rel="next" title="RAMON API" href="ramon_api.html"/>
+        <link rel="prev" title="Data API" href="data_api.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ndstore
+          
+
+          
+            
+            <img src="../_static/neurodata_main.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">NeuroData Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/datamodel.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Administrator Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Slice API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-jpeg-stack-service-for-knossos">GET JPEG Stack Service for KNOSSOS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Further Reading</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">NeuroData Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">ndstore</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Slice API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/slice_api.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="slice-api">
+<h1>Slice API<a class="headerlink" href="#slice-api" title="Permalink to this headline">¶</a></h1>
+<p><strong>NOTE</strong>: These APIs do not return the orginal data. If you want the orginal raw data then please use the <a class="reference internal" href="data_api.html#id1"><span>Data APIs</span></a>.</p>
+<div class="section" id="get-xy-slice-cutout">
+<span id="slice-xy"></span><h2>GET XY Slice Cutout<a class="headerlink" href="#get-xy-slice-cutout" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/xy/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>z_slice</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time_slice</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Download a single image of a specified canonical plane, XY, and specified channel, resolution and bounds. Your browser can load these images.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>z_slice</strong> (<em>int</em>) &#8211; Z-slice value</li>
+<li><strong>time_slice</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">image/tiff</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/slice_xy.png"><img alt="../_images/slice_xy.png" src="../_images/slice_xy.png" style="width: 500px; height: 500px;" /></a>
+</div>
+</div>
+<div class="section" id="get-xz-slice-cutout">
+<span id="slice-xz"></span><h2>GET XZ Slice Cutout<a class="headerlink" href="#get-xz-slice-cutout" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/xz/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>y_slice</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/(int:time_slice/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Download a single image of a specified canonical plane, XZ, and specified channel, resolution and bounds. Your browser can load these images.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>y_slice</strong> (<em>int</em>) &#8211; Y-slice value</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>time_slice</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">image/tiff</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/slice_xz.png"><img alt="../_images/slice_xz.png" src="../_images/slice_xz.png" style="width: 500px; height: 200px;" /></a>
+</div>
+</div>
+<div class="section" id="get-yz-slice-cutout">
+<span id="slice-yz"></span><h2>GET YZ Slice Cutout<a class="headerlink" href="#get-yz-slice-cutout" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/yz/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>x_slice</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time_slice</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Download a single image of a specified canonical plane, YZ, and specified channel, resolution and bounds. Your browser can load these images.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>x_slice</strong> (<em>int</em>) &#8211; X-slice value</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> (<em>int</em>) &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>CUTOUT</strong> &#8211; HDF5 group, Post data</li>
+<li><strong>CHANNELTYPE</strong> &#8211; HDF5 group, Channel type(image, annotation, probmap, timeseries)</li>
+<li><strong>DATATYPE</strong> &#8211; HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">image/tiff</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/slice_yz.png"><img alt="../_images/slice_yz.png" src="../_images/slice_yz.png" style="width: 500px; height: 200px;" /></a>
+</div>
+</div>
+<div class="section" id="get-jpeg-stack-service-for-knossos">
+<h2>GET JPEG Stack Service for KNOSSOS<a class="headerlink" href="#get-jpeg-stack-service-for-knossos" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="jpeg-get"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/jpeg/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a JPEG stack in <a class="reference external" href="http://knossostool.org/">KNOSSOS</a> format.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">image/jpeg</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/slice_jpeg.jpg"><img alt="../_images/slice_jpeg.jpg" src="../_images/slice_jpeg.jpg" style="width: 500px; height: 1000px;" /></a>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ramon_api.html" class="btn btn-neutral float-right" title="RAMON API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="data_api.html" class="btn btn-neutral" title="Data API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, NeuroData Project.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v0.7.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

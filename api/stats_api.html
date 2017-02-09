@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Statistics API &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Statistics API &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,9 +32,7 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="JSON API" href="json_api.html"/>
-        <link rel="prev" title="Propagate API" href="propagate_api.html"/> 
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -52,12 +50,12 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> open-connectome
+            <a href="../index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="../_static/ocp_main.png" class="logo" />
+            <img src="../_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -96,39 +94,23 @@
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Statistics API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#stats-service">Stats Service</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#histograms">Histograms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gethistogram">getHistogram</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#genhistogram">genHistogram</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#stats">Stats</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#allstatistics">allStatistics</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mean">Mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#standard-deviation">Standard Deviation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#percentile">Percentile</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -145,7 +127,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connectome</a>
+        <a href="../index.html">ndstore</a>
       </nav>
 
 
@@ -189,8 +171,8 @@
 <div class="section" id="gethistogram">
 <span id="stats-hist"></span><h3>getHistogram<a class="headerlink" href="#gethistogram" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-hist-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hist/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-hist-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hist/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -199,9 +181,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
 </ul>
 </td>
 </tr>
@@ -217,11 +199,76 @@
 </dd></dl>
 
 </div>
+<div class="section" id="getrois">
+<span id="stats-roi-all"></span><h3>getROIs<a class="headerlink" href="#getrois" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-roi-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hist/roi/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-roi-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve all the ROIs that correspond to stored histograms associated with the given token / channel.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; ROIs retrieved and returned as JSON.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histograms based on ROIs for this token / channel.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="gethistogramroi">
+<span id="stats-hist-roi"></span><h3>getHistogramROI<a class="headerlink" href="#gethistogramroi" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><dl class="get">
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-roi-(string-roi)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hist/roi/</code><span class="sig-paren">(</span><em class="property">string: </em><em>roi</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-roi-(string-roi)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve the histogram corresponding to the given token, channel, and ROI.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+<li><strong>roi</strong> (<em>string</em>) &#8211; ROI (<code class="xref std std-option docutils literal"><span class="pre">x0,y0,z0-x1,y1,z1</span></code>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Histogram retrieved.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histograms based on ROIs for this token / channel.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div></blockquote>
+</div>
 <div class="section" id="genhistogram">
 <span id="stats-genhist"></span><h3>genHistogram<a class="headerlink" href="#genhistogram" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genhist-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/genhist/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genhist-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-genHist-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/genHist/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-genHist-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -230,9 +277,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
 </ul>
 </td>
 </tr>
@@ -246,6 +293,80 @@
 </table>
 </dd></dl>
 
+<dl class="post">
+<dt id="post-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-genHist-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/genHist/</code><a class="headerlink" href="#post-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-genHist-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Generate a histogram for an image dataset using parameters set by user and store it in the database.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">JSON Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>ROI</strong> (<em>string</em>) &#8211; Generate one histogram for each of the specified regions of interest. ROIs are specified as an array of arrays of coordinates. Each coordinate is a triple array containing (x,y,z) points specifying a corner of the rectangular ROI. At present, only rectangular ROIs are supported.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Histogram generation started or queued.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error or unsupported token / channel type.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="example-post-code-python">
+<h3>Example POST Code (Python)<a class="headerlink" href="#example-post-code-python" title="Permalink to this headline">¶</a></h3>
+<p>The following script details creating a post request and passing in several ROIs following the format described above. A pre-built version of this code that can be run on the command line and takes token, channel, and ROI as parameters exists in <code class="docutils literal"><span class="pre">examples/genhistpost.py</span></code>.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;ROI&#39;</span><span class="p">:</span> <span class="p">[</span>
+   <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">]],</span>
+   <span class="p">[[</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">],[</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">]],</span>
+   <span class="p">[[</span><span class="mi">30</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">12</span><span class="p">],[</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">15</span><span class="p">]]</span>
+<span class="p">]}</span>
+<span class="n">baseurl</span> <span class="o">=</span> <span class="s">&#39;neurodata.io/nd&#39;</span>
+<span class="n">token</span> <span class="o">=</span> <span class="s">&#39;testToken&#39;</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="s">&#39;testChannel&#39;</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s">&quot;http://{}/stats/{}/{}/genhist/&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">baseurl</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">channel</span> <span class="p">)</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+   <span class="k">print</span> <span class="s">&quot;Post request succeeded!&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+   <span class="k">print</span> <span class="s">&quot;Error posting gen histogram request.</span><span class="se">\n</span><span class="s">Status code {}</span><span class="se">\n</span><span class="s">Error Message: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
 </div>
 </div>
 <div class="section" id="stats">
@@ -253,8 +374,8 @@
 <div class="section" id="allstatistics">
 <span id="stats-all"></span><h3>allStatistics<a class="headerlink" href="#allstatistics" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-all-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/all/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-all-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-all-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/all/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-all-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -263,9 +384,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
 </ul>
 </td>
 </tr>
@@ -284,8 +405,8 @@
 <div class="section" id="mean">
 <span id="stats-mean"></span><h3>Mean<a class="headerlink" href="#mean" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-mean-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/mean/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-mean-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-mean-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/mean/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-mean-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -294,9 +415,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
 </ul>
 </td>
 </tr>
@@ -315,8 +436,8 @@
 <div class="section" id="standard-deviation">
 <span id="stats-std"></span><h3>Standard Deviation<a class="headerlink" href="#standard-deviation" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-std-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/std/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-std-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-std-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/std/</code><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-std-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -325,9 +446,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
 </ul>
 </td>
 </tr>
@@ -346,8 +467,8 @@
 <div class="section" id="percentile">
 <span id="stats-percentile"></span><h3>Percentile<a class="headerlink" href="#percentile" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/percentile/</code><span class="sig-paren">(</span><em class="property">decimal: </em><em>percentile_value</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/percentile/</code><span class="sig-paren">(</span><em class="property">decimal: </em><em>percentile_value</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -356,9 +477,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; NeuroData Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; NeuroData Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; NeuroData Channel</li>
 <li><strong>percentile_value</strong> (<em>decimal</em>) &#8211; Arbitrary percentile expressed as a percent (e.g. 1 for 1%, 95.99 for 95.99%)</li>
 </ul>
 </td>
@@ -383,21 +504,12 @@
           </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="json_api.html" class="btn btn-neutral float-right" title="JSON API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="propagate_api.html" class="btn btn-neutral" title="Propagate API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

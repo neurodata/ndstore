@@ -23,7 +23,7 @@ Please visit our `How to Ingest Data <ingesting>`_ page, which will help you wit
 
 **Can I keep my data private?**
 
-We are an open science data portal so we do encourage you to make their data public as it will enable open science and allow other people to work on your data. But the project does NOT enforce you to make your data public. You can keep your data private for as long as you like.
+We are an open science data portal so we do encourage you to make their data public as this will enable open science and allow other people to work on your data. But the project does **NOT** enforce you to make your data public. You can keep your data private for as long as you like.
 
 **How much data can I upload?**
 
@@ -31,7 +31,7 @@ You can upload upto 1TB using the auto-ingest function provided. If you have mor
 
 **How do I contribute code to NeuroData?**
 
-This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request. NDIO is our internal master branch which is not yet deployed to the servers and might not be tested with all the tool-boxes but is an excellent place to look for new features.
+This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request.
 
 **How do I put in a new feature request or propose an idea?**
 
@@ -43,11 +43,38 @@ You can open an issue on our github `repository <https://github.com/neurodata/nd
 
 **How do I view my data?**
 
-Please visit our NeuroDataViz page.
+Please visit our `NeuroDataViz page <http://docs.neurodata.io/ndviz/>`_.
+
+**Why is the first slice of my data blank?**
+First check the offset of your data to make certain it is correct. If it is it could be that there is just not visualizable data on that slice, such as if the data is present by at too low of an insensity to be seen.
+
+**What if I think my data is missing?**
+First do the following: Check if it is propagated or not. Check the resolution. Try fetching data at base resolution using the data API. Try a region in the center of dataset. If your data is 16-bit check if the window is correctly set. If you have tried all of the above recommendations then you should contact us by opening a git issue.
+
+**What if the API is down?**
+First make certain you actually cannot access the API and that it isn't just slow. Once you have verified that the API is unaccessible wait at least three hours before opening an issue, or if the issue is urgent send an email (with all of your issue details) to support@neurodata.io. This email or issue should include all relevent details such a when you tried accessing the APIs, what you tried to fix it and what api documentation you looked at. 
+
+**How do I download data?**
+
+You can download sub volumes of data using our RESTful API's. `Here <../api/data_api>`_ is the documentation for this. You catch fetch the data in HDF5, Numpy or Blosc format. It is also highly recommended to fetch this data in regions of 1024,1024,16. Alternatively there is a python library NDIO, which wraps around these RESTful API's.
 
 **How do I use the RESTful interface?**
-The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. 
+
+The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. Alternatively if you do not wish to use the api directly we recommend you use our python interface `ndio <https://github.com/neurodata/ndio>`_.
+
+**If I want to set up my own instance of ndstore?**
+Generally we do not recommend setting up your own ndstore instance for storing data. However if you do wish to do this, the setup script can be found at 
+
+**Is there a way to retrieve (near-) isotropic jpeg stacks?**
+There is no current way to retrieve near-isotropic data in JPEG format. We do store both isotropic and near-isotropic data for some of our datasets.
+
+**Is it possible to deploy instances of the ndstore with Docker?**
+Yes, however it is highly not recommended and there is no formal support for it.
 
 **Is there a support forum?**
 
 Information on making a support request and archived questions and answers may be found `here <https://groups.google.com/a/neurodata.io/forum/#!forum/support>`_.
+
+**What do I do if a service is down?**
+
+If a service appears to be down, it is highly recommended that you wait some time and try to access it again later. If later the service is still down the fastest way to get a response will be to open an issue `here. <https://github.com/neurodata/ndstore/issues>`_

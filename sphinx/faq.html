@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Frequently Asked Questions (FAQ) &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Frequently Asked Questions (FAQ) &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="../_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="NeuroData Types" href="../api/nd_types.html"/>
         <link rel="prev" title="Configuration" href="config.html"/> 
 
@@ -52,12 +52,12 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> open-connectome
+            <a href="../index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="../_static/ocp_main.png" class="logo" />
+            <img src="../_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -101,19 +101,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -130,7 +129,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connectome</a>
+        <a href="../index.html">ndstore</a>
       </nav>
 
 
@@ -174,21 +173,37 @@
 <p><strong>How do I contribute my data to NeuroData?</strong></p>
 <p>Please visit our <a class="reference external" href="ingesting">How to Ingest Data</a> page, which will help you with mulitple options.</p>
 <p><strong>Can I keep my data private?</strong></p>
-<p>We are an open science data portal so we do encourage you to make their data public as it will enable open science and allow other people to work on your data. But the project does NOT enforce you to make your data public. You can keep your data private for as long as you like.</p>
+<p>We are an open science data portal so we do encourage you to make their data public as this will enable open science and allow other people to work on your data. But the project does <strong>NOT</strong> enforce you to make your data public. You can keep your data private for as long as you like.</p>
 <p><strong>How much data can I upload?</strong></p>
 <p>You can upload upto 1TB using the auto-ingest function provided. If you have more data please send us a note on our support forums and one of us will contact you.</p>
 <p><strong>How do I contribute code to NeuroData?</strong></p>
-<p>This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request. NDIO is our internal master branch which is not yet deployed to the servers and might not be tested with all the tool-boxes but is an excellent place to look for new features.</p>
+<p>This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request.</p>
 <p><strong>How do I put in a new feature request or propose an idea?</strong></p>
 <p>You can open an issue on our github <a class="reference external" href="https://github.com/neurodata/ndstore/issues">repository</a> and tag it as a feature. Prior to opening a new feature request, please checout our other feature issues to see if some of your suggestions or features have not been discussed before.</p>
 <p><strong>How do I report code bugs?</strong></p>
 <p>You can open an issue on our github <a class="reference external" href="https://github.com/neurodata/ndstore/issues">repository</a> and tag it as a bug. Prior to reporting a bug, please checout our other bugs to see if your bug has been reported or not. Do also have a look at our support forums to identify if this is a bug or not.</p>
 <p><strong>How do I view my data?</strong></p>
-<p>Please visit our NeuroDataViz page.</p>
-<p><strong>How do I use the RESTful interface?</strong>
-The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests.</p>
+<p>Please visit our <a class="reference external" href="http://docs.neurodata.io/ndviz/">NeuroDataViz page</a>.</p>
+<p><strong>Why is the first slice of my data blank?</strong>
+First check the offset of your data to make certain it is correct. If it is it could be that there is just not visualizable data on that slice, such as if the data is present by at too low of an insensity to be seen.</p>
+<p><strong>What if I think my data is missing?</strong>
+First do the following: Check if it is propagated or not. Check the resolution. Try fetching data at base resolution using the data API. Try a region in the center of dataset. If your data is 16-bit check if the window is correctly set. If you have tried all of the above recommendations then you should contact us by opening a git issue.</p>
+<p><strong>What if the API is down?</strong>
+First make certain you actually cannot access the API and that it isn&#8217;t just slow. Once you have verified that the API is unaccessible wait at least three hours before opening an issue, or if the issue is urgent send an email (with all of your issue details) to <a class="reference external" href="mailto:support&#37;&#52;&#48;neurodata&#46;io">support<span>&#64;</span>neurodata<span>&#46;</span>io</a>. This email or issue should include all relevent details such a when you tried accessing the APIs, what you tried to fix it and what api documentation you looked at.</p>
+<p><strong>How do I download data?</strong></p>
+<p>You can download sub volumes of data using our RESTful API&#8217;s. <a class="reference external" href="../api/data_api">Here</a> is the documentation for this. You catch fetch the data in HDF5, Numpy or Blosc format. It is also highly recommended to fetch this data in regions of 1024,1024,16. Alternatively there is a python library NDIO, which wraps around these RESTful API&#8217;s.</p>
+<p><strong>How do I use the RESTful interface?</strong></p>
+<p>The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. Alternatively if you do not wish to use the api directly we recommend you use our python interface <a class="reference external" href="https://github.com/neurodata/ndio">ndio</a>.</p>
+<p><strong>If I want to set up my own instance of ndstore?</strong>
+Generally we do not recommend setting up your own ndstore instance for storing data. However if you do wish to do this, the setup script can be found at</p>
+<p><strong>Is there a way to retrieve (near-) isotropic jpeg stacks?</strong>
+There is no current way to retrieve near-isotropic data in JPEG format. We do store both isotropic and near-isotropic data for some of our datasets.</p>
+<p><strong>Is it possible to deploy instances of the ndstore with Docker?</strong>
+Yes, however it is highly not recommended and there is no formal support for it.</p>
 <p><strong>Is there a support forum?</strong></p>
 <p>Information on making a support request and archived questions and answers may be found <a class="reference external" href="https://groups.google.com/a/neurodata.io/forum/#!forum/support">here</a>.</p>
+<p><strong>What do I do if a service is down?</strong></p>
+<p>If a service appears to be down, it is highly recommended that you wait some time and try to access it again later. If later the service is still down the fastest way to get a response will be to open an issue <a class="reference external" href="https://github.com/neurodata/ndstore/issues">here.</a></p>
 </div>
 
 
@@ -210,7 +225,7 @@ The RESTful interface can be accessed with any browser by inputting the correct 
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

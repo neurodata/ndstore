@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>HTTP Routing Table &mdash; open-connectome v0.7.0 documentation</title>
+  <title>HTTP Routing Table &mdash; ndstore v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="_static/neurodata_favicon.ico"/>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="index.html"/>
+    <link rel="top" title="ndstore v0.7.0 documentation" href="index.html"/>
  
 
     <script type="text/javascript">
@@ -57,12 +57,12 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> open-connectome
+            <a href="index.html" class="icon icon-home"> ndstore
           
 
           
             
-            <img src="_static/ocp_main.png" class="logo" />
+            <img src="_static/neurodata_main.png" class="logo" />
           
           </a>
 
@@ -106,19 +106,18 @@
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public_api.html">Public Token API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/json_api.html">JSON API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/tile_api.html">Tile API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/graphgen_api.html">GrahpGen API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/nifti_api.html">NIFTI API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/functions.html">ndstore Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -135,7 +134,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">open-connectome</a>
+        <a href="index.html">ndstore</a>
       </nav>
 
 
@@ -179,17 +178,17 @@
      <tr>
        <td></td>
        <td>
-       <a href="api/overlay_api.html#post-(string-host_server_name)-ocp-overlay-(float-alpha_value)-(string-first_server_name)-(string-first_token_name)-(string-first_channel_name)-(string-second_server_name)-(string-second_token_name)-(string-second_channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-"><code class="xref">POST (string:host_server_name)/ocp/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/</code></a></td><td>
+       <a href="api/overlay_api.html#post-(string-host_server_name)-nd-overlay-(float-alpha_value)-(string-first_server_name)-(string-first_token_name)-(string-first_channel_name)-(string-second_server_name)-(string-second_token_name)-(string-second_channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-"><code class="xref">POST (string:host_server_name)/nd/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/overlay_api.html#post-(string-host_server_name)-ocp-overlay-(float-alpha_value)-(string-first_server_name)-(string-first_token_name)-(string-first_channel_name)-(string-second_server_name)-(string-second_token_name)-(string-second_channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-"><code class="xref">POST (string:host_server_name)/ocp/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/</code></a></td><td>
+       <a href="api/overlay_api.html#post-(string-host_server_name)-nd-overlay-(float-alpha_value)-(string-first_server_name)-(string-first_token_name)-(string-first_channel_name)-(string-second_server_name)-(string-second_token_name)-(string-second_channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-"><code class="xref">POST (string:host_server_name)/nd/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/overlay_api.html#post-(string-host_server_name)-ocp-overlay-(float-alpha_value)-(string-first_server_name)-(string-first_token_name)-(string-first_channel_name)-(string-second_server_name)-(string-second_token_name)-(string-second_channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-"><code class="xref">POST (string:host_server_name)/ocp/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/</code></a></td><td>
+       <a href="api/overlay_api.html#post-(string-host_server_name)-nd-overlay-(float-alpha_value)-(string-first_server_name)-(string-first_token_name)-(string-first_channel_name)-(string-second_server_name)-(string-second_token_name)-(string-second_channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-"><code class="xref">POST (string:host_server_name)/nd/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/</code></a></td><td>
        <em></em></td></tr>
      <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
      <tr class="cap" id="cap-/(string:server_name)"><td></td><td>
@@ -197,167 +196,242 @@
      <tr>
        <td></td>
        <td>
-       <a href="api/ramon_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/graphgen_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(string-graph_type)-(int-Xmin)-,int-Xmax)-(int-Ymin),(int-Ymax)-(int-Zmin),(int-Zmax)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(string:graph_type)/(int:Xmin)/,int:Xmax)/(int:Ymin),(int:Ymax)/(int:Zmin),(int:Zmax)/</code></a></td><td>
+       <a href="api/graphgen_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(string-graph_type)-(int-Xmin)-,int-Xmax)-(int-Ymin),(int-Ymax)-(int-Zmin),(int-Zmax)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(string:graph_type)/(int:Xmin)/,int:Xmax)/(int:Ymin),(int:Ymax)/(int:Zmin),(int:Zmax)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getField-(string-ramon_field)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/ramon_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getField-(string-ramon_field)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/</code></a></td><td>
+       <a href="api/swc_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getPropagate-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/getPropagate/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/swc_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getPropagate/</code></a></td><td>
+       <a href="api/slice_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-setField-(string-ramon_field)-(string-int-float-ramon_value)"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/ramon_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/</code></a></td><td>
+       <a href="api/propagate_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/setPropagate/(int:propagate_value)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/slice_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/ramon_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setField-(string-ramon_field)-(string-int-float-ramon_value)"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)</code></a></td><td>
+       <a href="api/slice_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/propagate_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setPropagate/(int:propagate_value)/</code></a></td><td>
+       <a href="api/slice_api.html#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-"><code class="xref">GET (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/</code></a></td><td>
+       <a href="api/public_api.html#get-(string-server_name)-nd-ca-public_datsets-"><code class="xref">GET (string:server_name)/nd/ca/public_datsets/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/</code></a></td><td>
+       <a href="api/public_api.html#get-(string-server_name)-nd-ca-public_tokens-"><code class="xref">GET (string:server_name)/nd/ca/public_tokens/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/</code></a></td><td>
+       <a href="api/tile_api.html#get-(string-server_name)-nd-catmaid-(string-token_name)-(string-channel_name)-xy-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png"><code class="xref">GET (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/xy/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/info_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-info-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/info/</code></a></td><td>
+       <a href="api/tile_api.html#get-(string-server_name)-nd-catmaid-(string-token_name)-(string-channel_name)-xz-(int-time)-(int-yvalue)-(int-ztile)_(int-xtile)_(int-resolution).png"><code class="xref">GET (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/xz/(int:time)/(int:yvalue)/(int:ztile)_(int:xtile)_(int:resolution).png</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/info_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-projinfo-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/projinfo/</code></a></td><td>
+       <a href="api/tile_api.html#get-(string-server_name)-nd-catmaid-(string-token_name)-(string-channel_name)-yz-(int-time)-(int-xvalue)-(int-ztile)_(int-ytile)_(int-resolution).png"><code class="xref">GET (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/yz/(int:time)/(int:xvalue)/(int:ztile)_(int:ytile)_(int:resolution).png</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/public_api.html#get-(string-server_name)-ocp-ca-public_tokens-"><code class="xref">GET (string:server_name)/ocp/ca/public_tokens/</code></a></td><td>
+       <a href="api/tile_api.html#get-(string-server_name)-nd-catmaid-mcfc-(string-token_name)-(string-channel_name)-(string-color_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png"><code class="xref">GET (string:server_name)/nd/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/tile_api.html#get-(string-server_name)-ocp-catmaid-(string-token_name)-(string-channel_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png"><code class="xref">GET (string:server_name)/ocp/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png</code></a></td><td>
+       <a href="api/tile_api.html#get-(string-server_name)-nd-catmaid-viking-(string-token_name)-volume-(string-channel_name)-(int-resolution)-X(int-xtile)_Y(int-xtile)_Z(int-zvalue).png"><code class="xref">GET (string:server_name)/nd/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/tile_api.html#get-(string-server_name)-ocp-catmaid-mcfc-(string-token_name)-(string-channel_name)-(string-color_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png"><code class="xref">GET (string:server_name)/ocp/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-(int-id)-"><code class="xref">GET (string:server_name)/nd/ramon/(string:token_name)/(string:channel_name)/(int:id)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/tile_api.html#get-(string-server_name)-ocp-catmaid-viking-(string-token_name)-volume-(string-channel_name)-(int-resolution)-X(int-xtile)_Y(int-xtile)_Z(int-zvalue).png"><code class="xref">GET (string:server_name)/ocp/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-(int-id)-boundingbox-(int-res)-"><code class="xref">GET (string:server_name)/nd/ramon/(string:token_name)/(string:channel_name)/(int:id)/boundingbox/(int:res)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/stats_api.html#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-all-"><code class="xref">GET (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/all/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-query-(string-int-float-key)-(string-int-float-value)-"><code class="xref">GET (string:server_name)/nd/ramon/(string:token_name)/(string:channel_name)/query/(string/int/float:key)/(string/int/float:value)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/stats_api.html#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genhist-"><code class="xref">GET (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/genhist/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-topkeys-(int-num_results)-"><code class="xref">GET (string:server_name)/nd/ramon/(string:token_name)/(string:channel_name)/topkeys/(int:num_results)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/stats_api.html#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-hist-"><code class="xref">GET (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/hist/</code></a></td><td>
+       <a href="api/ramon_api.html#get-(string-server_name)-nd-ramon-(string-token_name)-(string-channel_name)-topkeys-(int-num_results)-type-(int-ramon_type)-"><code class="xref">GET (string:server_name)/nd/ramon/(string:token_name)/(string:channel_name)/topkeys/(int:num_results)/type/(int:ramon_type)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/stats_api.html#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-mean-"><code class="xref">GET (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/mean/</code></a></td><td>
+       <a href="api/resource_api.html#get-(string-server_name)-nd-resource-dataset-"><code class="xref">GET (string:server_name)/nd/resource/dataset/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/stats_api.html#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)"><code class="xref">GET (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/percentile/(decimal:percentile_value)</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/stats_api.html#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-std-"><code class="xref">GET (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/std/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/ramon_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(string-option_args)-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(string:option_args)/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-raw-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/raw/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/info_api.html#get-(string-server_name)-nd-sd-(string-token_name)-info-"><code class="xref">GET (string:server_name)/nd/sd/(string:token_name)/info/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/data_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/info_api.html#get-(string-server_name)-nd-sd-(string-token_name)-projinfo-"><code class="xref">GET (string:server_name)/nd/sd/(string:token_name)/projinfo/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/json_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-createChannel-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/createChannel/</code></a></td><td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-all-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/all/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/json_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-deleteChannel-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/deleteChannel/</code></a></td><td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-genHist-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/genHist/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="api/json_api.html#post-(string-server_name)-ocp-ca-autoIngest-"><code class="xref">POST (string:server_name)/ocp/ca/autoIngest/</code></a></td><td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/hist/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-roi-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/hist/roi/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-hist-roi-(string-roi)-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/hist/roi/(string:roi)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-mean-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/mean/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/percentile/(decimal:percentile_value)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/stats_api.html#get-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-std-"><code class="xref">GET (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/std/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/ramon_api.html#post-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-(string-option_args)-"><code class="xref">POST (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(string:option_args)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/resource_api.html#post-(string-server_name)-nd-ca-(string-token_name)-deleteChannel-"><code class="xref">POST (string:server_name)/nd/ca/(string:token_name)/deleteChannel/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/autoingest_api.html#post-(string-server_name)-nd-ca-autoIngest-"><code class="xref">POST (string:server_name)/nd/ca/autoIngest/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/resource_api.html#post-(string-server_name)-nd-resource-dataset-"><code class="xref">POST (string:server_name)/nd/resource/dataset/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/data_api.html#post-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/data_api.html#post-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/data_api.html#post-(string-server_name)-nd-sd-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/resource_api.html#post-(string-server_name)-nd-sd-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-"><code class="xref">POST (string:server_name)/nd/sd/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/stats_api.html#post-(string-server_name)-nd-stats-(string-token_name)-(string-channel_name)-genHist-"><code class="xref">POST (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/genHist/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/resource_api.html#delete-(string-server_name)-nd-resource-dataset-"><code class="xref">DELETE (string:server_name)/nd/resource/dataset/</code></a></td><td>
        <em></em></td></tr>
    </table>
 
@@ -371,7 +445,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Open Connectome Project.
+        &copy; Copyright 2015, NeuroData Project.
 
     </p>
   </div>

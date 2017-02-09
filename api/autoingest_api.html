@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>SWC API &mdash; ndstore v0.7.0 documentation</title>
+  <title>Auto-Ingest API &mdash; ndstore v0.7.0 documentation</title>
   
 
   
@@ -33,8 +33,8 @@
 
   
     <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="NeuroData Functions" href="functions.html"/>
-        <link rel="prev" title="NIFTI API" href="nifti_api.html"/> 
+        <link rel="next" title="Resources API" href="resource_api.html"/>
+        <link rel="prev" title="Propagate API" href="propagate_api.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -104,14 +104,14 @@
 <li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Auto-Ingest API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#autoingest">autoIngest</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">SWC API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#getswc">getSWC</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
@@ -149,11 +149,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>SWC API</li>
+    <li>Auto-Ingest API</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/swc_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/autoingest_api.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -163,35 +163,61 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="swc-api">
-<h1>SWC API<a class="headerlink" href="#swc-api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="getswc">
-<span id="swc-get"></span><h2>getSWC<a class="headerlink" href="#getswc" title="Permalink to this headline">¶</a></h2>
-<dl class="get">
-<dt id="get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getPropagate-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getPropagate/</code><a class="headerlink" href="#get-(string-server_name)-nd-ca-(string-token_name)-(string-channel_name)-getPropagate-" title="Permalink to this definition">¶</a></dt>
+  <div class="section" id="auto-ingest-api">
+<h1>Auto-Ingest API<a class="headerlink" href="#auto-ingest-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="autoingest">
+<span id="json-autoingest"></span><h2>autoIngest<a class="headerlink" href="#autoingest" title="Permalink to this headline">¶</a></h2>
+<dl class="post">
+<dt id="post-(string-server_name)-nd-ca-autoIngest-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/ca/autoIngest/</code><a class="headerlink" href="#post-(string-server_name)-nd-ca-autoIngest-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the graph from the server.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a dataset, project and channels with a JSON file.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in NeuroData.</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in NeuroData. <em>Optional</em>. If missing will use default channel for the token.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>JSON</strong> &#8211; Look at the Tech Sheet</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if channel already exists</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>POST /nd/ca/json/ HTTP/1.1
+Host: openconnecto.me
+Content-Type: application/json
+
+{
+  dataset
+  project
+  metadata
+}
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  SUCCESS
+}
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -204,10 +230,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="functions.html" class="btn btn-neutral float-right" title="NeuroData Functions" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="resource_api.html" class="btn btn-neutral float-right" title="Resources API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nifti_api.html" class="btn btn-neutral" title="NIFTI API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="propagate_api.html" class="btn btn-neutral" title="Propagate API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
