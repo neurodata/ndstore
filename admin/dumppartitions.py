@@ -59,7 +59,7 @@ def main():
   cursor = conn.cursor()
   try:
     cursor.execute ( sql )
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     print "Problem retrieving max zindex %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
     sys.exit (-1)
 

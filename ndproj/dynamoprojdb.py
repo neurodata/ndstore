@@ -14,8 +14,8 @@
 
 import boto3
 
-from ndchannel import NDChannel
-from ndproject import NDProject
+from .ndchannel import NDChannel
+from .ndproject import NDProject
 
 from ndwserror import NDWSError
 import logging
@@ -122,7 +122,7 @@ class DynamoProjDB:
       # itable.meta.client.get_waiter('table_exists').wait(TableName='{}_{}_idx'.format(pr.project_name, ch.channel_name))
       # etable.meta.client.get_waiter('table_exists').wait(TableName='{}_{}_exc'.format(pr.project_name, ch.channel_name))
     
-    except Exception, e:
+    except Exception as e:
       ch.deleteChannel()
       logger.warning("Cannot create DynamoDB Table {}".format(channel_name))
       raise NDWSError("Cannot create DynamoDB Table {}".format(channel_name))
@@ -154,6 +154,6 @@ class DynamoProjDB:
       try:
         table = self.dynamodb.Table(table_name)
         table.delete()
-      except Exception, e:
+      except Exception as e:
         logger.warning("Channel table {} in DynamoDB does not exist".format(channel_name))
         pass

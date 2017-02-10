@@ -52,7 +52,7 @@ class MySQLProjectDB:
           cursor.execute(sql)
           conn.commit()
         
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.error("Failed to create database for new project {}: {}.".format(e.args[0], e.args[1]))
           raise NDWSError("Failed to create database for new project {}: {}.".format(e.args[0], e.args[1]))
   
@@ -83,7 +83,7 @@ class MySQLProjectDB:
          
           # Commiting at the end
           conn.commit()
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           ch.deleteChannel()
           logging.error ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
           raise NDWSError ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
@@ -101,7 +101,7 @@ class MySQLProjectDB:
           try:
             cursor.execute(sql)
             conn.commit()
-          except MySQLdb.Error, e:
+          except MySQLdb.Error as e:
             # Skipping the error if the database does not exist
             if e.args[0] == 1008:
               logger.warning("Database {} does not exist".format(self.pr.dbname))
@@ -143,7 +143,7 @@ class MySQLProjectDB:
           try: 
             cursor.execute (sql)
             conn.commit()
-          except MySQLdb.Error, e:
+          except MySQLdb.Error as e:
             # Skipping the error if the table does not exist
             if e.args[0] == 1051:
               pass

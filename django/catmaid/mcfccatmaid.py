@@ -15,7 +15,7 @@
 import django
 import re
 import numpy as np
-import cStringIO
+from io import BytesIO
 import pylibmc
 import math
 from contextlib import closing
@@ -159,17 +159,17 @@ class MCFCCatmaid:
 
       # check for channel_name:color and put them in the designated list
       try:
-        self.channel_list, colors = zip(*re.findall("(\w+)[:]?(\w)?", channels))
+        self.channel_list, colors = list(zip(*re.findall("(\w+)[:]?(\w)?", channels)))
         # checking for a non-empty list
-        if not not filter(None, colors):
+        if not not [_f for _f in colors if _f]:
           # if it is a mixed then replace the missing ones with the existing schema
-          self.colors = [ b if a is u'' else a for a,b in zip(colors, self.colors)]
-      except Exception, e:
+          self.colors = [ b if a is '' else a for a,b in zip(colors, self.colors)]
+      except Exception as e:
         logger.error("Incorrect channel formst for getTile {}. {}".format(channels, e))
         raise NDWSError("Incorrect channel format for getTile {}. {}".format(channels, e))
       
       #self.colors = [] 
-    except Exception, e:
+    except Exception as e:
       logger.error("Incorrect arguments for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
@@ -195,12 +195,12 @@ class MCFCCatmaid:
           logger.error("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
           raise NDWSError("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
         
-        fobj = cStringIO.StringIO ( )
+        fobj = BytesIO( )
         img.save ( fobj, "PNG" )
         self.mc.set(mckey, fobj.getvalue())
       
       else:
-        fobj = cStringIO.StringIO(tile)
+        fobj = BytesIO(tile)
 
       fobj.seek(0)
       return fobj

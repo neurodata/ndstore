@@ -15,9 +15,9 @@
 import django.http
 import numpy as np
 from PIL import Image
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
-import cStringIO
+from io import BytesIO
 from django.conf import settings
 from webservices.ndwserror import NDWSError
 import logging
@@ -36,16 +36,16 @@ def overlayImage (request, webargs):
   # Get the info for project 1
   url = 'http://{}/nd/ca/{}/info/'.format(server1, token1)
   try:
-    f = urllib2.urlopen(url)
-  except urllib2.URLError, e:
+    f = urllib.request.urlopen(url)
+  except urllib.error.URLError as e:
     raise NDWSError("Web service error. URL {}. Error {}.".format(url,e))
   layer1info = json.loads ( f.read() )
 
   # Get the info for project 2
   url = 'http://{}/nd/ca/{}/info/'.format(server2, token2)
   try:
-    f = urllib2.urlopen ( url )
-  except urllib2.URLError, e:
+    f = urllib.request.urlopen ( url )
+  except urllib.error.URLError as e:
     raise NDWSError ( "Web service error. URL {}. Error {}.".format(url,e))
   layer2info = json.loads ( f.read() )
   
@@ -55,21 +55,21 @@ def overlayImage (request, webargs):
   # get the first image
   url = 'http://{}/ocp/ca/{}/{}/{}/{}'.format(server1,token1,channel1,plane,cutout) 
   try:
-    f = urllib2.urlopen ( url )
-  except urllib2.URLError, e:
+    f = urllib.request.urlopen ( url )
+  except urllib.error.URLError as e:
     raise NDWSError ( "Web service error. URL {}.  Error {}.".format(url,e))
 
-  fobj = cStringIO.StringIO ( f.read() )
+  fobj = BytesIO( f.read() )
   img1 = Image.open(fobj) 
    
   # get the second image
   url = 'http://{}/ocp/ca/{}/{}/{}/{}'.format(server2,token2,channel2,plane,cutout) 
   try:
-    f = urllib2.urlopen ( url )
-  except urllib2.URLError, e:
+    f = urllib.request.urlopen ( url )
+  except urllib.error.URLError as e:
     raise NDWSError ( "Web service error. URL {}.  Error {}.".format(url,e))
 
-  fobj = cStringIO.StringIO ( f.read() )
+  fobj = BytesIO( f.read() )
   img2 = Image.open(fobj) 
 
   try:
@@ -80,7 +80,7 @@ def overlayImage (request, webargs):
     compimg1 = Image.composite ( img1, img2, img1 )
     compimg = Image.blend ( img2, compimg1, alpha )
 
-  except Exception, e:
+  except Exception as e:
     logger.error ("Unknown error processing overlay images. Error={}".format(e))
     raise
   # Create blended image of the two
@@ -92,11 +92,11 @@ def overlay (request, webargs):
 
   try:
     overlayimg = overlayImage ( request, webargs )
-  except Exception, e:
+  except Exception as e:
      raise
 
   # write the merged image to a buffer
-  fobj2 = cStringIO.StringIO ( )
+  fobj2 = BytesIO( )
   overlayimg.save ( fobj2, "PNG" )
 
   fobj2.seek(0)

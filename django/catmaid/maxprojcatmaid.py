@@ -14,7 +14,7 @@
 
 import re
 import numpy as np
-import cStringIO
+from io import BytesIO
 from contextlib import closing
 from PIL import Image
 from spdb.spatialdb import SpatialDB
@@ -74,7 +74,7 @@ class MaxProjCatmaid:
       # extract the width as an integer
       width = int(widthstr)
       
-    except Exception, e:
+    except Exception as e:
       logger.error("Incorrect arguments for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
@@ -97,11 +97,11 @@ class MaxProjCatmaid:
           logger.error ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
           raise NDWSError ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
         
-        fobj = cStringIO.StringIO ( )
+        fobj = BytesIO( )
         img.save ( fobj, "PNG" )
 
       else:
-        fobj = cStringIO.StringIO(tile)
+        fobj = BytesIO(tile)
 
       fobj.seek(0)
       return fobj

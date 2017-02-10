@@ -15,7 +15,6 @@
 import urllib2
 import numpy as np
 import urllib2
-import cStringIO
 import sys
 
 import tempfile

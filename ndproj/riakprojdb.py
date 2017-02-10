@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import riak
-from ndchannel import NDChannel
-from ndproject import NDProject
+from ndproj.ndchannel import NDChannel
+from ndproj.ndproject import NDProject
 from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")

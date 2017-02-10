@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import re
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import django
 django.setup()
@@ -47,25 +47,25 @@ def autoIngest(webargs, post_data):
     project_dict = nd_dict['project']
     channels = nd_dict['channels']
     metadata_dict = nd_dict['metadata']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing requred fields of dataset, project, channels, metadata.")
     return HttpResponseBadRequest(json.dumps("Missing required fields of dataset, project, channels, metadata. Please check if one of them is not missing."), content_type="application/json")
   
   # try:
     # DATASET_SCHEMA.validate(dataset_dict)
-  # except Exception, e:
+  # except Exception as e:
     # logger.error("Invalid Dataset schema")
     # return json.dumps("Invalid Dataset schema")
   
   # try:
     # PROJECT_SCHEMA.validate(project_dict)
-  # except Exception, e:
+  # except Exception as e:
     # logger.error("Invalid Project schema")
     # return json.dumps("Invalid Project schema")
     
   #try:
     #CHANNEL_SCHEMA.validate(channels)
-  #except Exception, e:
+  #except Exception as e:
     #print "Invalid Channel schema"
     #return json.dumps("Invalid Channel schema")
 
@@ -77,7 +77,7 @@ def autoIngest(webargs, post_data):
   if pr.project_name in ['unittest','unittest2']:
     pr.host = 'localhost'
   ch_list = []
-  for channel_name, value in channels.iteritems():
+  for channel_name, value in channels.items():
     channel_dict = channels[channel_name]
     ch_list.append(extractChannelDict(channel_dict))
 
@@ -135,7 +135,7 @@ def autoIngest(webargs, post_data):
         pd = NDProjectsDB.getProjDB(pr)
         pd.newNDProject()
         PROJECT_CREATED = True
-      except Exception, e:
+      except Exception as e:
         if TOKEN_CREATED:
           tk.delete()
         if PROJECT_CREATED:
@@ -163,7 +163,7 @@ def autoIngest(webargs, post_data):
           pd = NDProjectsDB.getProjDB(pr)
           pd.newNDChannel(ch.channel_name)
           CHANNEL_CREATED = True
-        except Exception, e:
+        except Exception as e:
           if TOKEN_CREATED:
             tk.delete()
           if CHANNEL_CREATED:
@@ -197,7 +197,7 @@ def autoIngest(webargs, post_data):
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
 
-  except Exception, e:
+  except Exception as e:
     # KL TODO Delete data from the LIMS systems
     try:
       pd
@@ -220,14 +220,14 @@ def createChannel(webargs, post_data):
   try:
     m = re.match("(\w+)/createChannel/$", webargs)
     token_name = m.group(1)
-  except Exception, e:
+  except Exception as e:
     logger.error("Error in URL format")
     raise NDWSError("Error in the URL format")
   
   nd_dict = json.loads(post_data)
   try:
     channels = nd_dict['channels']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing channels field. Ensure that 'Channel' field exists.")
     return HttpResponseBadRequest("Missing channels field. Ensure that 'Channel' field exists.")
   
@@ -236,7 +236,7 @@ def createChannel(webargs, post_data):
   pr = Project.objects.get(project_name=tk.project_id)
 
   ch_list = []
-  for channel_name, value in channels.iteritems():
+  for channel_name, value in channels.items():
     channel_dict = channels[channel_name]
     ch_list.append(extractChannelDict(channel_dict, channel_only=True))
   
@@ -257,7 +257,7 @@ def createChannel(webargs, post_data):
       # Create channel database using the ndproj interface
       pd = NDProjectsDB.getProjDB(pr)
       pd.newNDChannel(ch.channel_name)
-  except Exception, e:
+  except Exception as e:
     logger.error("Error saving models")
     # return the bad request with failed message
     return HttpResponseBadRequest("Error saving models.", content_type="text/plain")
@@ -272,14 +272,14 @@ def deleteChannel(webargs, post_data):
   try:
     m = re.match("(\w+)/deleteChannel/$", webargs)
     token_name = m.group(1)
-  except Exception, e:
+  except Exception as e:
     logger.error("Error in URL format")
     raise NDWSError("Error in URL format")
   
   nd_dict = json.loads(post_data)
   try:
     channels = nd_dict['channels']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing requred fields.")
     return HttpResponseBadRequest("Missing requred fields.")
   
@@ -300,7 +300,7 @@ def deleteChannel(webargs, post_data):
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return HttpResponse("Success. Channels deleted.")
-  except Exception, e:
+  except Exception as e:
     logger.error("Error saving models. The channels were not deleted.")
     return HttpResponseBadRequest("Error saving models. The channels were not deleted.")
 
@@ -310,10 +310,10 @@ def postMetadataDict(metadata_dict, project_name):
 
   try:
     url = 'http://{}/metadata/ocp/set/{}/'.format(settings.LIMS_SERVER, project_name)
-    req = urllib2.Request(url, json.dumps(metadata_dict))
+    req = urllib.request.Request(url, json.dumps(metadata_dict))
     req.add_header('Content-Type', 'application/json')
-    response = urllib2.urlopen(req)
-  except urllib2.URLError, e:
+    response = urllib.request.urlopen(req)
+  except urllib.error.URLError as e:
     logger.error("Failed URL {}".format(url))
     pass
 
@@ -327,7 +327,7 @@ def extractDatasetDict(ds_dict):
     ds.dataset_name = ds_dict['dataset_name']
     imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
     [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing required fields")
     raise NDWSError("Missing required fields")
 
@@ -349,8 +349,8 @@ def computeScalingLevels(imagesize):
   scalinglevels = 0
   # When both x and y dimensions are below 1000 or one is below 100 then stop
   while (ximagesz>1000 or yimagesz>1000) and ximagesz>500 and yimagesz>500:
-    ximagesz = ximagesz / 2
-    yimagesz = yimagesz / 2
+    ximagesz = ximagesz // 2
+    yimagesz = yimagesz // 2
     scalinglevels += 1
 
   return scalinglevels
@@ -363,7 +363,7 @@ def extractProjectDict(pr_dict):
 
   try:
     pr.project_name = pr_dict['project_name']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing required fields")
     raise NDWSError("Missing required fields")
 
@@ -390,7 +390,7 @@ def extractChannelDict(ch_dict, channel_only=False):
       data_url = ch_dict['data_url']
       file_format = ch_dict['file_format']
       file_type = ch_dict['file_type']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing required fields")
     raise NDWSError("Missing required fields")
     
@@ -418,7 +418,7 @@ def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
     nd_dict['project'] = createProjectDict(*project)
     nd_dict['metadata'] = metadata
   
-  for channel_name, value in channel_list.iteritems():
+  for channel_name, value in channel_list.items():
     value = value + (channel_only,)
     nd_dict['channels'][channel_name] = createChannelDict(*value)
   
@@ -432,10 +432,10 @@ def postMetadataDict(metadata_dict, project_name):
 
   try:
     url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, project_name)
-    req = urllib2.Request(url, json.dumps(metadata_dict))
+    req = urllib.request.Request(url, json.dumps(metadata_dict))
     req.add_header('Content-Type', 'application/json')
-    response = urllib2.urlopen(req)
-  except urllib2.URLError, e:
+    response = urllib.request.urlopen(req)
+  except urllib.error.URLError as e:
     logger.error("Failed URL {}".format(url))
     pass
 
@@ -449,7 +449,7 @@ def extractDatasetDict(ds_dict):
     ds.dataset_name = ds_dict['dataset_name']
     imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
     [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
-  except Exception, e:
+  except Exception as e:
     logger.error("Missing required fields")
     raise NDWSError("Missing required fields")
 
@@ -471,8 +471,8 @@ def computeScalingLevels(imagesize):
   scalinglevels = 0
   # When both x and y dimensions are below 1000 or one is below 100 then stop
   while (ximagesz>1000 or yimagesz>1000) and ximagesz>500 and yimagesz>500:
-    ximagesz = ximagesz / 2
-    yimagesz = yimagesz / 2
+    ximagesz = ximagesz // 2
+    yimagesz = yimagesz // 2
     scalinglevels += 1
 
   return scalinglevels
@@ -487,7 +487,7 @@ def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
     nd_dict['project'] = createProjectDict(*project)
     nd_dict['metadata'] = metadata
   
-  for channel_name, value in channel_list.iteritems():
+  for channel_name, value in channel_list.items():
     nd_dict['channels'][channel_name] = createChannelDict(*value)
   
   return json.dumps(nd_dict, sort_keys=True, indent=4)
@@ -551,7 +551,7 @@ def createProjectDict(project_name, token_name='', public=0):
 def compareModelObjects(obj1, obj2, excluded_keys=['_state']):
   """Compare two model objects"""
 
-  for key, value in obj1.__dict__.items():
+  for key, value in list(obj1.__dict__.items()):
     if key in excluded_keys:
       continue
     if obj2.__dict__[key] == value:

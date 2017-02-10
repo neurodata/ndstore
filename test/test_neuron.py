@@ -18,7 +18,6 @@ import tempfile
 import random
 import numpy as np
 from PIL import Image
-from StringIO import StringIO
 import makeunitdb
 from ndlib.ndtype import IMAGE, UINT8, UINT16
 from params import Params

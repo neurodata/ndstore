@@ -16,10 +16,12 @@ import numpy as np
 import tempfile
 import h5py
 import csv
-import cStringIO
+from io import BytesIO
 import re
-import annotation
+
+from . import annotation
 from webservices.ndwserror import NDWSError
+
 import logging
 logger = logging.getLogger("neurodata")
 
@@ -309,7 +311,7 @@ def H5toAnnotation ( key, idgrp, annodb, ch ):
 
     # and the key/value pairs
     if mdgrp.get('KVPAIRS'):
-      fstring = cStringIO.StringIO( mdgrp['KVPAIRS'][0] )
+      fstring = BytesIO( mdgrp['KVPAIRS'][0] )
       csvr = csv.reader(fstring, delimiter=',')
       for r in csvr:
         anno.kvpairs[r[0]] = r[1] 
@@ -322,7 +324,7 @@ def H5GetVoxels ( h5fh ):
   """Return the voxel data associated with the annotation"""
 
   # assume a single annotation for now
-  keys = h5fh.keys()
+  keys = list(h5fh.keys())
   idgrp = h5fh.get(keys[0])
 
   if idgrp.get('VOXELS'):
@@ -334,7 +336,7 @@ def H5GetVolume ( h5fh ):
   """Return the volume associated with the annotation"""
 
   # assume a single annotation for now
-  keys = h5fh.keys()
+  keys = list(h5fh.keys())
   idgrp = h5fh.get(keys[0])
 
   if idgrp.get('XYZOFFSET'):
@@ -372,9 +374,9 @@ def BasetoH5 ( anno, annotype, h5fh ):
   h5anno.mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=anno.author )
 
   # Turn our dictionary into a csv file
-  fstring = cStringIO.StringIO()
+  fstring = BytesIO()
   csvw = csv.writer(fstring, delimiter=',')
-  csvw.writerows([r for r in anno.kvpairs.iteritems()]) 
+  csvw.writerows([r for r in anno.kvpairs.items()]) 
 
   # User-defined metadata
   h5anno.mdgrp.create_dataset ( "KVPAIRS", (1,), dtype=h5py.special_dtype(vlen=str), data=fstring.getvalue())
@@ -558,16 +560,16 @@ def PackageIDs ( annoids ):
 def h5toCSV ( h5f ):
   """Marshall all HDF5 fields into a csv file"""
 
-  fstring = cStringIO.StringIO()
+  fstring = BytesIO()
   csvw = csv.writer(fstring, delimiter=',')
 
-  keys = h5f.keys()
+  keys = list(h5f.keys())
   idgrp = h5f.get(keys[0])
 
-  for k in idgrp.keys():
+  for k in list(idgrp.keys()):
     if k == 'METADATA':
       mdgrp = idgrp.get('METADATA')
-      for m in mdgrp.keys():
+      for m in list(mdgrp.keys()):
         if len(mdgrp[m]) == 1:
           csvw.writerow ( [m, mdgrp[m][0]] )
         else: 

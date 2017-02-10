@@ -88,7 +88,7 @@ def getAnnotation ( webargs ):
 
       jsonstr = json.dumps( annobj )
 
-    except Exception, e: 
+    except Exception as e: 
       logger.error("JSON get ID {}. Error {}. Webargs {}.".format( option_args[0], e, webargs ))
       raise NDWSError ("JSON Get ID {}. Error {}.".format( option_args[0], e ))
 

@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from contextlib import closing
 import numpy as np
 from PIL import Image
-from operator import sub, add, mul, div
+from operator import sub, add, mul, floordiv
 import boto3
 import botocore
 import django
@@ -50,7 +50,7 @@ class IngestData:
     self.file_type = file_type
     try:
       self.client = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
-    except Exception, e:
+    except Exception as e:
       logger.error("Cannot connect to S3 backend")
       raise NDWSError("Cannot connect to S3 backend")
 
@@ -83,7 +83,7 @@ class IngestData:
 
         # req = urllib2.Request(url)
         # resp = urllib2.urlopen(req, timeout=15)
-      # except urllib2.URLError, e:
+      # except urllib2.URLError as e:
         # logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
         # continue
       
@@ -91,7 +91,7 @@ class IngestData:
       # try:
         # image_file = open('{}'.format(self.path+self.generateFileName(slice_number)),'w')
         # image_file.write(resp.read())
-      # except IOError, e:
+      # except IOError as e:
         # logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateFileName(slice_number), e))
       # finally:
         # image_file.close()
@@ -107,9 +107,9 @@ class IngestData:
       
       # making the request
       try:
-        req = urllib2.Request(url)
-        resp = urllib2.urlopen(req, timeout=15)
-      except urllib2.URLError, e:
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req, timeout=15)
+      except urllib.error.URLError as e:
         logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
         continue
         
@@ -117,7 +117,7 @@ class IngestData:
       try:
         catmaid_file = open('{}'.format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
         catmaid_file.write(resp.read())
-      except IOError, e:
+      except IOError as e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile), e))
       finally:
         catmaid_file.close()
@@ -128,7 +128,7 @@ class IngestData:
     for slice_number in slice_list:
       try:
         os.remove('{}{}'.format(self.path, self.generateCatmaidFileName(slice_number, xtile, ytile)))
-      except OSError, e:
+      except OSError as e:
         logger.warning("File {} not found. {}".format(self.generateCatmaidFileName(slice_number, xtile, ytile), e))
  
   def cleanData(self, slice_list):
@@ -137,7 +137,7 @@ class IngestData:
     for slice_number in slice_list:
       try:
         os.remove('{}{}'.format(self.path, self.generateFileName(slice_number)))
-      except OSError, e:
+      except OSError as e:
         logger.warning("File {} not found. {}".format(self.generateFileName(slice_number), e))
 
   def generateCatmaidFileName(self, slice_number, xtile, ytile, ondisk=True):
@@ -190,7 +190,7 @@ class IngestData:
     [starttime,endtime] = ch.time_range()
     [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.get_cubedim(self.resolution)
     [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
-    [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
+    [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = list(map(mul, cubedim, SUPERCUBESIZE))
 
     if ch.channel_type in TIMESERIES_CHANNELS:
       logger.error("Timeseries data not supported for CATMAID data. Error in {}".format(self.token))
@@ -209,7 +209,7 @@ class IngestData:
           slab = np.zeros([zsupercubedim, tilesz, tilesz], dtype=ND_dtypetonp.get(ch.channel_datatype))
           
           # prefetch data
-          self.fetchCatmaidData(range(slice_number, slice_number+zsupercubedim) if slice_number+zsupercubedim<=zimagesz else range(slice_number, zimagesz), xtile, ytile)
+          self.fetchCatmaidData(list(range(slice_number, slice_number+zsupercubedim)) if slice_number+zsupercubedim<=zimagesz else list(range(slice_number, zimagesz)), xtile, ytile)
           
           for b in range(zsupercubedim):
             if (slice_number + b < zimagesz):
@@ -218,7 +218,7 @@ class IngestData:
                 file_name = "{}{}".format(self.path, self.generateCatmaidFileName(slice_number+b, xtile, ytile))
                 logger.info("Open filename {}".format(file_name))
                 slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))[:,:,0]
-              except IOError, e:
+              except IOError as e:
                 logger.warning("IOError {}.".format(e))
                 slab[b,:,:] = np.zeros((tilesz, tilesz), dtype=ND_dtypetonp.get(ch.channel_datatype))
 
@@ -242,7 +242,7 @@ class IngestData:
                 s3db.putCube(ch, self.resolution, zidx, cube.toBlosc())
       
           # clean up the slices fetched
-          self.cleanCatmaidData(range(slice_number,slice_number+zsupercubedim) if slice_number+zsupercubedim<=zimagesz else range(slice_number,zimagesz), xtile, ytile)
+          self.cleanCatmaidData(list(range(slice_number,slice_number+zsupercubedim)) if slice_number+zsupercubedim<=zimagesz else list(range(slice_number,zimagesz)), xtile, ytile)
 
   def ingestImageStack(self):
     """Ingest a TIF image stack"""
@@ -273,7 +273,7 @@ class IngestData:
             time_value = timestamp
           else:
             time_value = None
-          self.fetchData(range(slice_number, slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number, zimagesz), time_value=time_value)
+          self.fetchData(list(range(slice_number, slice_number+zcubedim)) if slice_number+zcubedim<=zimagesz else list(range(slice_number, zimagesz)), time_value=time_value)
           for b in range(zcubedim):
             if (slice_number + b < zimagesz):
               try:
@@ -294,7 +294,7 @@ class IngestData:
                 else:
                   logger.error("Cannot ingest this data yet")
                   raise NDWSError("Cannot ingest this data yet")
-              except IOError, e:
+              except IOError as e:
                 logger.warning("IOError {}.".format(e))
                 slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
           
@@ -319,11 +319,11 @@ class IngestData:
                 elif ch.channel_type in TIMESERIES_CHANNELS:
                   db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=False)
                 elif ch.channel_type in ANNOTATION_CHANNELS:
-                  corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
+                  corner = list(map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset]))
                   db.annotateDense(ch, corner, self.resolution, cube.data, 'O')
                 else:
                   logger.error("Channel type {} not supported".format(ch.channel_type))
                   raise NDWSError("Channel type {} not supported".format(ch.channel_type))
           
           # clean up the slices fetched
-          self.cleanData(range(slice_number, slice_number+zcubedim) if slice_number + zcubedim<=zimagesz else range(slice_number, zimagesz))
+          self.cleanData(list(range(slice_number, slice_number+zcubedim)) if slice_number + zcubedim<=zimagesz else list(range(slice_number, zimagesz)))

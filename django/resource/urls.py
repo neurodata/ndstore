@@ -13,12 +13,12 @@
 # limitations under the License.
 
 from django.conf.urls import url
-from publicview import DatasetPublicView, ProjectPublicView, TokenPublicView
-from datasetview import DatasetView
-from listview import DatasetListView, ProjectListView
-from projectview import ProjectView
-from channelview import ChannelView
-from tokenview import TokenView
+from .publicview import DatasetPublicView, ProjectPublicView, TokenPublicView
+from .datasetview import DatasetView
+from .listview import DatasetListView, ProjectListView
+from .projectview import ProjectView
+from .channelview import ChannelView
+from .tokenview import TokenView
 
 urlpatterns = [
   url(r'public/dataset/?$', DatasetPublicView.as_view()),

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import h5py
-import cStringIO
+from io import BytesIO
 import zlib
 import tempfile
 import blosc
@@ -42,7 +42,7 @@ def postNPZ (p, post_data, time=False):
   elif p.channels is None:
     url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
-  fileobj = cStringIO.StringIO ()
+  fileobj = BytesIO()
   np.save (fileobj, post_data)
   cdz = zlib.compress (fileobj.getvalue())
 
@@ -70,7 +70,7 @@ def getNPZ (p, time=False):
 
   resp = getURL(url)
   rawdata = zlib.decompress (resp.content)
-  fileobj = cStringIO.StringIO (rawdata)
+  fileobj = BytesIO(rawdata)
   return np.load (fileobj)
 
 def postBlaze (p, post_data, time=False):
@@ -142,8 +142,6 @@ def postHDF5 (p, post_data, time=False):
     chan_grp.create_dataset("CUTOUT", tuple(post_data[idx,:].shape), post_data[idx,:].dtype, compression='gzip', data=post_data[idx,:])
     chan_grp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.channel_type)
     chan_grp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.datatype)
-
-    print chan_grp['CUTOUT'], chan_grp['CHANNELTYPE'], chan_grp['DATATYPE']
 
   fh5out.close()
   tmpfile.seek(0)

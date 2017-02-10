@@ -14,7 +14,6 @@
 
 import re
 import MySQLdb
-import cStringIO
 import django.http
 from django.shortcuts import render
 from django.views.decorators.cache import cache_control
@@ -39,11 +38,11 @@ def jsonramon (request, webargs):
 #      print "JSON delete"
 #      ndwsjson.deleteAnnotation(webargs)
 #      return django.http.HttpResponse ("Success", content_type='text/html')
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in jsonramon. {}".format(e))
     raise NDWSError("Unknown exception in jsonramon. {}".format(e))
 

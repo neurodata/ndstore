@@ -1,4 +1,4 @@
-#) Copyright 2014 NeuroData (http://neurodata.io)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 #Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
 #RBTODO --- refactor other fields like ROI children
 #  e.g. Node children, Skeleton nodes, other TODOs in file
 
-import StringIO
 import tempfile
 import numpy as np
 import zlib
 import h5py
 import os
-import cStringIO
+from io import BytesIO
 import csv
 import re
 import json
@@ -30,9 +29,9 @@ from PIL import Image
 import MySQLdb
 import itertools
 from contextlib import closing
-from libtiff import TIFF
+#from libtiff import TIFF
 from operator import sub, add
-from libtiff import TIFFfile, TIFFimage
+#from libtiff import TIFFfile, TIFFimage
 import webservices.restargs as restargs
 from ndlib.ndtype import *
 from spdb.spatialdb import SpatialDB
@@ -44,7 +43,7 @@ from ndramon.annotation import *
 from ndramon.ramondb import RamonDB
 from ndproj import  h5projinfo
 from ndproj import jsonprojinfo
-import mcfc
+from . import mcfc
 from ndlib.ndctypelib import filter_ctype_OMP
 from spdb.ndcube.timecube8 import TimeCube8
 import webservices.ndwsskel
@@ -154,12 +153,12 @@ def numpyZip ( chanargs, proj, db ):
   try:
     cubedata = channelIterCutout(channels, imageargs, proj, db)
     # Create the compressed cube
-    fileobj = cStringIO.StringIO ()
+    fileobj = BytesIO()
     np.save ( fileobj, cubedata )
     cdz = zlib.compress (fileobj.getvalue()) 
 
     # Package the object as a Web readable file handle
-    fileobj = cStringIO.StringIO(cdz)
+    fileobj = BytesIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
   
@@ -217,7 +216,7 @@ def JPEG ( chanargs, proj, db ):
       img = Image.fromarray(cubedata, mode='RGBA')
     else:
       img = Image.fromarray(cubedata)
-    fileobj = cStringIO.StringIO ()
+    fileobj = BytesIO()
     img.save ( fileobj, "JPEG" )
 
     fileobj.seek(0)
@@ -266,10 +265,10 @@ def binZip ( chanargs, proj, db ):
     cdz = zlib.compress (cubedata.tostring()) 
 
     # Package the object as a Web readable file handle
-    fileobj = cStringIO.StringIO(cdz)
+    fileobj = BytesIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
-  except Exception,e:
+  except Exception as e:
     logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
@@ -338,7 +337,9 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
   with closing (tempfile.NamedTemporaryFile()) as tmpfile:
     tmpfile.write( postdata )
     tmpfile.seek(0)
-    tif = TIFF.open(tmpfile.name)
+    # RBTODO move to libtiff
+    assert(0)
+#    tif = TIFF.open(tmpfile.name)
 
     # get tiff metadata
     image_width = tif.GetField("ImageWidth")
@@ -416,7 +417,8 @@ def tiff3d ( chanargs, proj, db ):
 
   # create a temporary tif file
   tmpfile = tempfile.NamedTemporaryFile()
-  tif = TIFF.open(tmpfile.name, mode='w')
+  assert 0   # RBTODO new TIFF
+#  tif = TIFF.open(tmpfile.name, mode='w')
 
   try: 
 
@@ -558,7 +560,8 @@ def imgSlice(webargs, proj, db):
     cbnew.data = window(cb.data, ch, window_range=window_range)
     return cbnew
   elif cb.data.dtype == np.uint8:
-    cb.data = window(cb.data, ch, window_range=window_range)
+# KLTODO  do we window 8 bit data.This causes test to fila
+#    cb.data = window(cb.data, ch, window_range=window_range)
     return cb
   else:
     return cb
@@ -583,7 +586,7 @@ def imgPNG (proj, webargs, cb):
   elif service == 'xz':
     img = cb.xzImage(proj.datasetcfg.scale[int(resolution)][service])
 
-  fileobj = cStringIO.StringIO ( )
+  fileobj = BytesIO( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
@@ -634,7 +637,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   try:
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
+  except restargs.RESTArgsError as e:
     logger.error("REST Arguments %s failed: {}".format(chanargs,e))
     raise NDWSError(e.value)
 
@@ -661,7 +664,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   elif service == 'yz':
     img = cb.yzImage (  proj.datasetcfg.zscale[resolution] )
 
-  fileobj = cStringIO.StringIO ( )
+  fileobj = BytesIO( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
@@ -698,7 +701,7 @@ def listIds ( chanargs, proj, db ):
   cb = db.cutout ( ch, corner, dim, resolution )
   ids =  np.unique(cb.data)
 
-  idstr=''.join([`id`+', ' for id in ids])
+  idstr=''.join([repr(id)+', ' for id in ids])
   
   idstr1 = idstr.lstrip('0,')
   return idstr1.rstrip(', ')
@@ -752,6 +755,7 @@ def selectPost ( webargs, proj, db, postdata ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( postargs, proj.datasetcfg )
   except restargs.RESTArgsError as e:
+    import pdb; pdb.set_trace()
     logger.error( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
     
@@ -791,9 +795,6 @@ def selectPost ( webargs, proj, db, postdata ):
             h5_datatype = h5f.get(ch.channel_name)['DATATYPE'].value[0]
             h5_channeltype = h5f.get(ch.channel_name)['CHANNELTYPE'].value[0]
 
-            # h5xyzoffset = chgrp.get('XYZOFFSET')
-            # h5resolution = chgrp.get('RESOLUTION')[0]
-
             # Checking the datatype of the voxarray
             if voxarray.dtype != ND_dtypetonp[ch.channel_datatype]:
               logger.error("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.channel_datatype))
@@ -832,7 +833,7 @@ def selectPost ( webargs, proj, db, postdata ):
         # get the data out of the compressed blob
         if service == 'npz':
           rawdata = zlib.decompress ( postdata )
-          fileobj = cStringIO.StringIO ( rawdata )
+          fileobj = BytesIO( rawdata )
           voxarray = np.load ( fileobj )
         elif service == 'blosc':
           voxarray = blosc.unpack_array(postdata)
@@ -879,14 +880,14 @@ def selectPost ( webargs, proj, db, postdata ):
       done = True
 
     # rollback if you catch an error
-    except MySQLdb.OperationalError, e:
+    except MySQLdb.OperationalError as e:
       logger.warning("Transaction did not complete. {}".format(e))
       tries += 1
       continue
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error("POST transaction rollback. {}".format(e))
       raise NDWSError("POST transaction rollback. {}".format(e))
-    except Exception, e:
+    except Exception as e:
       logger.exception("POST transaction rollback. {}".format(e))
       raise NDWSError("POST transaction rollback. {}".format(e))
 
@@ -1035,7 +1036,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, timestamp, resolut
       datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[1], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[2], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[3] ]  = cbdata [0,:,:,:]
    
     offset = proj.datasetcfg.get_offset(resolution)
-    bbcorner = map(add, bbcorner, offset)
+    bbcorner = list(map(add, bbcorner, offset))
     h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
   elif dataoption == AR_BOUNDINGBOX:
@@ -1090,13 +1091,13 @@ def getAnnotation ( webargs ):
       annobjs = {}
       try:
         if re.match ( '^[\d,]+$', option_args[0] ): 
-          annoids = map(int, option_args[0].split(','))
+          annoids = list(map(int, option_args[0].split(',')))
           for annoid in annoids: 
             annobjs.update(getAnnoDictById ( ch, annoid, proj, rdb ))
 
         jsonstr = json.dumps( annobjs )
 
-      except Exception, e: 
+      except Exception as e: 
         logger.error("Error: {}".format(e))
         raise NDWSError("Error: {}".format(e))
 
@@ -1117,7 +1118,7 @@ def getAnnotation ( webargs ):
       # if the first argument is numeric.  it is an annoid
       if re.match ( '^[\d,]+$', option_args[0] ): 
 
-        annoids = map(int, option_args[0].split(','))
+        annoids = list(map(int, option_args[0].split(',')))
 
         for annoid in annoids: 
 
@@ -1398,13 +1399,13 @@ def putAnnotation ( webargs, postdata ):
     
       annobjdict = json.loads(postdata)
 
-      if len(annobjdict.keys()) != 1:
+      if len(list(annobjdict.keys())) != 1:
         # for now we just accept a single annotation
-        logger.error("JSON post interface can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
-        raise NDWSError("JSON post interface can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
+        logger.error("JSON post interface can only accept one annotation. Tried to post {}.".format(len(list(annobjdict.keys()))))
+        raise NDWSError("JSON post interface can only accept one annotation. Tried to post {}.".format(len(list(annobjdict.keys()))))
 
       # create annotation object by type 
-      annotype = annobjdict[ annobjdict.keys()[0] ]['ann_type'] 
+      annotype = annobjdict[ list(annobjdict.keys())[0] ]['ann_type'] 
 
       if annotype == ANNO_ANNOTATION:
         anno = Annotation( rdb, ch )
@@ -1425,7 +1426,7 @@ def putAnnotation ( webargs, postdata ):
       elif annotype == ANNO_ROI:
         anno = AnnROI( rdb, ch )
       
-      anno.fromDict( annobjdict[ annobjdict.keys()[0] ] )
+      anno.fromDict( annobjdict[ list(annobjdict.keys())[0] ] )
 
       # if the post is an update
       if 'update' in optionsargs.split('/'):
@@ -1458,19 +1459,19 @@ def putAnnotation ( webargs, postdata ):
         # get the conflict option if it exists
         options = optionsargs.split('/')
         if 'preserve' in options:
-          conflictopt = 'P'
+          conflictopt = b'P'
         elif 'exception' in options:
-          conflictopt = 'E'
+          conflictopt = b'E'
         else:
-          conflictopt = 'O'
+          conflictopt = b'O'
     
         try:
     
-          if len(h5f.keys()) == 0:
+          if len(list(h5f.keys())) == 0:
             logger.error("Error. Failed to parse HDF5 file because it was empty.")
             raise NDWSError("Error. Failed to parse HDF5 file becuase it was empty.") 
 
-          for k in h5f.keys():
+          for k in list(h5f.keys()):
              
             idgrp = h5f.get(k)
     
@@ -1512,18 +1513,18 @@ def putAnnotation ( webargs, postdata ):
                 #  Is it voxel data?
                 if 'VOXELS' in idgrp:
                   voxels = np.array(idgrp.get('VOXELS'),dtype=np.uint32)
-                  voxels = voxels - proj.datasetcfg.offset[resolution]
+                  voxels = voxels - [np.uint32(i) for i in proj.datasetcfg.offset[resolution]]
                 else: 
                   voxels = None
     
                 if voxels!=None and 'reduce' not in options:
 
                   if 'preserve' in options:
-                    conflictopt = 'P'
+                    conflictopt = b'P'
                   elif 'exception' in options:
-                    conflictopt = 'E'
+                    conflictopt = b'E'
                   else:
-                    conflictopt = 'O'
+                    conflictopt = b'O'
     
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
@@ -1557,14 +1558,14 @@ def putAnnotation ( webargs, postdata ):
                   #   Probably remove the offset is the best idea.  and align data
                   #    to zero regardless of where it starts.  For now.
                   offset = proj.datasetcfg.offset[resolution]
-                  corner = map(sub, h5xyzoffset, offset)
+                  corner = list(map(sub, h5xyzoffset, offset))
                   
                   db.annotateEntityDense ( ch, anno.annid, timestamp, corner, resolution, np.array(cutout), conflictopt )
     
                 elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
                   offset = proj.datasetcfg.offset[resolution]
-                  corner = map(sub, h5xyzoffset,offset)
+                  corner = list(map(sub, h5xyzoffset,offset))
     
                   db.shaveEntityDense ( ch, anno.annid, timestamp, corner, resolution, np.array(cutout))
     
@@ -1586,14 +1587,14 @@ def putAnnotation ( webargs, postdata ):
                 done = True
     
               # rollback if you catch an error
-              except MySQLdb.OperationalError, e:
+              except MySQLdb.OperationalError as e:
                 logger.warning("Put Anntotation: Transaction did not complete. {}".format(e))
                 tries += 1
                 continue
-              except MySQLdb.Error, e:
+              except MySQLdb.Error as e:
                 logger.error("Put Annotation: Put transaction rollback. {}".format(e))
                 raise NDWSError("Put Annotation: Put transaction rollback. {}".format(e))
-              except Exception, e:
+              except Exception as e:
                 logger.exception("Put Annotation:Put transaction rollback. {}".format(e))
                 raise NDWSError("Put Annotation:Put transaction rollback. {}".format(e))
     
@@ -1717,7 +1718,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   try:
     m = re.search("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Wrong arguments {}. {}".format(webargs, e))
     raise NDWSError("Wrong arguments {}. {}".format(webargs, e))
 
@@ -1744,7 +1745,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
         try:
           resolution = h5f['RESOLUTION'][0]
           offset = proj.datasetcfg.offset[resolution]
-          corner = map(sub, h5f['XYZOFFSET'], offset)
+          corner = list(map(sub, h5f['XYZOFFSET'], offset))
           dim = h5f['CUTOUTSIZE'][:]
   
           if not proj.datasetcfg.checkCube(resolution, corner, dim):
@@ -1790,7 +1791,7 @@ def deleteAnnotation ( webargs ):
 
     # if the first argument is numeric.  it is an annoid
     if re.match ( '^[\d,]+$', args[0] ): 
-      annoids = map(np.uint32, args[0].split(','))
+      annoids = list(map(np.uint32, args[0].split(',')))
     # if not..this is not a well-formed delete request
     else:
       logger.error ("Delete did not specify a legal object identifier = %s" % args[0] )
@@ -1807,15 +1808,15 @@ def deleteAnnotation ( webargs ):
           rdb.deleteAnnotation ( ch, annoid )
           done = True
         # rollback if you catch an error
-        except MySQLdb.OperationalError, e:
+        except MySQLdb.OperationalError as e:
           logger.warning("Transaction did not complete. {}".format(e))
           tries += 1
           continue
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.error("Put transaction rollback. {}".format(e))
           raise NDWSError("Put transaction rollback. {}".format(e))
           raise
-        except Exception, e:
+        except Exception as e:
           logger.exception("Put transaction rollback. {}".format(e))
           raise NDWSError("Put transaction rollback. {}".format(e))
 
@@ -1827,7 +1828,7 @@ def jsonInfo ( webargs ):
     # format /token/info/
     m = re.match(r'(\w+)/info/', webargs)
     token = m.group(1)
-  except Exception, e:
+  except Exception as e:
     logger.error("Bad URL {}".format(webargs))
     raise NDWSError("Bad URL {}".format(webargs))
   
@@ -1842,7 +1843,7 @@ def xmlInfo ( webargs ):
     # match the format /token/volume.vikingxml
     m = re.match(r'(\w+)/volume.vikingxml', webargs)
     token = m.group(1)
-  except Exception, e:
+  except Exception as e:
     logger.error("Bad URL {}".format(webargs))
     raise NDWSError("Bad URL {}".format(webargs))
   
@@ -1963,7 +1964,7 @@ def getPropagate (webargs):
   # input in the format token/channel_list/getPropagate/
   try:
     (token, channel_list) = re.match("(\w+)/([\w+,]+)/getPropagate/$", webargs).groups()
-  except Exception, e:
+  except Exception as e:
     logger.error("Illegal getPropagate request. Wrong format {}. {}".format(webargs,e))
     raise NDWSError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
 
@@ -2104,7 +2105,7 @@ def exceptions ( webargs, ):
     try:
       args = restargs.BrainRestArgs ();
       args.cutoutArgs ( cutoutargs, proj.datasetcfg )
-    except restargs.RESTArgsError, e:
+    except restargs.RESTArgsError as e:
       logger.error("REST Arguments {} failed: {}".format(webargs,e))
       raise NDWSError(e)
 
@@ -2215,7 +2216,7 @@ def minmaxProject ( webargs ):
   img =  Image.frombuffer ( 'L', (mpdata.shape[1],mpdata.shape[0]), mpdata.flatten(), 'raw', 'L', 0, 1 )
 
 
-  fileobj = cStringIO.StringIO ( )
+  fileobj = BytesIO( )
   img.save ( fileobj, "PNG" )
 
   fileobj.seek(0)
@@ -2266,7 +2267,7 @@ def mcFalseColor ( webargs ):
     colors = ('C','M','Y','R','G','B')
     img =  mcfc.mcfcPNG ( mcdata, colors, 2.0 )
 
-    fileobj = cStringIO.StringIO ( )
+    fileobj = BytesIO( )
     img.save ( fileobj, "PNG" )
 
     fileobj.seek(0)

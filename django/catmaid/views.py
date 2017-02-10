@@ -14,9 +14,9 @@
 
 import re
 import django.http
-import mcfccatmaid
-import simplecatmaid
-import maxprojcatmaid
+from . import mcfccatmaid
+from . import simplecatmaid
+from . import maxprojcatmaid
 from webservices.ndwserror import NDWSError
 
 import logging
@@ -30,9 +30,9 @@ def filterview (request, webargs):
     imgfobj = fv.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in filtercatmaidview: {}".format(e) )
     raise
 
@@ -44,9 +44,9 @@ def maxprojview (request, webargs):
     imgfobj = mp.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
     raise
 
@@ -59,9 +59,9 @@ def mcfccatmaidview (request, webargs):
     imgfobj = mc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in mcfccatmaidview: {}".format(e))
     raise
 
@@ -73,9 +73,9 @@ def simplecatmaidview (request, webargs):
     imgfobj = sc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in simplecatmaidview: {}".format(e))
     raise
 
@@ -96,8 +96,8 @@ def simplevikingview (request, webargs):
     response['content-length'] = len(response.content)
     return response
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )
     raise

@@ -67,14 +67,14 @@ class BrainRestArgs:
       [self.resolution, x1, x2, y1, y2, z1, z2] = [int(i) for i in m.groups()[:-1]]
       rest = m.groups()[-1]
 
-    except Exception, e:
+    except Exception as e:
       raise RESTArgsError("Incorrect cutout arguments {}. {}".format(imageargs, e))
 
     if self.resolution not in datasetcfg.resolutions:
       raise RESTArgsError("Illegal scaling level {}".format(imageargs))
 
     # Convert cutout into 0 base in all dimensions
-    (xoffset,yoffset,zoffset) = datasetcfg.get_offset(self.resolution)
+    (xoffset,yoffset,zoffset) = [np.uint32(i) for i in datasetcfg.get_offset(self.resolution)]
 
     (x1, x2) = (x1-xoffset, x2-xoffset)
     (y1, y2) = (y1-yoffset, y2-yoffset)
@@ -92,7 +92,7 @@ class BrainRestArgs:
     try:
       if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim) ):
         raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.dataset_dim(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
-    except Exception, e:
+    except Exception as e:
       raise RESTArgsError ( "Illegal arguments to cutout. Check cube failed {}".format(str(e)))
 
     # list of identifiers to keep
@@ -141,11 +141,11 @@ def conflictOption  ( imageargs ):
   restargs = imageargs.split('/')
   if len (restargs) > 0:
     if restargs[0] == 'preserve':
-      return 'P'
+      return b'P'
     elif restargs[0] == 'except':
-      return 'E'
+      return b'E'
     else:
-      return 'O'
+      return b'O'
 
                                                                                  
 def annotationId ( webargs, datasetcfg ):

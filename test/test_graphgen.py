@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import urllib2
-import cStringIO
 import tempfile
 import random
 import csv

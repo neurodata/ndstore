@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import cassandra
-from ndchannel import NDChannel
-from ndproject import NDProject
+from .ndchannel import NDChannel
+from .ndproject import NDProject
 from ndlib.ndtype import TIMESERIES , ND_servermap
 from ndwserror import NDWSError
 import logging
@@ -50,7 +50,7 @@ class CassProjectDB:
       else:
         self.session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(self.pr.getProjectName()), timeout=30)
     
-    except Exception, e:
+    except Exception as e:
       self.pr.deleteProject()
       logger.error("Failed to create namespace for new project {}".format(self.project_name))
       raise NDWSError("Failed to create namespace for new project {}".format(self.project_name))
@@ -69,7 +69,7 @@ class CassProjectDB:
       if ch.channel_type not in [TIMESERIES]:
         self.session.execute ( "CREATE table {} ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )".format(ch.getTable()), timeout=30)
     
-    except Exception, e:
+    except Exception as e:
       ch.deleteChannel()
       logging.error("Failed to create table for channel {}".format(channel_name))
       raise NDWSError("Failed to create table for channel {}".format(channel_name))
@@ -84,7 +84,7 @@ class CassProjectDB:
     try:
       self.session.execute ( "DROP KEYSPACE {}".format(self.pr.getProjectName()), timeout=30 )
     
-    except Exception, e:
+    except Exception as e:
       logger.warning("Keyspace {} does not exist".format(self.project_name))
       pass
     
@@ -102,7 +102,7 @@ class CassProjectDB:
       for table_name in table_list:
         self.session.execute("DROP table {}".format(ch.getTable()))
     
-    except Exception, e:
+    except Exception as e:
       logger.warning("Table {} does not exist".format(ch.getTable()))
       pass
     

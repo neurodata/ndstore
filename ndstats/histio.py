@@ -18,18 +18,18 @@ import django
 django.setup()
 from nduser.models import Token, Project, Channel
 from stats.models import Histogram
-import cStringIO
+from io import BytesIO
 import zlib
 import logging
 logger = logging.getLogger("neurodata")
 
 def toNPZ( array ):
-  fileobj = cStringIO.StringIO()
+  fileobj = BytesIO()
   np.save( fileobj, array )
   return zlib.compress( fileobj.getvalue() )
 
 def fromNPZ( data ):
-  numpydata = np.load( cStringIO.StringIO( zlib.decompress( data[:] ) ) )
+  numpydata = np.load( BytesIO( zlib.decompress( data[:] ) ) )
   return numpydata
 
 def getChannelObj(token, channel):
@@ -38,14 +38,12 @@ def getChannelObj(token, channel):
       projobj = tokenobj.project
     except Token.DoesNotExist:
       logger.error("Error in HistIO: Token {} does not exist!".format(token))
-      print "Error in HistIO: Token {} does not exist!".format(token)
       raise
 
     try:
       chanobj = Channel.objects.get( channel_name = channel, project = projobj )
     except Channel.DoesNotExist:
       logger.error("Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name))
-      print "Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name)
       raise
 
     return chanobj
@@ -60,7 +58,6 @@ def loadHistogram(token, channel):
     histobj = Histogram.objects.get( channel = chanobj, region = 0 )
   except Histogram.DoesNotExist:
     logger.error("Error: No histogram exists for {}, {}".format(token, channel))
-    print "Error: No histogram exists for {}, {}".format(token, channel)
     raise
 
   bins_ret = fromNPZ( histobj.bins )
@@ -92,7 +89,6 @@ def loadHistogramROI(token, channel, roi):
     histobj = Histogram.objects.get( channel = chanobj, region = 1, roi=json.dumps(roi) )
   except Histogram.DoesNotExist:
     logger.exception("Error: No histogram exists for {}, {}".format(token, channel))
-    print "Error: No histogram exists for {}, {}, {}".format(token, channel, roi)
     raise
 
   bins_ret = fromNPZ( histobj.bins )

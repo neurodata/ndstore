@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import numpy as np
-import annotation
-import mysqlramondb
+
+from . import annotation
+from . import mysqlramondb
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
@@ -150,7 +151,7 @@ class RamonDB:
 
       self.annodb.commit()
 
-    except Exception, e:
+    except Exception as e:
       self.annodb.rollback()
       raise
 
@@ -163,7 +164,7 @@ class RamonDB:
       self.annodb.deleteAnnotation(ch, annoid)
       self.annodb.commit()
 
-    except Exception, e:
+    except Exception as e:
       self.annodb.rollback()
       raise
 

@@ -20,7 +20,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.template import RequestContext 
 from django.contrib.sites.models import Site
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 
 from django.conf import settings 

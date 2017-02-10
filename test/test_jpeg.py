@@ -18,7 +18,7 @@ import tempfile
 import random
 import numpy as np
 from PIL import Image
-import cStringIO
+from io import BytesIO
 import makeunitdb
 from ndlib.ndtype import IMAGE, UINT8, UINT16
 from params import Params
@@ -61,7 +61,7 @@ class Test_Jpeg:
 
     url = "https://{}/sd/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])
     data = getURL(url)
-    posted_data = np.asarray( Image.open(cStringIO.StringIO(data.content)) )
+    posted_data = np.asarray( Image.open(BytesIO(data.content)) )
 
     image_data = image_data[0,:,:,:].reshape(1000,100)
     assert ( np.array_equal(image_data,posted_data) )

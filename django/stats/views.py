@@ -36,7 +36,7 @@ def getHist(request, webargs):
   try:
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/$", webargs)
     [token, channel] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -59,7 +59,7 @@ def getHistROI(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/roi/(?P<roi>[\d,-]+)$", webargs)
     md = m.groupdict()
 
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -97,7 +97,7 @@ def getBinnedHistROI(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/binnedhist/roi/(?P<roi>[\d,-]+)$", webargs)
     md = m.groupdict()
 
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -150,7 +150,7 @@ def getROIs(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/roi/$", webargs)
     md = m.groupdict()
 
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -181,7 +181,7 @@ def genHist(request, webargs):
     try:
       m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/genhist/$", webargs)
       [token, channel] = [i for i in m.groups()]
-    except Exception, e:
+    except Exception as e:
       logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
       return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -226,7 +226,7 @@ def genHist(request, webargs):
     try:
       m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/genhist/$", webargs)
       [token, channel] = [i for i in m.groups()]
-    except Exception, e:
+    except Exception as e:
       logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
       return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -317,7 +317,7 @@ def mean(request, webargs):
   try:
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/mean/$", webargs)
     [token, channel] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -337,7 +337,7 @@ def std(request, webargs):
   try:
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/std/$", webargs)
     [token, channel] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -357,7 +357,7 @@ def percentile(request, webargs):
   try:
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/percentile/(?P<percent>[\d.]+)/$", webargs)
     [token, channel, percent] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
@@ -380,7 +380,7 @@ def all(request, webargs):
   try:
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/all/$", webargs)
     [token, channel] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 

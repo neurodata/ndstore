@@ -14,7 +14,7 @@
 
 import re
 import numpy as np
-import cStringIO
+from io import BytesIO
 import pylibmc
 import math
 from contextlib import closing
@@ -186,7 +186,7 @@ class SimpleCatmaid:
       m = p.match(webargs)
       [self.token, self.channel, slice_type, filterlist] = [i for i in m.groups()[:4]]
       [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[4:]]
-    except Exception, e:
+    except Exception as e:
       logger.error("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
     
@@ -199,6 +199,7 @@ class SimpleCatmaid:
 
         # if tile is in memcache, return it
         tile = self.mc.get(mckey)
+        # RBRM critical -- this is broken
         tile = None
         
         if tile == None:
@@ -212,13 +213,12 @@ class SimpleCatmaid:
             logger.error("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
             raise NDWSError("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
           
-          fobj = cStringIO.StringIO ( )
+          fobj = BytesIO( )
           img.save ( fobj, "PNG" )
           self.mc.set(mckey,fobj.getvalue())
         
         else:
-          print "Hit"
-          fobj = cStringIO.StringIO(tile)
+          fobj = BytesIO(tile)
 
         fobj.seek(0)
         return fobj

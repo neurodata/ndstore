@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import numpy as np
-import cStringIO
 import MySQLdb
 from collections import defaultdict
 import json
@@ -106,7 +105,7 @@ class Annotation:
   def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'ann_type':
         next
       elif k == 'ann_status':
@@ -206,7 +205,7 @@ class AnnSynapse (Annotation):
     """convert a dictionary to the class elements"""
 
     anndict = defaultdict(list)
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'syn_weight':
         self.weight = float(v)
       elif k == 'syn_type':
@@ -307,7 +306,7 @@ class AnnSeed (Annotation):
 
     anndict = defaultdict(list)
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'seed_parent':
         self.parent = int(v)
       elif k == 'seed_position':
@@ -398,7 +397,7 @@ class AnnSegment (Annotation):
 
     anndict = defaultdict(list)
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'seg_class':
         self.segmentclass = int(v)
       elif k == 'seg_parentseed':
@@ -539,7 +538,7 @@ class AnnOrganelle (Annotation):
 
     anndict = defaultdict(list)
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'org_class':
         self.organelleclass = int(v)
       elif k == 'org_centroid':
@@ -638,7 +637,7 @@ class AnnNode (Annotation):
     
     anndict = defaultdict(list)
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'node_type':
         self.nodetype = int(v)
       elif k == 'node_location':
@@ -712,7 +711,7 @@ class AnnSkeleton (Annotation):
 
     anndict = defaultdict(list)
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'skel_type':
         self.skeletontype = int(v)
       elif k == 'skel_rootnode':
@@ -774,7 +773,7 @@ class AnnROI (Annotation):
 
     anndict = defaultdict(list)
 
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       if k == 'roi_parent':
         self.parent = int(v)
       else:

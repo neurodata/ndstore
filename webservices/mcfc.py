@@ -15,7 +15,7 @@
 import numpy as np
 from PIL import Image
 
-from ndwserror import NDWSError
+from .ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

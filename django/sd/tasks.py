@@ -27,7 +27,7 @@ def propagate (token, channel_name):
 
   try:
     buildStack(token, channel_name)
-  except Exception, e:
+  except Exception as e:
     logger.error("Error in propagate. {}".format(e))
     raise NDWSError("Error in propagate. {}".format(e))
 
@@ -38,6 +38,6 @@ def ingest (token_name, channel_name, resolution, data_url, file_format, file_ty
   try:
     ingest_data = IngestData(token_name, channel_name, resolution, data_url, file_format, file_type)
     ingest_data.ingest()
-  except Exception, e:
+  except Exception as e:
     logger.error("Error in ingest. {}".format(e))
     raise NDWSError("Error in ingest. {}".format(e))

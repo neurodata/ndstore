@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO
+from io import BytesIO
 import tempfile
 import h5py
 import random
@@ -65,7 +65,7 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
     kvpairs[k]=v
 
     # Turn our dictionary into a csv file
-    fstring = cStringIO.StringIO()
+    fstring = BytesIO()
     csvw = csv.writer(fstring, delimiter=',')
     csvw.writerows([r for r in kvpairs.iteritems()])
 

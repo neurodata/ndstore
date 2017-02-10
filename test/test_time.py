@@ -16,7 +16,7 @@ import random
 import blosc
 import numpy as np
 from PIL import Image
-from StringIO import StringIO
+from io import BytesIO
 import makeunitdb
 from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
@@ -78,7 +78,7 @@ class Test_Time_Slice:
     response = getURL(url)
     
     assert(response.status_code == 200)
-    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(response.content)) )
     assert ( np.array_equal(slice_data, time_data[0][0][0]) )
 
   def test_yz (self):
@@ -93,7 +93,7 @@ class Test_Time_Slice:
     response = getURL (url)
     assert(response.status_code == 200)
 
-    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(response.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -108,7 +108,7 @@ class Test_Time_Slice:
     response = getURL (url)
     assert(response.status_code == 200)
 
-    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(response.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
 
   #def test_xy_incorrect (self):
@@ -244,7 +244,7 @@ class Test_Time_Simple_Catmaid:
     url = "https://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
   def test_yz_tile (self):
@@ -264,7 +264,7 @@ class Test_Time_Simple_Catmaid:
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,:,0]) )
 
   def test_xz_tile (self):
@@ -284,7 +284,7 @@ class Test_Time_Simple_Catmaid:
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,0,:]) )
 
 class Test_Time_Window:
@@ -309,7 +309,7 @@ class Test_Time_Window:
 
     from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
   def test_window_args(self):
@@ -325,7 +325,7 @@ class Test_Time_Window:
 
     from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
 
@@ -381,5 +381,5 @@ class Test_Time_Diff:
     #url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     #f = getURL (url)
 
-    #slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    #slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     #assert ( np.array_equal(slice_data,image_data[0][0]) )

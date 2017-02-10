@@ -17,7 +17,7 @@ import django.http
 from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import login_required
 import MySQLdb
-import cStringIO
+from io import BytesIO
 import re
 
 from ndauth.authentication import PublicAuthentication
@@ -141,11 +141,11 @@ def nifti (request, webargs):
       return response
     elif request.method == 'POST':
       return django.http.HttpResponse(ndwsrest.putNIFTI(webargs,request.body))
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in NIFTI. {}".format(e))
     raise NDWSError("Unknown exception in NIFTI. {}".format(e))
     raise
@@ -165,11 +165,11 @@ def swc (request, webargs):
       return response
     elif request.method == 'POST':
       return django.http.HttpResponse(ndwsrest.putSWC(webargs,request.body))
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in SWC. {}".format(e))
     raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
@@ -184,19 +184,17 @@ def jsonramon (request, webargs):
 
   try:
     if request.method == 'GET':
-      print "JSON get"
       return django.http.HttpResponse(ndwsrest.getJSONAnnotation(webargs), content_type="application/json" )
     elif request.method == 'POST':
-      print "JSON post"
       return django.http.HttpResponse(ndwsrest.putJSONAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       ndwsrest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", content_type='text/html')
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in jsonramon. {}".format(e))
     raise NDWSError("Unknown exception in jsonramon. {}".format(e))
 
@@ -216,11 +214,11 @@ def annotation (request, webargs):
     elif request.method == 'DELETE':
       ndwsrest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", content_type='text/html')
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in annotation. {}".format(e))
     raise NDWSError("Unknown exception in annotation. {}".format(e))
 
@@ -233,11 +231,11 @@ def csv (request, webargs):
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(ndwsrest.getCSV(webargs), content_type="text/html" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in csv. {}".format(e))
     raise NDWSError("Unknown exception in csv. {}".format(e))
 
@@ -253,11 +251,11 @@ def queryObjects ( request, webargs ):
     elif request.method == 'POST':
       return django.http.HttpResponse(ndwsrest.queryAnnoObjects(webargs,request.body), content_type="product/hdf5")
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in listObjects. {}".format(e))
     raise NDWSError("Unknown exception in listObjects. {}".format(e))
 
@@ -270,16 +268,16 @@ def catmaid (request, webargs):
   try:
     catmaidimg = ndwsrest.ndcatmaid_legacy(webargs)
 
-    fobj = cStringIO.StringIO ( )
+    fobj = BytesIO ( )
     catmaidimg.save ( fobj, "PNG" )
     fobj.seek(0)
     return django.http.HttpResponse(fobj.read(), content_type="image/png")
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in catmaid {}.".format(e))
     raise NDWSError("Unknown exception in catmaid {}.".format(e))
 
@@ -288,11 +286,11 @@ def publictokens (request, webargs):
   """Return list of public tokens"""
   try:
     return django.http.HttpResponse(ndwsrest.publicTokens(webargs), content_type="application/json" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
@@ -301,11 +299,11 @@ def publicdatasets (request, webargs):
   """Return list of public datasets"""
   try:
     return django.http.HttpResponse(ndwsrest.publicDatasets(webargs), content_type="application/json" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
@@ -317,11 +315,11 @@ def jsoninfo (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.jsonInfo(webargs), content_type="application/json" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in jsoninfo. {}".format(e))
     raise NDWSError("Unknown exception in jsoninfo. {}".format(e))
 
@@ -333,11 +331,11 @@ def xmlinfo (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.xmlInfo(webargs), content_type="application/xml" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in xmlinfo. {}".format(e))
     raise NDWSError("Unknown exception in xmlinfo. {}".format(e))
 
@@ -349,11 +347,11 @@ def projinfo (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.projInfo(webargs), content_type="product/hdf5" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in projInfo. {}".format(e))
     raise NDWSError("Unknown exception in projInfo. {}".format(e))
 
@@ -365,11 +363,11 @@ def mcFalseColor (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.mcFalseColor(webargs), content_type="image/png" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in mcFalseColor. {}".format(e))
     raise NDWSError("Unknown exception in mcFalseColor. {}".format(e))
 
@@ -381,11 +379,11 @@ def reserve (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.reserve(webargs), content_type="application/json" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in reserve. {}".format(e))
     raise NDWSError("Unknown exception in reserve. {}".format(e))
 
@@ -398,11 +396,11 @@ def setField (request, webargs):
   try:
     ndwsrest.setField(webargs)
     return django.http.HttpResponse()
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in setField. {}".format(e))
     raise NDWSError("Unknown exception in setField. {}".format(e))
 
@@ -414,11 +412,11 @@ def getField (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.getField(webargs), content_type="text/html" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in getField. {}".format(e))
     raise NDWSError("Unknown exception in getField. {}".format(e))
 
@@ -430,11 +428,11 @@ def getPropagate (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.getPropagate(webargs), content_type="text/html" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in getPropagate. {}".format(e))
     raise NDWSError("Unknown exception in getPropagate. {}".format(e))
 
@@ -447,11 +445,11 @@ def setPropagate (request, webargs):
   try:
     ndwsrest.setPropagate(webargs)
     return django.http.HttpResponse()
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in setPropagate. {}".format(e))
     raise NDWSError("Unknown exception in setPropagate. {}".format(e))
 
@@ -463,11 +461,11 @@ def merge (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.merge(webargs), content_type="text/html" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in global Merge. {}".format(e))
     raise NDWSError("Unknown exception in global Merge. {}".format(e))
 
@@ -479,11 +477,11 @@ def exceptions (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.exceptions(webargs), content_type="product/hdf5" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in exceptions Web service. {}".format(e))
     raise NDWSError("Unknown exception in exceptions Web service. {}".format(e))
 
@@ -495,11 +493,11 @@ def minmaxProject (request, webargs):
 
   try:
     return django.http.HttpResponse(ndwsrest.minmaxProject(webargs), content_type="image/png" )
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in (min|max) projection Web service. {}".format(e))
     raise NDWSError("Unknown exception in (min|max) projection Web service. {}".format(e))
 
@@ -511,9 +509,9 @@ def autoIngest(request, webargs):
 
   try:
     return ndwsprojingest.autoIngest(webargs, request.body)
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound()
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
@@ -525,9 +523,9 @@ def createChannel(request, webargs):
 
   try:
     return ndwsprojingest.createChannel(webargs, request.body)
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound()
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
@@ -539,8 +537,8 @@ def deleteChannel(request, webargs):
 
   try:
     return ndwsprojingest.deleteChannel(webargs, request.body)
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound()
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))

@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import h5py
 import tempfile
 import random
 import numpy as np
 from PIL import Image
-from StringIO import StringIO
+from io import BytesIO
 import makeunitdb
 from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
@@ -55,7 +55,6 @@ p.window = [0,500]
 p.channel_type = TIMESERIES
 p.datatype = UINT8
 p.voxel = [4.0,4.0,3.0]
-#p.args = (3000,3100,4000,4100,500,510)
 
 
 class Test_Image_Slice:
@@ -78,7 +77,7 @@ class Test_Image_Slice:
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
 
   def test_yz (self):
@@ -91,7 +90,7 @@ class Test_Image_Slice:
     url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -104,7 +103,7 @@ class Test_Image_Slice:
     url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][:75][:].reshape(75,100)) )
 
   def test_xy_incorrect (self):
@@ -136,10 +135,10 @@ class Test_Image_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
     
     # xy/z/y_x_res
-    url = "https://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]//512, p.args[0]//512, p.resolution)
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0]) )
 
   def test_yz_tile (self):
@@ -155,11 +154,12 @@ class Test_Image_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
 
     # yz/x/z_y_res
-    url = "https://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]//512, p.args[2]//512, p.resolution)
     f = getURL (url)
 
-    scale_range = 512*p.voxel[2]/p.voxel[1]
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    scale_range = int(512*p.voxel[2]/p.voxel[1])
+    print("{} {}".format(scale_range, p.voxel))
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,:,0] ))
 
   def test_xz_tile (self):
@@ -175,11 +175,12 @@ class Test_Image_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
 
     # xz/y/z_x_res
-    url = "https://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]//512, p.args[0]//512, p.resolution)
     f = getURL (url)
 
-    scale_range = 512*p.voxel[2]/p.voxel[0]
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    scale_range = int(512*p.voxel[2]//p.voxel[0])
+    print("{} {}".format(scale_range, p.voxel))
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,0,:]) )
 
 class Test_Image_Mcfc_Catmaid:
@@ -202,10 +203,10 @@ class Test_Image_Mcfc_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "https://{}/catmaid/mcfc/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, ','.join(p.channels), p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/mcfc/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, ','.join(p.channels), p.args[4], p.args[2]//512, p.args[0]//512, p.resolution)
     f = getURL (url)
 
-    #slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    #slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     #assert ( np.array_equal(slice_data, image_data[0][0]) )
 
 class Test_Image_Simple_Viking:
@@ -228,10 +229,10 @@ class Test_Image_Simple_Viking:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "https://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]/512, p.args[2]/512, p.args[4])
+    url = "https://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]//512, p.args[2]//512, p.args[4])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0]) )
 
 class Test_Image_Window:
@@ -256,7 +257,7 @@ class Test_Image_Window:
 
     from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
 
   def test_window_args(self):
@@ -272,7 +273,7 @@ class Test_Image_Window:
 
     from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
 
 
@@ -379,6 +380,7 @@ class Test_Image_Default:
   def test_npz_default_channel (self):
     """Post npz data with default channel"""
 
+    p.args = (5000,5100,6000,6100,700,710)
     image_data = np.ones ( [1,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     p.channels = None
     response = postNPZ(p, image_data)
@@ -401,5 +403,5 @@ class Test_Image_Default:
     url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )

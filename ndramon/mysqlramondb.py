@@ -39,7 +39,7 @@ class MySQLRamonDB:
     try:
       self.conn = MySQLdb.connect (host = self.proj.host, user = self.proj.kvengine_user, passwd = self.proj.kvengine_password, db = self.proj.dbname)
       self.cursor = self.conn.cursor()
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       self.conn = None
       logger.error("Failed to connect to database: {}, {}".format(self.proj.host, self.proj.dbname))
 
@@ -87,7 +87,7 @@ class MySQLRamonDB:
         sql = "SELECT max(id) FROM {}".format(ch.getIdsTable()) 
         try:
           cursor.execute ( sql )
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.error ( "Failed to create annotation identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
@@ -103,7 +103,7 @@ class MySQLRamonDB:
         sql = "INSERT INTO {} VALUES ({})".format(ch.getIdsTable(), identifier)
         try:
           cursor.execute ( sql )
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
@@ -127,7 +127,7 @@ class MySQLRamonDB:
         sql = "INSERT INTO {} VALUES({})".format(ch.getIdsTable(), annoid)
         try:
           cursor.execute ( sql )
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.warning ( "Failed to set identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
@@ -155,7 +155,7 @@ class MySQLRamonDB:
         sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.proj.getIdsTable()) )
         try:
           cursor.executemany ( sql, [str(i) for i in annoidList] )  
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.warning ( "Failed to set identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
@@ -181,7 +181,7 @@ class MySQLRamonDB:
         sql = "SELECT max(id) FROM {}".format( ch.getIdsTable() ) 
         try:
           cursor.execute ( sql )
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.error ( "Failed to create annotation identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
@@ -197,11 +197,11 @@ class MySQLRamonDB:
         sql = "INSERT INTO {} VALUES ({}) ".format(ch.getIdsTable(), identifier+count)
         try:
           cursor.execute ( sql )
-        except MySQLdb.Error, e:
+        except MySQLdb.Error as e:
           logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
-      except Exception, e:
+      except Exception as e:
         logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
       finally:
@@ -218,7 +218,7 @@ class MySQLRamonDB:
     try:
       self.cursor.execute ( sql )
       pairs = self.cursor.fetchall()
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error ( "Failed to fetch annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
     
@@ -250,7 +250,7 @@ class MySQLRamonDB:
     sql = "INSERT INTO {}_ramon (annoid, kv_key, kv_value) VALUES (%s,%s,%s)".format(ch.channel_name)
  
     data = []
-    for (k,v) in kvdict.iteritems():
+    for (k,v) in kvdict.items():
       # blowout lists to multiple values
       if type(v) in [list,tuple]:
         [ data.append((annid,k,vv)) for vv in v ]
@@ -259,7 +259,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.executemany ( sql, data )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
 
       logger.error ( "Failed to put annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
@@ -271,7 +271,7 @@ class MySQLRamonDB:
     sql = "DELETE FROM {}_ramon WHERE annoid={}".format(ch.channel_name,annoid)
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error ( "Failed to delete annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
 
@@ -285,7 +285,7 @@ class MySQLRamonDB:
     try:
       self.cursor.execute ( sql )
       annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
@@ -302,7 +302,7 @@ class MySQLRamonDB:
     try:
       self.cursor.execute ( sql )
       topkeys = list(self.cursor.fetchall())
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
@@ -341,14 +341,14 @@ class MySQLRamonDB:
     it = iter(args)
     try:
 
-      field = it.next()
+      field = next(it)
 
       # build a query for all the predicates
       while ( field ):
 
         # provide a limit clause for iterating through the database
         if field == "limit":
-          val = it.next()
+          val = next(it)
           if not re.match('^\d+$',val):
             logger.warning ( "Limit needs an integer. Illegal value:%s" % (field,val) )
             raise OCPCAError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
@@ -365,7 +365,7 @@ class MySQLRamonDB:
 
           if field in compfields:
 
-            opstr = it.next()
+            opstr = next(it)
             if opstr == 'lt':
               op = ' < '
             elif opstr == 'gt':
@@ -374,7 +374,7 @@ class MySQLRamonDB:
               logger.warning ( "Not a comparison operator: %s" % (opstr) )
               raise OCPCAError ( "Not a comparison operator: %s" % (opstr) )
 
-            val = it.next()
+            val = next(it)
             if not re.match('^[\d\.]+$',val):
               logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
               raise OCPCAError ( "For field %s. Illegal value:%s" % (field,val) )
@@ -383,15 +383,15 @@ class MySQLRamonDB:
           # all other fields have equality predicates
           # rewrite those in interface 
           elif field in eqfields:
-            val = it.next()
+            val = next(it)
             clause += "kv_key = '%s' AND kv_value = '%s'" % ( key_name[field], val )
 
           # all others are kv equality
           else: 
-            val = it.next()
+            val = next(it)
             clause += "kv_key = '%s' AND kv_value = '%s'" % ( field, val )
 
-        field = it.next()
+        field = next(it)
 
     except StopIteration:
       pass
@@ -401,7 +401,7 @@ class MySQLRamonDB:
     try:
       self.cursor.execute ( sql )
       annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
@@ -415,7 +415,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -429,7 +429,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -442,7 +442,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -456,7 +456,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying skeleton nodes %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying skeleton nodes %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -470,7 +470,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -483,7 +483,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -496,7 +496,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -509,7 +509,7 @@ class MySQLRamonDB:
 
     try:
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 

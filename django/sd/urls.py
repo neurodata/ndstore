@@ -14,7 +14,7 @@
 
 from django.conf.urls import url
 from . import views
-from swcview import SwcView
+from .swcview import SwcView
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin

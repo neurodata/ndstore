@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.conf.urls import url
-from views import IngestView
+from .views import IngestView
 
 urlpatterns = [
   url(r'^$', IngestView.as_view()),

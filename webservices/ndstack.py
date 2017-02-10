@@ -94,7 +94,7 @@ def clearStack (proj, ch, res=None):
     try:
       db.kvio.conn.cursor().execute(sql)
       db.kvio.conn.commit()
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.error ("Error truncating the table. {}".format(e))
       raise
     finally:
@@ -121,9 +121,9 @@ def buildAnnoStack ( proj, ch, res=None ):
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res-1)
 
       # Set the limits for iteration on the number of cubes in each dimension
-      xlimit = (ximagesz-1) / xcubedim + 1
-      ylimit = (yimagesz-1) / ycubedim + 1
-      zlimit = (zimagesz-1) / zcubedim + 1
+      xlimit = (ximagesz-1) // xcubedim + 1
+      ylimit = (yimagesz-1) // ycubedim + 1
+      zlimit = (zimagesz-1) // zcubedim + 1
 
       # choose constants that work for all resolutions. 
       # recall that cube size changes from 128x128x16 to 64*64*64 with res
@@ -136,7 +136,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
 
       # Round up to the top of the range
-      lastzindex = (XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
+      lastzindex = (XYZMorton([xlimit,ylimit,zlimit])//64+1)*64
 
       # Iterate over the cubes in morton order
       for mortonidx in range(0, lastzindex, 64): 
@@ -158,7 +158,7 @@ def buildAnnoStack ( proj, ch, res=None ):
 
             # Compute the offset in the output data cube 
             #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
-            offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
+            offset = [(xyz[0]%4)*(xcubedim//2), (xyz[1]%4)*(ycubedim//2), (xyz[2]%4)*zcubedim]
             # add the contribution of the cube in the hierarchy
             addDataToZSliceStack_ctype(cube, outdata, offset)
 
@@ -166,7 +166,7 @@ def buildAnnoStack ( proj, ch, res=None ):
 
             # Compute the offset in the output data cube 
             #  we are placing 4x4x4 input blocks into a 2x2x2 cube 
-            offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*(zcubedim/2)]
+            offset = [(xyz[0]%4)*(xcubedim//2), (xyz[1]%4)*(ycubedim//2), (xyz[2]%4)*(zcubedim//2)]
 
             # use python version for debugging
             addDataToIsotropicStack_ctype(cube, outdata, offset)
@@ -176,9 +176,9 @@ def buildAnnoStack ( proj, ch, res=None ):
 
         # adjust to output corner for scale.
         if scaling == ZSLICES:
-          outcorner = [xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim]
+          outcorner = [xyzout[0]*xcubedim//2, xyzout[1]*ycubedim//2, xyzout[2]*zcubedim]
         elif scaling == ISOTROPIC:
-          outcorner = [xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2]
+          outcorner = [xyzout[0]*xcubedim//2, xyzout[1]*ycubedim//2, xyzout[2]*zcubedim//2]
 
         #  Data stored in z,y,x order dims in x,y,z
         outdim = outdata.shape[::-1]
@@ -222,9 +222,9 @@ def buildImageStack(proj, ch, res=None):
       biggercubedim = [xcubedim*xscale, ycubedim*yscale, zcubedim*zscale]
 
       # Set the limits for iteration on the number of cubes in each dimension
-      xlimit = (ximagesz-1) / xcubedim + 1
-      ylimit = (yimagesz-1) / ycubedim + 1
-      zlimit = (zimagesz-1) / zcubedim + 1
+      xlimit = (ximagesz-1) // xcubedim + 1
+      ylimit = (yimagesz-1) // ycubedim + 1
+      zlimit = (zimagesz-1) // zcubedim + 1
 
       # Iterating over time
       for ts in range(timerange[0], timerange[1]+1, 1):

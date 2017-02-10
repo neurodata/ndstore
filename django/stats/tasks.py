@@ -23,11 +23,11 @@ import ndstats.histio as histio
 from nduser.models import Channel
 from stats.models import Histogram
 
-import cStringIO
+from io import BytesIO
 import zlib
 
 def toNPZ( array ):
-  fileobj = cStringIO.StringIO()
+  fileobj = BytesIO()
   np.save( fileobj, array )
   return zlib.compress( fileobj.getvalue() )
 

@@ -15,7 +15,7 @@
 import random
 import numpy as np
 from PIL import Image
-from StringIO import StringIO
+from io import BytesIO
 import makeunitdb
 from ndlib.ndtype import IMAGE, FLOAT32
 from params import Params
@@ -73,7 +73,7 @@ class Test_Probability_Slice:
     f = getURL (url)
 
     image_data = np.uint8(image_data*256)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:,:,0],image_data[0][0]) )
 
   def test_yz (self):
@@ -87,7 +87,7 @@ class Test_Probability_Slice:
     f = getURL (url)
 
     image_data = np.uint8(image_data*256)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:,:,0], image_data[0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -101,7 +101,7 @@ class Test_Probability_Slice:
     f = getURL (url)
 
     image_data = np.uint8(image_data*256)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:,:,0], image_data[0][:75][:].reshape(75,100)) )
 
   def test_xy_incorrect (self):

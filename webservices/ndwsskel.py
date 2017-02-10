@@ -124,7 +124,7 @@ def ingestSWC ( swcfile, ch, db ):
         nodes[swcnodeid] = node
 
 
-  except Exception, e:
+  except Exception as e:
     logger.warning("Failed to put SWC file {}".format(e))
     raise NDWSError("Failed to put SWC file {}".format(e))
 
@@ -198,7 +198,7 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
  
     db.commit()
 
-  except Exception, e:
+  except Exception as e:
     db.rollback()
     logger.warning("Failed to get SWC file {}".format(e))
     raise NDWSError("Failed to get SWC file {}".format(e))

@@ -12,24 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
 import argparse
 import numpy as np
-import urllib2
-import cStringIO
+from io import BytesIO
 import sys
 import tempfile
 import h5py
 import random 
 import csv
 import os
-
-sys.path += [os.path.abspath('../django')]
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
-from ndlib.restutil import *
-
+import requests
 
 
 class H5Anno:
@@ -68,7 +60,7 @@ class H5Anno:
       kvpairs[k]=v
 
       # Turn our dictionary into a csv file
-      fstring = cStringIO.StringIO()
+      fstring = BytesIO()
       csvw = csv.writer(fstring, delimiter=',')
       csvw.writerows([r for r in kvpairs.iteritems()])
 
@@ -301,16 +293,13 @@ def main():
   elif result.reduce:  
     url += 'reduce/'
 
-  print url
+  print(url)
 
-  # open the file name as a tiff file and post
-  response = postURL(url, fileobj.read())
-  if response.status_code != 200:
-    print "Failed {}. Exception {}".format(url, response._content)
-    sys.exit(1)
+  requests.packages.urllib3.disable_warnings()
+  response = requests.post(url, fileobj.read(), verify=False)
 
-  the_page = response.text
-  print "Success with id %s" % the_page
+  print("Status {}. Message {}".format(response.status_code, response._content))
+
 
 if __name__ == "__main__":
   main()

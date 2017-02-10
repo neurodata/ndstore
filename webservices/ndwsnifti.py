@@ -26,16 +26,10 @@ logger = logging.getLogger("neurodata")
 def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
 
-  print "In ingest nifti"
-
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 
-  print "Loaded file"
-
   nifti_data = np.array(nifti_img.get_data())
-
-  print "Convert to array"
 
   # create the channel if needed
   if create:
@@ -55,15 +49,13 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
     try:
       newch = NDChannel(Channel (channel_name=channel_name, channel_type=ndtype.TIMESERIES, channel_datatype=channel_datatype, channel_description=channel_name, project_id=proj.project_name, readonly=False, propagate=False, resolution=0, exceptions=0, starttime=0, endtime=endtime))
-    except Exception,e:
+    except Exception as e:
       logger.warning("Failed to create channel {}. Error{}".format(channel_name,e))
       raise NSWDError("Failed to create channel {}. Error {}".format(channel_name,e))
 
     newch.create()
 
     ch = NDChannel.fromName(proj, channel_name)
-
-    print "Created channel"
 
   else:
   
@@ -79,11 +71,7 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     
   nifti_data = nifti_data.transpose()
 
-  print "Transpose"
-
   nifti_data = np.array(nifti_data,ND_dtypetonp[ch.channel_datatype])
-
-  print "Data ready to ingest"
 
   try:
 
@@ -100,8 +88,6 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
     # save the header if the data was written
     nh.save()
-
-    print "Saved header"
 
   except Exception as e:
     logger.error("Failed to load nii file. Error {}".format(str(e)))

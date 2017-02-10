@@ -23,7 +23,7 @@ import csv
 import time
 import numpy as np
 from PIL import Image
-from StringIO import StringIO
+from io import BytesIO
 sys.path += [os.path.abspath('../django')]
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
@@ -86,14 +86,14 @@ class Test_Image_Zslice_Propagate:
     p.args = (100,150,100,150,4,5)
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+1, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL(url)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:50,:50]) )
 
     # Checking at res5
     p.args = (7,9,7,9,4,5)
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+5, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL(url)
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:2,:2]) )
 
 class Test_Image_Readonly_Propagate:

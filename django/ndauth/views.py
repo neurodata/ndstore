@@ -19,7 +19,6 @@ from rest_framework.authtoken.models import Token
 import django.http
 from django.views.decorators.cache import cache_control
 import MySQLdb
-import cStringIO
 import re
 import json
 from rest_framework.permissions import AllowAny

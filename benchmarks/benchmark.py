@@ -21,7 +21,7 @@ import tempfile
 import h5py
 import urllib2
 import zlib
-import cStringIO
+from io import BytesIO
 import blosc
 import time
 
@@ -87,7 +87,7 @@ def postNPZ (p, post_data):
   # Build the url and then create a npz object
   url = 'http://{}/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
-  fileobj = cStringIO.StringIO ()
+  fileobj = BytesIO ()
   np.save (fileobj, post_data)
   cdz = zlib.compress (fileobj.getvalue())
   return (url, cdz)
@@ -106,7 +106,7 @@ def postURL(url, post_data):
     response = urllib2.urlopen(req)
     print time.time()-start
     return response
-  except urllib2.HTTPError, e:
+  except urllib2.HTTPError as e:
     return e
 
 def getURL(url):
@@ -119,7 +119,7 @@ def getURL(url):
     response = urllib2.urlopen(req)
     print time.time()-start
     return response.read()
-  except urllib2.HTTPError, e:
+  except urllib2.HTTPError as e:
     return e
 
 def main():

@@ -16,11 +16,11 @@ from django import forms
 from django.contrib.auth.models import User
 from django.forms import ModelForm
 from django.forms.models import inlineformset_factory
-from models import Project
-from models import Dataset
-from models import Token
-from models import Channel
-from models import Backup
+from .models import Project
+from .models import Dataset
+from .models import Token
+from .models import Channel
+from .models import Backup
 
 
 class ProjectForm(ModelForm):

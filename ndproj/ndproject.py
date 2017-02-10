@@ -42,7 +42,7 @@ class NDProject(NDObject):
         # self.tk = Token.objects.get(token_name = token_name)
         # self.pr = Project.objects.get(project_name = self.tk.project_id)
         # self.datasetcfg = NDDataset.fromName(self.pr.dataset_id)
-      # except ObjectDoesNotExist, e:
+      # except ObjectDoesNotExist as e:
         # logger.error("Token {} does not exist. {}".format(token_name, e))
         # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
     # elif isinstance(token_name, Project):
@@ -51,7 +51,7 @@ class NDProject(NDObject):
         # self.tk = None
         # self.pr = token_name
         # self.datasetcfg = NDDataset.fromName(self.pr.dataset_id)
-      # except ObjectDoesNotExist, e:
+      # except ObjectDoesNotExist as e:
         # logger.error("Token {} does not exist. {}".format(token_name, e))
         # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
   
@@ -67,7 +67,7 @@ class NDProject(NDObject):
       tk = Token.objects.get(token_name = token_name)
       pr = Project.objects.get(project_name = tk.project_id)
       return cls(pr)
-    except ObjectDoesNotExist, e:
+    except ObjectDoesNotExist as e:
       logger.error("Token {} does not exist. {}".format(token_name, e))
       raise NDWSError("Token {} does not exist. {}".format(token_name, e))
 
@@ -270,8 +270,7 @@ class NDProject(NDObject):
       chs = Channel.objects.filter(project_id=self.pr)
     else:
       chs = channel_list
-    for name in chs:
-      ch = Channel.objects.get(project_id=self.pr, channel_name=name)
+    for ch in chs:
       yield NDChannel(ch)
 
   def getChannelObj ( self, channel_name='default' ):

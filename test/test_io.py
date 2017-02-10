@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import requests
-import cStringIO
+from io import BytesIO
 import tempfile
 import h5py
 import random
@@ -55,7 +55,6 @@ def readAnno ( params ):
 
   if params.voxels:
     url = "https://{}/sd/{}/{}/{}/voxels/{}/".format(params.baseurl, params.token, params.channel, params.annids,  params.resolution)
-    print url
   elif params.cutout != None:
     url = "https://{}/sd/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.cutout)
   elif params.tightcutout:
@@ -119,9 +118,9 @@ class H5Anno:
       kvpairs[k]=v
 
       # Turn our dictionary into a csv file
-      fstring = cStringIO.StringIO()
+      fstring = BytesIO()
       csvw = csv.writer(fstring, delimiter=',')
-      csvw.writerows([r for r in kvpairs.iteritems()])
+      csvw.writerows([r for r in kvpairs.items()])
 
       # User-defined metadata
       mdgrp.create_dataset ( "KVPAIRS", (1,), dtype=h5py.special_dtype(vlen=str), data=fstring.getvalue())
@@ -340,7 +339,7 @@ def writeAnno ( params ):
 def countVoxels ( annid, h5 ):
   """Count the number of voxels in an HDF5 file for an annotation id"""
 
-  keys = h5.keys()
+  keys = list(h5.keys())
   for k in keys:
     if int(k) == int(annid):
       idgrp = h5.get(k)
@@ -355,11 +354,11 @@ def countCuboidVoxels ( annid, h5 ):
   """Count the number of voxels in an HDF5 file for an annotation id"""
 
   voxsum = 0
-  keys = h5.keys()
+  keys = list(h5.keys())
   for k in keys:
     if int(k) == int(annid):
       cbgrp = h5[k]['CUBOIDS']
-      for cb in cbgrp.keys():
+      for cb in list(cbgrp.keys()):
         voxsum += len(np.nonzero(np.array(cbgrp[cb]['CUBOID'][:,:,:]))[0])
 
   return voxsum
@@ -413,7 +412,7 @@ class TestRW:
     url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
-    fileobj = cStringIO.StringIO ()
+    fileobj = BytesIO()
     np.save ( fileobj, annodata )
     cdz = zlib.compress (fileobj.getvalue())
 
@@ -424,7 +423,7 @@ class TestRW:
     f = getURL( url )
 
     rawdata = zlib.decompress ( f.content )
-    fileobj = cStringIO.StringIO ( rawdata )
+    fileobj = BytesIO( rawdata )
     voxarray = np.load ( fileobj )
 
     # check that the return matches the post
@@ -552,16 +551,16 @@ class TestRW:
 
     # Write one object as voxels
     retval = writeAnno(wp)
-    assert retval >= 1
+    assert int(retval) >= 1
 
     # Read it as voxels and as a cutout
     rp.resolution = 0
-    rp.annids = retval
+    rp.annids = int(retval)
     rp.voxels = True
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 100*100*1
 
-    rp.annids = retval
+    rp.annids = int(retval)
     rp.voxels = False
     rp.tightcutout = True
     h5r = readAnno(rp)
@@ -570,15 +569,15 @@ class TestRW:
     # Write one object as a cutout
     wp.voxels=False
     retval = writeAnno ( wp )
-    assert retval >= 1
+    assert int(retval) >= 1
 
     # Read it as voxels and as a cutout
-    rp.annids = retval
+    rp.annids = int(retval)
     rp.voxels = True
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 100*100*1
 
-    rp.annids = retval
+    rp.annids = int(retval)
     rp.voxels = False
     rp.tightcutout = True
     h5r = readAnno(rp)
@@ -689,11 +688,11 @@ class TestRW:
       url = 'https://{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
 
     resp = deleteURL(url)
-    assert resp.content == "Success"
+    assert resp.content == b"Success"
 
     # Verify that we can't read it anymore
     h5r = readAnno(rp)
-    assert(h5r.keys() == [])
+    assert(list(h5r.keys()) == [])
 
   def test_dataonly(self):
     """Data only option."""

@@ -54,14 +54,14 @@ class NDProjectsDB(object):
   @staticmethod
   def loadDatasetConfig(dataset_name):
     """Query the database for the dataset information and build a db configuration"""
-    from nddataset import NDDataset
+    from .nddataset import NDDataset
     return NDDataset(dataset_name)
 
 
   @staticmethod
   def loadToken(token_name):
     """Query django configuration for a token to bind to a project"""
-    from ndproject import NDProject
+    from .ndproject import NDProject
     return NDProject.fromTokenName(token_name)
 
 
@@ -91,10 +91,10 @@ class NDProjectsDB(object):
   def getProjDB(pr):
     """Return a the kvengine object"""
     
-    # from ndproject import NDProject
+    # from .ndproject import NDProject
     # pr = NDProject.fromName(project_name)
     if pr.kvengine == MYSQL:
-      from mysqlprojdb import MySQLProjectDB
+      from .mysqlprojdb import MySQLProjectDB
       return MySQLProjectDB(pr)
     # elif pr.kvengine == CASSANDRA:
       # from cassprojdb import CassProjectDB
@@ -106,7 +106,7 @@ class NDProjectsDB(object):
       # from dynamoprojdb import DynamoProjectDB
       # return DynamoProjectDB(project_name)
     elif pr.kvengine == REDIS:
-      from redisprojdb import RedisProjectDB
+      from .redisprojdb import RedisProjectDB
       return RedisProjectDB(pr)
     else:
       logging.error ("Unknown KV Engine requested: {}".format(pr.kvengine))

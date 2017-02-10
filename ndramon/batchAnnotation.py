@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import numpy as np
-import cStringIO
 import MySQLdb
 import sys
 from collections import defaultdict
@@ -110,7 +109,7 @@ class BatchAnnotation:
 
     try:
       cursor.executemany (sql, data)
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -128,7 +127,7 @@ class BatchAnnotation:
 
       try:
         cursor.execute(sql)
-      except MySQLdb.Error, e:
+      except MySQLdb.Error as e:
         logger.warning ( "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise NDWSError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -147,7 +146,7 @@ class BatchAnnotation:
 
     try:
       cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -159,7 +158,7 @@ class BatchAnnotation:
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
     try:
       cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -189,7 +188,7 @@ class BatchAnnotation:
 
       try:
         cursor.execute ( sql )
-      except MySQLdb.Error, e:
+      except MySQLdb.Error as e:
         logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise NDWSError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -204,7 +203,7 @@ class BatchAnnotation:
 
     try:
       cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -216,7 +215,7 @@ class BatchAnnotation:
 
     try:
       cursor.execute ( sql )
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error retrieving annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -227,7 +226,7 @@ class BatchAnnotation:
     try:
       cursor.execute ( sql )
       kvpairs = cursor.fetchall()
-    except MySQLdb.Error, e:
+    except MySQLdb.Error as e:
       logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise NDWSError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     
@@ -293,7 +292,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -323,7 +322,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #       
 #      logger.warning ( "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -360,7 +359,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -387,7 +386,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -455,7 +454,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -476,7 +475,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -494,7 +493,7 @@ class BatchAnnotation:
 #      
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -513,7 +512,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -546,7 +545,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -597,7 +596,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -621,7 +620,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -651,7 +650,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error retrieving segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -676,7 +675,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -704,7 +703,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -824,7 +823,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -850,7 +849,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -877,7 +876,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -898,7 +897,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      logger.warning ( "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #
@@ -923,7 +922,7 @@ class BatchAnnotation:
 #  try:
 #    cursor.execute ( sql )
 #    sqlresult = cursor.fetchone()
-#  except MySQLdb.Error, e:
+#  except MySQLdb.Error as e:
 #    logger.warning ( "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #    raise NDWSError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #  
@@ -1020,7 +1019,7 @@ class BatchAnnotation:
 #
 #    try:
 #      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
+#    except MySQLdb.Error as e:
 #      cursor.close()
 #      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 #      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))

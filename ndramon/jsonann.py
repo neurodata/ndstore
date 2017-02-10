@@ -14,7 +14,7 @@
 
 
 import json
-import annotation
+from . import annotation
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")

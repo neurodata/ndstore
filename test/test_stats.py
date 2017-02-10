@@ -253,7 +253,7 @@ class TestHistogramROI:
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       print e
       assert(e.reason == 0)
 
@@ -312,7 +312,7 @@ class TestHistogramROI:
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       print e
       assert(e.reason == 0)
 
@@ -371,7 +371,7 @@ class TestHistogramROI:
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       print e
       assert(e.reason == 0)
 
@@ -504,7 +504,7 @@ class TestHistogramROIMultiple:
       try:
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
-      except urllib2.HTTPError, e:
+      except urllib2.HTTPError as e:
         print e
         assert(e.reason == 0)
 

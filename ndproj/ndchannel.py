@@ -34,7 +34,7 @@ class NDChannel(NDObject):
 
   def __init__(self, ch):
     """Constructor for a channel. It is a project and then some."""
-    from ndproject import NDProject
+    from ndproj.ndproject import NDProject
     self.ch = ch
     self.pr = NDProject.fromName(self.project_name)
     with closing (NDProjectsDB.getProjDB(self.pr)) as db:
@@ -48,8 +48,6 @@ class NDChannel(NDObject):
       return cls(ch)
     except Channel.DoesNotExist as e:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
-#   RB this error message useless
-#      raise Channel.DoesNotExist
       raise NDWSError("Channel {} does not exist".format(channel_name))
 
   @classmethod
@@ -144,7 +142,6 @@ class NDChannel(NDObject):
   def propagate(self, value):
     # TODO KL port logic
     self.ch.propagate = value
-    print "updating"
     self.update()
 
   @property

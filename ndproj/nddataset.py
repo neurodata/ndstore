@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import math
-from operator import add, sub, mul, div, mod
+from operator import add, sub, mul, floordiv, mod
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -233,7 +233,7 @@ class NDDataset(NDObject):
 
   def get_supercube_limit(self, res):
     # return Vector3D(map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3))
-    return map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3)
+    return map(add, map(floordiv, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3)
   
   @property
   def scalingoption(self):
@@ -258,9 +258,10 @@ class NDDataset(NDObject):
 
     [xend, yend, zend] = map(add, corner, dim) 
 
-    if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self._image_size[resolution][0]) and\
-        ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self._image_size[resolution][1]) and\
-        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self._image_size[resolution][2])): 
+    if (( xstart >= 0 ) and ( xstart < xend) and ( xend <= int(self._image_size[resolution][0])) and\
+        ( ystart >= 0 ) and ( ystart < yend) and ( yend <= int(self._image_size[resolution][1])) and\
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= int(self._image_size[resolution][2]))): 
       return True
     else:
+      import pdb; pdb.set_trace()
       return False

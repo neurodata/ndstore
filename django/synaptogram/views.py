@@ -16,7 +16,7 @@
 import numpy as np
 import re
 from contextlib import closing
-import cStringIO
+from io import BytesIO
 import django.http
 from PIL import Image
 import base64
@@ -95,7 +95,7 @@ def synaptogram_view (request, webargs):
               img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
             
             # convert to base64
-            fileobj = cStringIO.StringIO()
+            fileobj = BytesIO()
             img.save(fileobj, "PNG")
             fileobj.seek(0)
             encodedimg = base64.b64encode(fileobj.read())
@@ -179,10 +179,10 @@ def synaptogram_view_old (request, webargs):
     sogimg = sog.construct()
 
     # Draw the image file
-    fobj = cStringIO.StringIO() 
+    fobj = BytesIO() 
     sogimg.save ( fobj, "PNG" )
     fobj.seek(0)
     return django.http.HttpResponse(fobj.read(), content_type="image/png" )
 
-  except Exception, e:
+  except Exception as e:
     raise
