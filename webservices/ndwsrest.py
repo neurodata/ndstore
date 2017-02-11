@@ -677,7 +677,8 @@ def annId ( chanargs, proj, db ):
   # Perform argument processing
   (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
   # Get the identifier
-  return db.getVoxel(ch, resolution, voxel)
+  # RB timestamp = 0 for now.
+  return db.getVoxel(ch, 0, resolution, voxel)
 
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
@@ -755,7 +756,6 @@ def selectPost ( webargs, proj, db, postdata ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( postargs, proj.datasetcfg )
   except restargs.RESTArgsError as e:
-    import pdb; pdb.set_trace()
     logger.error( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
     

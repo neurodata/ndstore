@@ -39,16 +39,16 @@ def h5DatasetInfo ( dataset, h5f ):
   dsgrp.create_dataset('NAME', (1,), dtype=h5py.special_dtype(vlen=str), data=dataset.dataset_name)
   dsgrp.create_dataset('RESOLUTIONS', data=dataset.resolutions)
   imggrp = dsgrp.create_group('IMAGE_SIZE')
-  for k,v in dataset.image_size.iteritems():
+  for k,v in dataset.image_size.items():
     imggrp.create_dataset ( str(k), data=v )
   imggrp = dsgrp.create_group('OFFSET')
-  for k,v in dataset.offset.iteritems():
+  for k,v in dataset.offset.items():
     imggrp.create_dataset ( str(k), data=v )
   imggrp = dsgrp.create_group('VOXELRES')
-  for k,v in dataset.voxelres.iteritems():
+  for k,v in dataset.voxelres.items():
     imggrp.create_dataset ( str(k), data=v )
   cdgrp = dsgrp.create_group('CUBE_DIMENSION')
-  for k,v in dataset.cubedim.iteritems():
+  for k,v in dataset.cubedim.items():
     cdgrp.create_dataset ( str(k), data=v )
 
 

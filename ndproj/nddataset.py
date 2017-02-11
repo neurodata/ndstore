@@ -263,5 +263,4 @@ class NDDataset(NDObject):
         ( zstart >= 0 ) and ( zstart < zend) and ( zend <= int(self._image_size[resolution][2]))): 
       return True
     else:
-      import pdb; pdb.set_trace()
       return False

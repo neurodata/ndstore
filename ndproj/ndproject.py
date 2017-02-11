@@ -276,7 +276,7 @@ class NDProject(NDObject):
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
     if channel_name == 'default':
-      channel_name = Channel.objects.get(project_id=self.pr, default=True)
+      return NDChannel(Channel.objects.get(project_id=self.pr, default=True))
     return NDChannel.fromName(self.pr, channel_name)
 
   # def getDBUser( self ):

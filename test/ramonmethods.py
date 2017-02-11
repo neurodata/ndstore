@@ -152,7 +152,7 @@ def getH5id ( f ):
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
   keys = h5f.keys()
   tmpfile.close()
-  return int (keys[0])
+  return int ([key for key in keys][0])
 
 
 def makeAnno ( p, anntype ):
@@ -196,7 +196,8 @@ def setField (p, field, value):
   """Set the specified field to the value"""
 
   url =  "https://{}/sd/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
-  assert ( getURL(url).content == '')
+  resp = getURL(url)
+  assert ( resp.content == b'')
 
 
 def queryField (p, field, value):

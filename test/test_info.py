@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import pytest
 import json
 import h5py
@@ -94,8 +94,8 @@ class Test_Info:
     f = getURL("https://{}/sd/{}/volume.vikingxml".format(SITE_HOST, p.token))
 
     xmlinfo = etree.XML(f.content)
-    assert( xmlinfo.values()[2] == p.token )
-    assert( xmlinfo.values()[3] == '1000' )
+    assert( list(xmlinfo.values())[2] == p.token )
+    assert( list(xmlinfo.values())[3] == '1000' )
 
   # def test_reserve ( self ):
     # """Reserve 1000 ids twice and make sure that the numbers work"""

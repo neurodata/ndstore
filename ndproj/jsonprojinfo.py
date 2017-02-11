@@ -82,8 +82,6 @@ def chandict ( channel ):
 def jsonInfo (proj):
   """All Project Info"""
 
-  import pdb; pdb.set_trace()
-
   jsonprojinfo = {}
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )

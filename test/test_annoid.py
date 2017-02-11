@@ -20,7 +20,7 @@ import pytest
 import numpy as np
 import random
 import h5py
-import urllib2 
+import urllib.request, urllib.error, urllib.parse 
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -53,6 +53,7 @@ class Test_Annotation_Json():
     """Test the annotation (RAMON) JSON interface"""
 
     image_data = np.random.randint(0, high=255, size=[1, 10, 1024, 1024]).astype(np.uint32)
+
     response = postNPZ(p, image_data)
 
     assert( response.status_code == 200 )
@@ -73,7 +74,7 @@ class Test_Annotation_Json():
       # Build a get request
       response = getURL(url)
     except Exception as e:
-      print e
+      print(e)
 
     assert( response.status_code == 200 )
 

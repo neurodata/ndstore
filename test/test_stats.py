@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import time
 import json
 import numpy as np
@@ -35,7 +35,7 @@ class Test_Histogram8:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, p.channels, channel_type=IMAGE, channel_datatype=UINT8, public=True, ximagesize=1024, yimagesize=1024, zimagesize=10, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
+    makeunitdb.createTestDB(p.token, p.channels, channel_type=TIMESERIES, channel_datatype=UINT8, public=True, ximagesize=1024, yimagesize=1024, zimagesize=10, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -59,11 +59,11 @@ class Test_Histogram8:
       # Build a get request
       response = getURL(url)
     except Exception as e:
-      print e
+      print(e)
 
     assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.content)
+    jsonresponse = json.loads(response.content.decode('utf-8'))
 
     # make sure the celery job started
     celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
@@ -84,11 +84,11 @@ class Test_Histogram8:
       # Build a get request
       response = getURL(url)
     except Exception as e:
-      print e
+      print(e)
 
     assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.content)
+    jsonresponse = json.loads(response.content.decode('utf-8'))
 
     # now see if the two histograms are equivalent
     testhist = np.histogram(image_data[image_data > 0], bins=256, range=(0,256))
@@ -103,7 +103,7 @@ class Test_Histogram16:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, p.channels, channel_type=IMAGE, channel_datatype=UINT16, public=True, ximagesize=1024, yimagesize=1024, zimagesize=10, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
+    makeunitdb.createTestDB(p.token, p.channels, channel_type=TIMESERIES, channel_datatype=UINT16, public=True, ximagesize=1024, yimagesize=1024, zimagesize=10, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -127,11 +127,11 @@ class Test_Histogram16:
       # Build a get request
       response = getURL(url)
     except Exception as e:
-      print e
+      print(e)
 
     assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.content)
+    jsonresponse = json.loads(response.content.decode('utf-8'))
 
     # make sure the celery job started
     celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
@@ -152,7 +152,7 @@ class Test_Histogram16:
       # Build a get request
       response = getURL(url)
     except Exception as e:
-      print e
+      print(e)
 
     assert( response.status_code == 200 )
 
@@ -171,7 +171,7 @@ class TestHistogramROI:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, p.channels, channel_type=IMAGE, channel_datatype=UINT8, public=True, ximagesize=1024, yimagesize=1024, zimagesize=20, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
+    makeunitdb.createTestDB(p.token, p.channels, channel_type=TIMESERIES, channel_datatype=UINT8, public=True, ximagesize=1024, yimagesize=1024, zimagesize=20, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
 
     # modify params args to match new data size
     p.args = (0,1024,0,1024,1,21)
@@ -201,10 +201,10 @@ class TestHistogramROI:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': [roi] }))
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e
+      req = urllib.request.Request(url, json.dumps({ 'ROI': [roi] }))
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     assert( response.code == 200 )
@@ -232,10 +232,10 @@ class TestHistogramROI:
     url = 'https://{}/stats/{}/{}/hist/roi/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e
+      req = urllib.request.Request(url)
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     jsonresponse = json.loads(response.read())
@@ -251,10 +251,10 @@ class TestHistogramROI:
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
     url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError as e:
-      print e
+      req = urllib.request.Request(url)
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     jsonresponse = json.loads(response.read())
@@ -279,10 +279,10 @@ class TestHistogramROI:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': [roi] }))
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e
+      req = urllib.request.Request(url, json.dumps({ 'ROI': [roi] }))
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     assert( response.code == 200 )
@@ -310,10 +310,10 @@ class TestHistogramROI:
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
     url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError as e:
-      print e
+      req = urllib.request.Request(url)
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     jsonresponse = json.loads(response.read())
@@ -338,10 +338,10 @@ class TestHistogramROI:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': [roi] }))
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e
+      req = urllib.request.Request(url, json.dumps({ 'ROI': [roi] }))
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     assert( response.code == 200 )
@@ -369,10 +369,10 @@ class TestHistogramROI:
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
     url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError as e:
-      print e
+      req = urllib.request.Request(url)
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     jsonresponse = json.loads(response.read())
@@ -397,11 +397,11 @@ class TestHistogramROI:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': [roi] }))
-      response = urllib2.urlopen(req)
+      req = urllib.request.Request(url, json.dumps({ 'ROI': [roi] }))
+      response = urllib.request.urlopen(req)
       assert( response.code != 200 )
-    except urllib2.HTTPError,e:
-      print e
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.code == 400)
 
     # post ROI that isn't a cube
@@ -411,11 +411,11 @@ class TestHistogramROI:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': [roi] }))
-      response = urllib2.urlopen(req)
+      req = urllib.request.Request(url, json.dumps({ 'ROI': [roi] }))
+      response = urllib.request.urlopen(req)
       assert( response.code != 200 )
-    except urllib2.HTTPError,e:
-      print e
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.code == 400)
 
     # post ROI outside of dataset bounds
@@ -425,11 +425,11 @@ class TestHistogramROI:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': [roi] }))
-      response = urllib2.urlopen(req)
+      req = urllib.request.Request(url, json.dumps({ 'ROI': [roi] }))
+      response = urllib.request.urlopen(req)
       assert( response.code != 200 )
-    except urllib2.HTTPError,e:
-      print e
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.code == 400)
 
 
@@ -437,7 +437,7 @@ class TestHistogramROIMultiple:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, p.channels, channel_type=IMAGE, channel_datatype=UINT8, public=True, ximagesize=1024, yimagesize=1024, zimagesize=20, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
+    makeunitdb.createTestDB(p.token, p.channels, channel_type=TIMESERIES, channel_datatype=UINT8, public=True, ximagesize=1024, yimagesize=1024, zimagesize=20, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
 
     # modify params args to match new data size
     p.args = (0,1024,0,1024,1,21)
@@ -470,10 +470,10 @@ class TestHistogramROIMultiple:
 
     try:
       # Make a POST request
-      req = urllib2.Request(url, json.dumps({ 'ROI': rois }))
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e
+      req = urllib.request.Request(url, json.dumps({ 'ROI': rois }))
+      response = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+      print(e)
       assert(e.reason == 0)
 
     assert( response.code == 200 )
@@ -502,10 +502,10 @@ class TestHistogramROIMultiple:
       roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
       url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
       try:
-        req = urllib2.Request(url)
-        response = urllib2.urlopen(req)
-      except urllib2.HTTPError as e:
-        print e
+        req = urllib.request.Request(url)
+        response = urllib.request.urlopen(req)
+      except urllib.error.HTTPError as e:
+        print(e)
         assert(e.reason == 0)
 
       jsonresponse = json.loads(response.read())

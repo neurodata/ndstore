@@ -241,7 +241,7 @@ class Test_Time_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
     
     # xy/z/y_z_res
-    url = "https://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]//512, p.args[0]//512, p.resolution)
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
@@ -260,10 +260,10 @@ class Test_Time_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
 
     # yz/x/z_y_res
-    url = "https://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]//512, p.args[2]//512, p.resolution)
     f = getURL (url)
 
-    scale_range = 512*p.voxel[2]/p.voxel[1]
+    scale_range = int(512*p.voxel[2]/p.voxel[1])
     slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,:,0]) )
 
@@ -280,10 +280,10 @@ class Test_Time_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
 
     # xz/y/z_x_res
-    url = "https://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]//512, p.args[0]//512, p.resolution)
     f = getURL (url)
 
-    scale_range = 512*p.voxel[2]/p.voxel[0]
+    scale_range = int(512*p.voxel[2]/p.voxel[0])
     slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,0,:]) )
 

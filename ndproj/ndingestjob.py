@@ -52,7 +52,6 @@ class NDIngestJob(NDObject):
 
   def delete(self):
     try:
-      import pdb; pdb.set_trace()
       self._job.delete()
     except Exception as e:
       raise

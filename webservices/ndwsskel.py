@@ -132,7 +132,7 @@ def ingestSWC ( swcfile, ch, db ):
   db.startTxn()
 
   # store the skeletons
-  for (skelid, skel) in skels.iteritems():
+  for (skelid, skel) in skels.items():
 
     # add comments to each skeleton KV pair
     commentno = 0
@@ -143,12 +143,12 @@ def ingestSWC ( swcfile, ch, db ):
     db.putAnnotation ( ch, skel )
 
   # store the nodes
-  for (nodeid,node) in nodes.iteritems():
+  for (nodeid,node) in nodes.items():
     db.putAnnotation ( ch, node )
 
   db.commit()
 
-  return [ x.annid for (i,x) in skels.iteritems() ]
+  return [ x.annid for (i,x) in skels.items() ]
 
 
 def querySWC ( swcfile, ch, db, proj, skelids=None ):
@@ -170,7 +170,7 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
       skel = db.getAnnotation( ch, skelids[0]  )
 
       # write each key value line out as a comment
-      for (k,v) in skel.toDict().iteritems():
+      for (k,v) in skel.toDict().items():
         # match a comment
         if re.match ( "^#.*\n", str(v) ):
           swcfile.write(v)

@@ -83,21 +83,21 @@ class Test_Ramon:
 
     # Test synapses
     f = getField(p, 'synapses')
-    rsynids = f.content.split(',')
+    rsynids = f.content.split(b',')
     for sid in rsynids:
       assert int(sid) in synids
     assert len(rsynids) == 9
 
     # Test presynapses
     f = getField(p, 'presynapses')
-    rsynids = f.content.split(',')
+    rsynids = f.content.split(b',')
     for sid in rsynids:
       assert int(sid) in presynids
     assert len(rsynids) == 8
 
     # Test postsynapses
     f = getField(p, 'postsynapses')
-    rsynids = f.content.split(',')
+    rsynids = f.content.split(b',')
     for sid in rsynids:
       assert int(sid) in postsynids
     assert len(rsynids) == 8
@@ -116,7 +116,7 @@ class Test_Ramon:
 
     # Test synapses
     f = getField(p, 'organelles')
-    rorgids = f.content.split(',')
+    rorgids = f.content.split(b',')
     for cid in rorgids:
       assert int(cid) in orgids
     assert len(rorgids) == 8
@@ -262,7 +262,7 @@ class Test_Ramon:
       url = 'https://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
 
     resp = deleteURL(url)
-    assert resp.content == "Success"
+    assert resp.content == b"Success"
 
     # retrieve the annotation
     # verify that it's not there.
@@ -345,31 +345,31 @@ class Test_Ramon:
     seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
     f = getField(p, 'seeds')
-    assert ','.join([str(i) for i in seeds]) == f.content
+    assert ','.join([str(i) for i in seeds]) == f.content.decode("utf-8") 
 
     # test the centroid
     centroid = [random.randint(0,65535), random.randint(0,65535), random.randint(0,65535)]
     f = setField(p, 'centroid', ','.join([str(i) for i in centroid]))
     f = getField(p, 'centroid')
-    assert ','.join([str(i) for i in centroid]) == f.content
+    assert ','.join([str(i) for i in centroid]) == f.content.decode("utf-8") 
 
     # Test the segments
     segments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'segments', ','.join([str(i) for i in segments]))
     f = getField(p, 'segments')
-    assert ','.join([str(i) for i in segments]) == f.content
+    assert ','.join([str(i) for i in segments]) == f.content.decode("utf-8") 
 
     # Test the presegments
     presegments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'presegments', ','.join([str(i) for i in presegments]))
     f = getField(p, 'presegments')
-    assert ','.join([str(i) for i in presegments]) == f.content
+    assert ','.join([str(i) for i in presegments]) == f.content.decode("utf-8") 
 
     # Test the postsegments
     postsegments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'postsegments', ','.join([str(i) for i in postsegments]))
     f = getField(p, 'postsegments')
-    assert ','.join([str(i) for i in postsegments]) == f.content
+    assert ','.join([str(i) for i in postsegments]) == f.content.decode("utf-8") 
 
   def test_seed (self):
     """Upload a seed and test it's fields"""
@@ -399,7 +399,7 @@ class Test_Ramon:
     position = [random.randint (0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'position', ','.join([str(i) for i in position]))
     f = getField(p, 'position')
-    assert ','.join([str(i) for i in position]) == f.content
+    assert ','.join([str(i) for i in position]) == f.content.decode("utf-8") 
 
 
 
@@ -424,7 +424,7 @@ class Test_Ramon:
 
     # Test segments
     f = getField(p, 'segments')
-    rsegids = f.content.split(',')
+    rsegids = f.content.split(b',')
     for sid in rsegids:
       assert int(sid) in segids
     assert len(rsegids) == 5
@@ -463,7 +463,7 @@ class Test_Ramon:
     seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
     f = getField(p, 'seeds')
-    assert ','.join([str(i) for i in seeds]) == f.content
+    assert ','.join([str(i) for i in seeds]) == f.content.decode("utf-8") 
 
   def test_wrong ( self ):
 
@@ -538,7 +538,10 @@ class Test_Ramon:
     location = [random.random(), random.random(), random.random()]
     f = setField(p, 'location', ','.join([str(i) for i in location]))
     f = getField(p, 'location')
-    assert ','.join([str(i) for i in location]) == f.content
+    [ x, y, z ] = [ float(v) for v in f.content.split(b',') ]
+    assert abs(x - location[0]) < 0.001
+    assert abs(y - location[1]) < 0.001
+    assert abs(z - location[2]) < 0.001
 
     # make a bunch of children
     q = Params()
@@ -554,7 +557,7 @@ class Test_Ramon:
 
     # Test children
     f = getField(p, 'children')
-    rchildids = f.content.split(',')
+    rchildids = f.content.split(b',')
     for cid in rchildids:
       assert int(cid) in childids
     assert len(rchildids) == 4
@@ -619,7 +622,7 @@ class Test_Ramon:
 
     # Test skeleton
     f = getField(p, 'nodes')
-    rskelids = f.content.split(',')
+    rskelids = f.content.split(b',')
     for sid in rskelids:
       assert int(sid) in skelids
     assert len(rskelids) == 7
@@ -651,7 +654,7 @@ class Test_Ramon:
 
     # Test children
     f = getField(p, 'children')
-    rchildids = f.content.split(',')
+    rchildids = f.content.split(b',')
     for cid in rchildids:
       assert int(cid) in childids
     assert len(rchildids) == 4
@@ -669,4 +672,4 @@ class Test_Ramon:
 
       setField( p, key, value )
       f = getField ( p, key )
-      assert ( f.content == value )
+      assert ( f.content.decode('utf-8') == value )
