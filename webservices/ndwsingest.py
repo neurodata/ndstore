@@ -91,8 +91,7 @@ class IngestData:
         s3 = boto3.resource('s3', aws_access_key_id=ndsettings.AWS_ACCESS_KEY_ID, aws_secret_access_key=ndsettings.AWS_SECRET_ACCESS_KEY)
         s3.Object('neurodata-public', key).download_file(self.path+self.generateFileName(slice_number))
       except Exception as e:
-        print (e)
-        raise e
+        logger.warning("Image file not found {}. {}".format(self.generateFileName(slice_number) , e))
 
         # req = urllib2.Request(url)
         # resp = urllib2.urlopen(req, timeout=15)
