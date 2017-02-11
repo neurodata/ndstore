@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import
 import os
 import sys
 import subprocess
@@ -33,12 +34,16 @@ class S3BackupFile(object):
     self.file_name = "{}{}_{}.sql".format(settings.TEMP_INGEST_PATH, socket.gethostname(), time.strftime('%Y_%m_%d_%H_%M_%S'))
     s3 = boto3.resource('s3', endpoint_url=ndingest_settings.S3_ENDPOINT, aws_access_key_id=ndingest_settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=ndingest_settings.AWS_SECRET_ACCESS_KEY)
     self.backup_object = s3.Object(ndingest_settings.S3_BACKUP_BUCKET, self.file_name.strip(settings.TEMP_INGEST_PATH))
+    self.logger = logging.getLogger('neurodjango_backup')
+    self.logger.setLevel(logging.INFO)
+    file_handle = logging.FileHandler('/var/log/neurodata/neurodjango_backup.log')
+    self.logger.addHandler(file_handle)
 
   def clean(self):
     try:
       os.remove(self.file_name)
     except Exception as e:
-      print (e)
+      self.logger.error("Error in cleaning file {}. {}".format(self.file_name, e))
       raise e
 
   def copy(self):
@@ -48,16 +53,19 @@ class S3BackupFile(object):
           StorageClass = 'STANDARD'
       )
     except Exception as e:
-      print (e)
+      self.logger.error("Error in copying file {}. {}".format(self.file_name, e))
       raise e
 
   def backup(self):
     try:
+      self.logger.info("Dumping file {}".format(self.file_name))
       subprocess.call("mysqldump -u{} -p{} {} > {}".format(settings.DATABASES['default']['USER'], settings.DATABASES['default']['PASSWORD'], settings.DATABASES['default']['NAME'], self.file_name), shell=True)
+      self.logger.info("Copying file {}".format(self.file_name))
       self.copy()
+      self.logger.info("Cleaning file {}".format(self.file_name))
       self.clean()
     except Exception as e:
-      print (e)
+      self.logger.error("Error in backing up file {}. {}".format(self.file_name, e))
       raise e
 
 def main():

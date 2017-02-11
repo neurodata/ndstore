@@ -44,6 +44,9 @@ sudo -u neurodata git submodule update
 
 # pip install packages
 cd /home/neurodata/ndstore/setup/
+# temp patch to install pip on 14.04 broken because of old python version supposedly not safe
+sudo wget https://bootstrap.pypa.io/get-pip.py .
+sudo python get-pip.py
 sudo pip install -U cython numpy
 sudo pip install -U -r requirements.txt
 

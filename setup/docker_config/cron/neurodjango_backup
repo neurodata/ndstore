@@ -1,0 +1,1 @@
+0 12 * * * neurodata cd /home/neurodata/ndstore/scripts/ && /usr/bin/python /home/neurodata/ndstore/scripts/neurodjango_backup.py >> /var/log/neurodata/neurodjango_backup.log

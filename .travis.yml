@@ -1,32 +1,27 @@
 language: python
-
 python:
-  - 2.7
-
+- 2.7
+#cache: pip
 notifications:
   email: false
-
+deploy:
+  provider: codedeploy
+  access_key_id: 
+    secure: RoyoYddJ+qhROIEQ2o2n49SG8XP9b3grHQGCLZ9OaeKFKYYOXNa5rq4AD6UVERZJ8k1djwFkV+YbeE/v47uQ6azU/Ux8RT85yNbdPn4A4b4TQpNt0Cr2rAGBfdZTMHhrPrmWGA8Q2i3qZuUKiqkvSJPncu5RECDVbw99fVlMYFk=
+  secret_access_key: 
+    secure: dutc2a4tSBIVz30B8MeyOPoP/A841yXJ4FIQy98eUxOuFo6pwiYt4ynnLkIrd+t+CKfayTT5x2ESfERpGl5SLfQ8yLTHRaCzyMy8iN/SMIfzROC7PZQAJqKiMSYk0ABORe1WGySZ5wqcz+lf5VTERmdXjsTNjauUrn53kWAKlkI=
+  bucket: ndplay
+  revision_type: github
+  on:
+    branch: master
 sudo: required
-
 dist: trusty
-
 before_install:
-  - mysql -u root -i -e "FLUSH PRIVILEGES; SET PASSWORD FOR 'root'@'localhost' = PASSWORD('neur0data')"
-  - sudo apt-get install apt-transport-https ca-certificates
-  #- sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-  - sudo apt-get update -y;
-  #- sudo apt-get -qqy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install docker-engine=1.11.1-0~trusty
-  #- sudo apt-get install docker-engine
-
+- mysql -u root -i -e "FLUSH PRIVILEGES; SET PASSWORD FOR 'root'@'localhost' = PASSWORD('neur0data')"
+- sudo apt-get install apt-transport-https ca-certificates
+- sudo apt-get update -y;
 script:
-  - echo "Branch $TRAVIS_BRANCH"
-  - sudo ./setup/ndstore_install.sh $TRAVIS_BRANCH
-  # Specifically for travis run django headlessly to avoid uwsgi problems
-  # and test stack against that local server
-  #- cd /home/neurodata/ndstore/django
-  #- screen -d -m python django runserver localhost:8080
-  # Need to replace test_site
-  #- sudo cp /home/neurodata/ndstore/setup/travis_test_settings.py /home/neurodata/ndstore/test/test_settings.py
-  - cd /home/neurodata/ndstore/test
-  - sudo py.test
-  #- docker build --build-arg BRANCH=$TRAVIS_BRANCH -t neurodata .
+- echo "Branch $TRAVIS_BRANCH"
+- sudo ./setup/ndstore_install.sh $TRAVIS_BRANCH
+- cd /home/neurodata/ndstore/test
+- sudo py.test
