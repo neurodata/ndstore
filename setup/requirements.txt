@@ -42,12 +42,12 @@ jsonschema
 json-spec
 #
 # Misc packages
-celery
+celery==3.1.23
 pytest
 posix-ipc
 networkx
 requests
 anyjson
-amqp
+amqp==1.4.9
 pylibmc
 toolz
