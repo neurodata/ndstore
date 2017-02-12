@@ -4,16 +4,16 @@ python:
 #cache: pip
 notifications:
   email: false
-deploy:
-  provider: codedeploy
-  access_key_id: 
-    secure: RoyoYddJ+qhROIEQ2o2n49SG8XP9b3grHQGCLZ9OaeKFKYYOXNa5rq4AD6UVERZJ8k1djwFkV+YbeE/v47uQ6azU/Ux8RT85yNbdPn4A4b4TQpNt0Cr2rAGBfdZTMHhrPrmWGA8Q2i3qZuUKiqkvSJPncu5RECDVbw99fVlMYFk=
-  secret_access_key: 
-    secure: dutc2a4tSBIVz30B8MeyOPoP/A841yXJ4FIQy98eUxOuFo6pwiYt4ynnLkIrd+t+CKfayTT5x2ESfERpGl5SLfQ8yLTHRaCzyMy8iN/SMIfzROC7PZQAJqKiMSYk0ABORe1WGySZ5wqcz+lf5VTERmdXjsTNjauUrn53kWAKlkI=
-  bucket: ndplay
-  revision_type: github
-  on:
-    branch: master
+#deploy:
+  #provider: codedeploy
+  #access_key_id: 
+    #secure: RoyoYddJ+qhROIEQ2o2n49SG8XP9b3grHQGCLZ9OaeKFKYYOXNa5rq4AD6UVERZJ8k1djwFkV+YbeE/v47uQ6azU/Ux8RT85yNbdPn4A4b4TQpNt0Cr2rAGBfdZTMHhrPrmWGA8Q2i3qZuUKiqkvSJPncu5RECDVbw99fVlMYFk=
+  #secret_access_key: 
+    #secure: dutc2a4tSBIVz30B8MeyOPoP/A841yXJ4FIQy98eUxOuFo6pwiYt4ynnLkIrd+t+CKfayTT5x2ESfERpGl5SLfQ8yLTHRaCzyMy8iN/SMIfzROC7PZQAJqKiMSYk0ABORe1WGySZ5wqcz+lf5VTERmdXjsTNjauUrn53kWAKlkI=
+  #bucket: ndplay
+  #revision_type: github
+  #on:
+    #branch: master
 sudo: required
 dist: trusty
 before_install:
