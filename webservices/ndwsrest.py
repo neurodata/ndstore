@@ -1617,7 +1617,7 @@ def getNIFTI ( webargs ):
     ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the nii file
-    with closing(tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+    with closing(tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:
       queryNIFTI ( tmpfile, ch, db, proj )
       tmpfile.seek(0)
       return tmpfile.read()
