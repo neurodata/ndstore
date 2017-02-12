@@ -41,11 +41,15 @@ def main():
 
     requests.packages.urllib3.disable_warnings()
     response = requests.post(url, open(result.filename).read(), verify=False)
+    if response.status_code == 200:
+      print "Success for url {}".format(url)
+    else:
+      print "Error for url {}. Status {}. Message {}".format(url,response.status_code,response.text)
+      response.raise_for_status()
 
-  except requests.HTTPError as e:
+  except Exception, e:
 
-    print "Failed {}. Exception {}".format(url, response._content)
-    return e
+    raise
 
 if __name__ == "__main__":
   main()

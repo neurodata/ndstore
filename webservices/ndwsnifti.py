@@ -25,7 +25,6 @@ logger = logging.getLogger("neurodata")
 
 def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annotations=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
-  
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 
@@ -33,6 +32,9 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annot
 
   # create the channel if needed
   if create:
+
+   # RBTODO talk to Kunal about using channel creation routines.
+   # RBTODO exception handling and cleanup if load fails after channel creation
 
     from nduser.models import Channel
     from ndproj.ndchannel import NDChannel
@@ -81,6 +83,7 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annot
 
   try:
 
+    # RBTODO Add this to function????? to get free memory
     # create the nifti header
     nh = NDNiftiHeader.fromImage(ch, nifti_img)
 
@@ -111,10 +114,11 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annot
     logger.error("Failed to load nii file. Error {}".format(str(e)))
     raise NDWSError("Failed to load nii file. Error {}".format(str(e)))
 
-def queryNIFTI ( tmpfile, ch, db, proj ):
+def queryNIFTI ( tmpfile, ch, db, proj ): 
   """ Return a NII file that contains the entire DB"""
   
   try:
+
     # get the header in a fileobj
     nh = NDNiftiHeader.fromChannel(ch)
 
