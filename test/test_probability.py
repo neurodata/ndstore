@@ -20,9 +20,7 @@ import makeunitdb
 from ndlib.ndtype import IMAGE, FLOAT32
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test Image
 

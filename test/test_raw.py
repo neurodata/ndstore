@@ -17,9 +17,7 @@ import makeunitdb
 from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getRAW
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test_RAW
 # 1 - test_get_raw

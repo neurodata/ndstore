@@ -25,8 +25,7 @@ from contextlib import closing
 from pytesthelpers import makeAnno
 import makeunitdb
 from ndlib.restutil import getURL, postURL, deleteURL
-import site_to_test
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 
 class ReadParms:

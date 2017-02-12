@@ -129,7 +129,7 @@ class NDDataset(NDObject):
       self._ds.delete()
     except Exception as e:
       raise
-  
+
   @classmethod
   def fromName(cls, dataset_name):
     try:

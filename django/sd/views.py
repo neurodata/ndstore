@@ -38,14 +38,14 @@ GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
 POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
 
-@api_view(['GET','POST'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
+#@api_view(['GET','POST'])
+#@authentication_classes((SessionAuthentication, TokenAuthentication))
+#@permission_classes((PublicAuthentication,))
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
   
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -339,9 +339,9 @@ def xmlinfo (request, webargs):
     logger.exception("Unknown exception in xmlinfo. {}".format(e))
     raise NDWSError("Unknown exception in xmlinfo. {}".format(e))
 
-@api_view(['GET'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
+#@api_view(['GET'])
+#@authentication_classes((SessionAuthentication, TokenAuthentication))
+#@permission_classes((PublicAuthentication,))
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -420,9 +420,9 @@ def getField (request, webargs):
     logger.exception("Unknown exception in getField. {}".format(e))
     raise NDWSError("Unknown exception in getField. {}".format(e))
 
-@api_view(['GET'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
+#@api_view(['GET'])
+#@authentication_classes((SessionAuthentication, TokenAuthentication))
+#@permission_classes((PublicAuthentication,))
 def getPropagate (request, webargs):
   """ Get the value for Propagate field for a given project """
 
@@ -436,9 +436,9 @@ def getPropagate (request, webargs):
     logger.exception("Unknown exception in getPropagate. {}".format(e))
     raise NDWSError("Unknown exception in getPropagate. {}".format(e))
 
-@api_view(['GET'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
+#@api_view(['GET'])
+#@authentication_classes((SessionAuthentication, TokenAuthentication))
+#@permission_classes((PublicAuthentication,))
 def setPropagate (request, webargs):
   """ Set the value for Propagate field for a given project """
 
@@ -501,9 +501,9 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service. {}".format(e))
     raise NDWSError("Unknown exception in (min|max) projection Web service. {}".format(e))
 
-@api_view(['POST'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
+# @api_view(['POST'])
+# @authentication_classes((SessionAuthentication, TokenAuthentication))
+# @permission_classes((PublicAuthentication,))
 def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 

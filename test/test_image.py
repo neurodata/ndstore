@@ -23,9 +23,7 @@ import makeunitdb
 from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 
 # Test Image
@@ -158,7 +156,7 @@ class Test_Image_Simple_Catmaid:
     f = getURL (url)
 
     scale_range = int(512*p.voxel[2]/p.voxel[1])
-    print("{} {}".format(scale_range, p.voxel))
+    # print("{} {}".format(scale_range, p.voxel))
     slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,:,0] ))
 
@@ -179,7 +177,7 @@ class Test_Image_Simple_Catmaid:
     f = getURL (url)
 
     scale_range = int(512*p.voxel[2]//p.voxel[0])
-    print("{} {}".format(scale_range, p.voxel))
+    # print("{} {}".format(scale_range, p.voxel))
     slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,0,:]) )
 
