@@ -20,7 +20,6 @@ import pytest
 import numpy as np
 import random
 import h5py
-import urllib.request, urllib.error, urllib.parse 
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'

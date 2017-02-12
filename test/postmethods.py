@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import urllib.request, urllib.error, urllib.parse
 import h5py
 from io import BytesIO
 import zlib
@@ -43,9 +42,7 @@ def postNPZ (p, post_data, time=False):
   cdz = zlib.compress (fileobj.getvalue())
 
   try:
-    # Build a post request
-    # req = urllib2.Request(url,cdz)
-    # response = urllib2.urlopen(req)
+    # post a request
     resp = postURL(url, cdz)
     return resp
   except Exception as e:
