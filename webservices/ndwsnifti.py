@@ -25,13 +25,6 @@ logger = logging.getLogger("neurodata")
 
 def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annotations=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
-<<<<<<< HEAD
-
-  #RBTODO load image in a function so that we can dereference the memory.  Function should return
-  #  nifti_data and nh (nifti header).  Should also catch memory errors and give good errors.
-=======
-  
->>>>>>> 5b840300d109b32f5d167c3e208097bf421dba9c
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 

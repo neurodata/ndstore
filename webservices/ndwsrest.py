@@ -1638,17 +1638,17 @@ def putNIFTI ( webargs, postdata ):
       createflag = False
       ch = NDChannel.fromName(proj, channel)
 
-    if "annotations" in optionsargs:
-      annotationsflag=True
-    else:
-      annotationsflag=False
-      
-    
       # Don't write to readonly channels
       if ch.readonly == READONLY_TRUE:
         logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
         raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
+
+    if "annotations" in optionsargs:
+      annotationsflag=True
+    else:
+      annotationsflag=False
+    
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
 
