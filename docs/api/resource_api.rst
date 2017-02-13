@@ -21,7 +21,7 @@ Dataset
    
    .. sourcecode:: http
       
-      POST /nd/resource/kasthuri11/ HTTPS/1.1
+      POST /nd/resource/kasthuri11/ HTTP/1.1
       Host: cloud.neurodata.io
       Content-Type: application/json
 
@@ -40,17 +40,17 @@ Dataset
 
    .. sourcecode:: http
 
-      HTTPS/1.1 201 Created
+      HTTP/1.1 201 Created
       Content-Type: text/plain
 
    .. sourcecode:: http
     
-      HTTPS/1.1 400 BadRequest
+      HTTP/1.1 400 BadRequest
       Content-Type: text/plain
 
    .. sourcecode:: http
 
-      HTTPS/1.1 403 Forbidden
+      HTTP/1.1 403 Forbidden
       Content-Type: text/plain
 
 .. _json-listdataset:
@@ -70,7 +70,7 @@ Dataset
    
    .. sourcecode:: http
       
-      GET /nd/resource/kasthuri11/ HTTPS/1.1
+      GET /nd/resource/kasthuri11/ HTTP/1.1
       Host: cloud.neurodata.io
       Content-Type: text/plain
 
@@ -78,7 +78,7 @@ Dataset
 
    .. sourcecode:: http
 
-      HTTPS/1.1 200 OK
+      GET HTTP/1.1 200 OK
       Content-Type: application/json
 
       {
@@ -89,12 +89,12 @@ Dataset
 
    .. sourcecode:: http
     
-      HTTPS/1.1 400 BadRequest
+      HTTP/1.1 400 BadRequest
       Content-Type: text/plain
 
    .. sourcecode:: http
 
-      HTTPS/1.1 403 Forbidden
+      HTTP/1.1 403 Forbidden
       Content-Type: text/plain
 
 .. _json-deletedataset:
@@ -114,7 +114,7 @@ Dataset
    
    .. sourcecode:: http
       
-      POST /nd/resource/kasthuri11/ HTTPS/1.1
+      POST /nd/resource/kasthuri11/ HTTP/1.1
       Host: cloud.neurodata.io
       Content-Type: application/json
 
@@ -126,17 +126,17 @@ Dataset
 
    .. sourcecode:: http
 
-      HTTPS/1.1 204 No Content
+      HTTP/1.1 204 No Content
       Content-Type: text/plain
 
    .. sourcecode:: http
     
-      HTTPS/1.1 400 BadRequest
+      HTTP/1.1 400 BadRequest
       Content-Type: text/plain
 
    .. sourcecode:: http
 
-      HTTPS/1.1 403 Forbidden
+      HTTP/1.1 403 Forbidden
       Content-Type: text/plain
 
 
@@ -162,7 +162,7 @@ Channel
 
    .. sourcecode:: http
       
-      POST /nd/ca/test_kat1/ HTTPS/1.1
+      POST /nd/ca/test_kat1/ HTTP/1.1
       Host: openconnecto.me
       Content-Type: application/json
 
@@ -187,17 +187,17 @@ Channel
 
    .. sourcecode:: http
 
-      HTTPS/1.1 201 Created
+      HTTP/1.1 201 Created
       Content-Type: text/plain
 
    .. sourcecode:: http
     
-      HTTPS/1.1 400 BadRequest
+      HTTP/1.1 400 BadRequest
       Content-Type: text/plain
 
    .. sourcecode:: http
 
-      HTTPS/1.1 403 Forbidden
+      HTTP/1.1 403 Forbidden
       Content-Type: text/plain
 
 .. _json-deletechannel:
@@ -223,7 +223,7 @@ deleteChannel
 
    .. sourcecode:: http
       
-      POST /nd/ca/test_kat1/ HTTPS/1.1
+      POST /nd/ca/test_kat1/ HTTP/1.1
       Host: openconnecto.me
       Content-Type: application/json
 
@@ -238,21 +238,21 @@ deleteChannel
 
    .. sourcecode:: http
 
-      HTTPS/1.1 200 OK
+      HTTP/1.1 200 OK
       Content-Type: text/plain
 
       Success. Channels deleted.
 
    .. sourcecode:: http
 
-      HTTPS/1.1 400 BadRequest
+      HTTP/1.1 400 BadRequest
       Content-Type: text/plain
 
       Missing. Required fields.
 
    .. sourcecode:: http
 
-      HTTPS/1.1 400 BadRequest
+      HTTP/1.1 400 BadRequest
       Content-Type: text/plain
 
       Error saving models. The channels were not deleted.
