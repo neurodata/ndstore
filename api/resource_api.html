@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Tile API" href="tile_api.html"/>
         <link rel="prev" title="Auto-Ingest API" href="autoingest_api.html"/> 
@@ -105,7 +108,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Resources API</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Resources API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dataset">Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#channel">Channel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deletechannel">deleteChannel</a></li>
@@ -143,7 +146,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -155,7 +158,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/resource_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/resource_api.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -194,33 +197,33 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>POST /nd/resource/kasthuri11/ HTTPS/1.1
-Host: cloud.neurodata.io
-Content-Type: application/json
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
-{
-  &quot;dataset_name&quot; : &quot;kasthuri11&quot;,
-  &quot;ximagesize&quot; : 2000,
-  &quot;yimagesize&quot; : 2000,
-  &quot;zimagesize&quot; : 100,
-  &quot;xvoxelres&quot; : 5.0,
-  &quot;yvoxelres&quot; : 5.0,
-  &quot;zvoxelres&quot; : 10.0,
-  &quot;public&quot; : 1
-}
+<span class="p">{</span>
+  <span class="nt">&quot;dataset_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;ximagesize&quot;</span> <span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+  <span class="nt">&quot;yimagesize&quot;</span> <span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+  <span class="nt">&quot;zimagesize&quot;</span> <span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+  <span class="nt">&quot;xvoxelres&quot;</span> <span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+  <span class="nt">&quot;yvoxelres&quot;</span> <span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+  <span class="nt">&quot;zvoxelres&quot;</span> <span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+  <span class="nt">&quot;public&quot;</span> <span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example Responses</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 201 Created
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -250,13 +253,13 @@ Content-Type: text/plain
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>GET /nd/resource/kasthuri11/ HTTPS/1.1
-Host: cloud.neurodata.io
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
 <p><strong>Example Responses</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 200 OK
+<div class="highlight-http"><div class="highlight"><pre><span></span>GET HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
@@ -266,12 +269,12 @@ Content-Type: application/json
 }
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -301,26 +304,26 @@ Content-Type: text/plain
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>POST /nd/resource/kasthuri11/ HTTPS/1.1
-Host: cloud.neurodata.io
-Content-Type: application/json
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
-{
-  &quot;dataset_name&quot; : &quot;kasthuri11&quot;,
-}
+<span class="p">{</span>
+  <span class="nt">&quot;dataset_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example Responses</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 204 No Content
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -346,7 +349,7 @@ Content-Type: text/plain
 </tr>
 <tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if <a class="reference internal" href="../sphinx/datamodel.html#channel"><span>channel</span></a> already exists</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if <a class="reference internal" href="../sphinx/datamodel.html#channel"><span class="std std-ref">channel</span></a> already exists</li>
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
 </ul>
 </td>
@@ -354,39 +357,39 @@ Content-Type: text/plain
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>POST /nd/ca/test_kat1/ HTTPS/1.1
-Host: openconnecto.me
-Content-Type: application/json
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/ca/test_kat1/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
-{
-  &quot;channels&quot;: {
-    &quot;CHAN1&quot;: {
-      &quot;channel_name&quot;: &quot;CHAN1&quot;,
-      &quot;channel_type&quot;: &quot;image&quot;,
-      &quot;datatype&quot;: &quot;uint8&quot;,
-      &quot;readonly&quot;: 0
-    },
-    &quot;CHAN2&quot;: {
-      &quot;channel_name&quot;: &quot;CHAN2&quot;,
-      &quot;channel_type&quot;: &quot;image&quot;,
-      &quot;datatype&quot;: &quot;uint8&quot;,
-      &quot;readonly&quot;: 0
-    }
-  }
-}
+<span class="p">{</span>
+  <span class="nt">&quot;channels&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;CHAN1&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;channel_name&quot;</span><span class="p">:</span> <span class="s2">&quot;CHAN1&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;channel_type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;datatype&quot;</span><span class="p">:</span> <span class="s2">&quot;uint8&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;readonly&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;CHAN2&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;channel_name&quot;</span><span class="p">:</span> <span class="s2">&quot;CHAN2&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;channel_type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;datatype&quot;</span><span class="p">:</span> <span class="s2">&quot;uint8&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;readonly&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example Responses</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 201 Created
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 403 Forbidden
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -412,7 +415,7 @@ Content-Type: text/plain
 </tr>
 <tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if <a class="reference internal" href="../sphinx/datamodel.html#channel"><span>channel</span></a> does not exist</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Error in file format or if <a class="reference internal" href="../sphinx/datamodel.html#channel"><span class="std std-ref">channel</span></a> does not exist</li>
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax</li>
 </ul>
 </td>
@@ -420,33 +423,33 @@ Content-Type: text/plain
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>POST /nd/ca/test_kat1/ HTTPS/1.1
-Host: openconnecto.me
-Content-Type: application/json
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/ca/test_kat1/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
-{
-  &quot;channels&quot;: [
-             &quot;CHAN2&quot;,
-             &quot;CHAN3&quot;
-  ]
-}
+<span class="p">{</span>
+  <span class="nt">&quot;channels&quot;</span><span class="p">:</span> <span class="p">[</span>
+             <span class="s2">&quot;CHAN2&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;CHAN3&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example Responses</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 200 OK
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 
 Success. Channels deleted.
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 
 Missing. Required fields.
 </pre></div>
 </div>
-<div class="highlight-http"><div class="highlight"><pre>HTTPS/1.1 400 BadRequest
-Content-Type: text/plain
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 
 Error saving models. The channels were not deleted.
 </pre></div>

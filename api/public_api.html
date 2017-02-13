@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Data API" href="data_api.html"/>
         <link rel="prev" title="Project Info API" href="info_api.html"/> 
@@ -99,7 +102,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Public Token API</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Public Token API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#get">GET</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#public-datasets-get">GET</a></li>
 </ul>
@@ -142,7 +145,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -154,7 +157,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/public_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/public_api.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -175,7 +178,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access <a class="reference internal" href="info_api.html#jsoninfo-get"><span>project information</span></a></p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access <a class="reference internal" href="info_api.html#jsoninfo-get"><span class="std std-ref">project information</span></a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
@@ -192,12 +195,12 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/ca/public_tokens</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/ca/public_tokens</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
 <span class="p">[</span>
@@ -241,12 +244,12 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/nd/ca/public_datasets</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/ca/public_datasets</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
 <span class="p">[</span>

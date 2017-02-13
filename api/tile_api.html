@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="NIFTI API" href="nifti_api.html"/>
         <link rel="prev" title="Resources API" href="resource_api.html"/> 
@@ -106,7 +109,7 @@
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoingest_api.html">Auto-Ingest API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="resource_api.html">Resources API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Tile API</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tile API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#getsimpletilexy">getSimpleTileXY</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getsimpletileyz">getSimpleTileYZ</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getsimpletilexz">getSimpleTileXZ</a></li>
@@ -145,7 +148,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -157,7 +160,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/tile_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/tile_api.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -170,7 +173,7 @@
   <div class="section" id="tile-api">
 <h1>Tile API<a class="headerlink" href="#tile-api" title="Permalink to this headline">¶</a></h1>
 <p>You can also view the <a class="reference external" href="http://docs.neurodata.io/ndtilecache/api/tilecache_api.html">Tilecache APIs</a> which work similarly for <a class="reference external" href="http://docs.neurodata.io/ndtilecache/index.html">ndtilecache</a>.</p>
-<p><strong>NOTE</strong>: These APIs do not return the orginal data. If you want the orginal raw data then please use the <a class="reference internal" href="data_api.html#id1"><span>Data APIs</span></a>.</p>
+<p><strong>NOTE</strong>: These APIs do not return the orginal data. If you want the orginal raw data then please use the <a class="reference internal" href="data_api.html#id1"><span class="std std-ref">Data APIs</span></a>.</p>
 <div class="section" id="getsimpletilexy">
 <span id="simple-tile-xy"></span><h2>getSimpleTileXY<a class="headerlink" href="#getsimpletilexy" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
@@ -205,12 +208,12 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span>  <span class="nn">/nd/catmaid/kasthuri11/image/xy/1/1_1_4.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span>  <span class="nn">/nd/catmaid/kasthuri11/image/xy/1/1_1_4.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/png</span>
 </pre></div>
 </div>
@@ -328,12 +331,12 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span>  <span class="nn">/nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span>  <span class="nn">/nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/png</span>
 </pre></div>
 </div>
@@ -376,12 +379,12 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span>  <span class="nn">/nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span>  <span class="nn">/nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/png</span>
 </pre></div>
 </div>

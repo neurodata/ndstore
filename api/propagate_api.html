@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Auto-Ingest API" href="autoingest_api.html"/>
         <link rel="prev" title="RAMON API" href="ramon_api.html"/> 
@@ -103,7 +106,7 @@
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Propagate API</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Propagate API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#propagation-service">Propagation Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#getpropagate">getPropagate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setpropagate">setPropagate</a></li>
@@ -145,7 +148,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -157,7 +160,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/propagate_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/propagate_api.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -171,7 +174,7 @@
 <h1>Propagate API<a class="headerlink" href="#propagate-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="propagation-service">
 <span id="nd-propagation"></span><h2>Propagation Service<a class="headerlink" href="#propagation-service" title="Permalink to this headline">¶</a></h2>
-<p>NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="#propagate-set"><span>set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="#propagate-get"><span>get propagation service</span></a>. Both these services return values which signify something. You can use the value reference table below to identify the propgation state of your project. The propagation service only runs when the project is marked not read-only. This is done to ensure that read-only projects are not accidently propagated. Please ensure that your project is marked not read-only before calling this service. Any extra terms are enumerated in the <a class="reference internal" href="../sphinx/datamodel.html#datamodel"><span>data model</span></a>.</p>
+<p>NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="#propagate-set"><span class="std std-ref">set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="#propagate-get"><span class="std std-ref">get propagation service</span></a>. Both these services return values which signify something. You can use the value reference table below to identify the propgation state of your project. The propagation service only runs when the project is marked not read-only. This is done to ensure that read-only projects are not accidently propagated. Please ensure that your project is marked not read-only before calling this service. Any extra terms are enumerated in the <a class="reference internal" href="../sphinx/datamodel.html#datamodel"><span class="std std-ref">data model</span></a>.</p>
 <p><em>WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.</em></p>
 <table border="1" class="docutils">
 <colgroup>
@@ -204,7 +207,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the <a class="reference internal" href="#nd-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the <a class="reference internal" href="#nd-propagation"><span class="std std-ref">propagation</span></a> state of the channel.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
@@ -234,7 +237,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Set the <a class="reference internal" href="#nd-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Set the <a class="reference internal" href="#nd-propagation"><span class="std std-ref">propagation</span></a> state of the channel.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">

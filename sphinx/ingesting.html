@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="ndstore v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Configuration" href="config.html"/>
         <link rel="prev" title="Administrator Console" href="console.html"/> 
@@ -91,7 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Ingest Data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#some-common-mistakes-you-can-make">Some common mistakes you can make</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ingesting-rgb-data">Ingesting RGB data</a></li>
@@ -157,7 +160,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -169,7 +172,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/sphinx/ingesting.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/sphinx/ingesting.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -229,7 +232,7 @@
 </div>
 <div class="section" id="how-do-i-name-my-projects-datasets-token">
 <h3>How do I name my projects/datasets/token?<a class="headerlink" href="#how-do-i-name-my-projects-datasets-token" title="Permalink to this headline">¶</a></h3>
-<p>Please see naming convections in the <a class="reference internal" href="datamodel.html#datamodel"><span>data model</span></a>.</p>
+<p>Please see naming convections in the <a class="reference internal" href="datamodel.html#datamodel"><span class="std std-ref">data model</span></a>.</p>
 </div>
 <div class="section" id="how-do-i-check-if-my-data-is-publicly-accessible">
 <h3>How do I check if my data is publicly accessible?<a class="headerlink" href="#how-do-i-check-if-my-data-is-publicly-accessible" title="Permalink to this headline">¶</a></h3>
@@ -239,7 +242,7 @@
 <div class="section" id="s3-bucket-upload">
 <h2>S3 Bucket Upload<a class="headerlink" href="#s3-bucket-upload" title="Permalink to this headline">¶</a></h2>
 <p>If you are uploading data through an amazon s3 bucket, this additional step is necessary for us to be able to access the data. In order to make the data in your S3 bucket public and available over HTTP you need to add this bucket policy (in the permissions tab of properties) and save it. Make sure to replace the &#8220;examplebucket&#8221; in the sample json with your bucket name. When including the data url be sure to set the data_url as <a class="reference external" href="http:/">http:/</a>/&lt;example-bucket&gt;.s3.amazonaws.com/ (with example-bucket being replaced with your bucket name).</p>
-<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
     <span class="nt">&quot;Statement&quot;</span><span class="p">:[</span>
       <span class="p">{</span>
@@ -263,7 +266,7 @@
 </div>
 <div class="section" id="explanation-of-additional-terms">
 <h3>Explanation of Additional Terms<a class="headerlink" href="#explanation-of-additional-terms" title="Permalink to this headline">¶</a></h3>
-<p>The <a class="reference internal" href="datamodel.html#datamodel"><span>data model</span></a> holds an explanation of the majority of the terms encountered when editing the autoingest.py script, however some extra terms that are not enumerated in that explanation are included here.</p>
+<p>The <a class="reference internal" href="datamodel.html#datamodel"><span class="std std-ref">data model</span></a> holds an explanation of the majority of the terms encountered when editing the autoingest.py script, however some extra terms that are not enumerated in that explanation are included here.</p>
 <dl class="function">
 <dt id="Scaling">
 <code class="descname">Scaling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Scaling" title="Permalink to this definition">¶</a></dt>
