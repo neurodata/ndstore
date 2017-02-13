@@ -21,7 +21,7 @@ Dataset
    
    .. sourcecode:: http
       
-      POST /nd/resource/kasthuri11/ HTTPS/1.1
+      POST /nd/resource/ HTTPS/1.1
       Host: cloud.neurodata.io
       Content-Type: application/json
 
@@ -57,7 +57,7 @@ Dataset
 
 .. http:get:: (string:server_name)/nd/resource/dataset/
    
-   :synopsis: List all datasets
+   :synopsis: List all datasets owned by the user
    
    :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
@@ -70,7 +70,7 @@ Dataset
    
    .. sourcecode:: http
       
-      GET /nd/resource/kasthuri11/ HTTPS/1.1
+      GET /nd/resource/dataset/ HTTPS/1.1
       Host: cloud.neurodata.io
       Content-Type: text/plain
 
@@ -97,14 +97,58 @@ Dataset
       HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
 
+.. _json-publicdataset:
+
+.. http:get:: (string:server_name)/nd/resource/public/dataset/
+   
+   :synopsis: List all public datasets
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+
+   :statuscode 200: OK. List of datasets returned
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /nd/resource/public/dataset/ HTTPS/1.1
+      Host: cloud.neurodata.io
+      Content-Type: text/plain
+
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        'kasthuri11'
+      }
+
+   .. sourcecode:: http
+    
+      HTTPS/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 403 Forbidden
+      Content-Type: text/plain
+
 .. _json-deletedataset:
 
-.. http:delete:: (string:server_name)/nd/resource/dataset/
+.. http:delete:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/
    
    :synopsis: Delete a dataset
    
    :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
+   :param dataset_name: Dataset name
+   :type dataset_name: string
 
    :statuscode 204: No content. Resource deleted
    :statuscode 400: Bad Request. Incorrect syntax
@@ -114,14 +158,10 @@ Dataset
    
    .. sourcecode:: http
       
-      POST /nd/resource/kasthuri11/ HTTPS/1.1
+      DELETE /nd/resource/dataset/kasthuri11/ HTTPS/1.1
       Host: cloud.neurodata.io
-      Content-Type: application/json
+      Content-Type: test/plain
 
-      {
-        "dataset_name" : "kasthuri11",
-      }
-   
    **Example Responses**:
 
    .. sourcecode:: http
@@ -139,50 +179,176 @@ Dataset
       HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
 
+.. _json-createproject:
 
-.. _json-createchannel:
+.. http:post:: (string:server_name)/nd/resource/dataset/{string:dataset_name)}/project/
 
-Channel
--------
-  
-.. http:post:: (string:server_name)/nd/sd/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/
-
-   :synopsis: Create a list of channels for an existing project using the project token and JSON file.
-
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :synopsis: Create a project
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
-   :param token_name: Token Name in NeuroData.
-   :type token_name: string
+   :param dataset_name: Name of dataset
+   :type dataset_name: string
 
-   :statuscode 200: No error
-   :statuscode 400: Error in file format or if :ref:`channel <channel>` already exists
-   :statuscode 404: Error in the syntax
-
+   :statuscode 201: Resource created
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
    **Example Request**:
-
+   
    .. sourcecode:: http
       
-      POST /nd/ca/test_kat1/ HTTPS/1.1
-      Host: openconnecto.me
+      POST /nd/resource/kasthuri11/project HTTPS/1.1
+      Host: cloud.neurodata.io
       Content-Type: application/json
 
       {
-        "channels": {
-          "CHAN1": {
-            "channel_name": "CHAN1",
-            "channel_type": "image",
-            "datatype": "uint8",
-            "readonly": 0
-          },
-          "CHAN2": {
-            "channel_name": "CHAN2",
-            "channel_type": "image",
-            "datatype": "uint8",
-            "readonly": 0
-          }
-        }
+        "project_name" : "kasthuri11",
+        "host" : "localhost",
+        "s3backend" : 1,
+        "public" : 1,
+        "kvserver" : "localhost",
+        "kvengine" : "Redis",
+      }
+   
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 201 Created
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+    
+      HTTPS/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 403 Forbidden
+      Content-Type: text/plain
+
+.. _json-deleteproject:
+
+.. http:delete:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/(string:project_name)
+   
+   :synopsis: Delete a dataset
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param dataset_name: Dataset name
+   :type datset_name: string
+   :param project_name: Project name
+   :type project_name: string
+
+   :statuscode 204: No content. Resource deleted
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      DELETE /nd/resource/dataset/kasthuri11/project/kat11 HTTPS/1.1
+      Host: cloud.neurodata.io
+      Content-Type: test/plain
+
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 204 No Content
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+    
+      HTTPS/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 403 Forbidden
+      Content-Type: text/plain
+
+.. _json-listproject:
+
+.. http:get:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/
+   
+   :synopsis: List all projectss owned by the user for dataset_name
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param dataset_name: Dataset name
+   :type dataset_name: string
+
+   :statuscode 200: OK. List of datasets returned
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /nd/resource/dataset/kasthuri11/project/ HTTPS/1.1
+      Host: cloud.neurodata.io
+      Content-Type: text/plain
+
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        'kat11'
+        'kat11cc'
+        'kat11test'
       }
 
+   .. sourcecode:: http
+    
+      HTTPS/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTPS/1.1 403 Forbidden
+      Content-Type: text/plain
+
+.. _json-createchannel:
+
+.. http:post:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/(string:project_name)/channel/
+
+   :synopsis: Create a channel
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param dataset_name: Name of dataset
+   :type dataset_name: string
+   :param: project_name: Name of project
+   :type project_name: string
+
+   :statuscode 201: Resource created
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      POST /nd/resource/kasthuri11/project/kat11/channel/ HTTPS/1.1
+      Host: cloud.neurodata.io
+      Content-Type: application/json
+
+      {
+        "channel_name" : "ch0",
+        "channel_type" : "image",
+        "channel_datatype" : "uint8",
+        "startwindow" : 0,
+        "endwindow" : 500,
+      }
+   
    **Example Responses**:
 
    .. sourcecode:: http
@@ -202,57 +368,44 @@ Channel
 
 .. _json-deletechannel:
 
-
-deleteChannel
--------------
-
-.. http:post:: (string:server_name)/nd/ca/(string:token_name)/deleteChannel/
-
-   :synopsis: Delete a list of channels for an existing project using the project token and a JSON file.
-
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+.. http:delete:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/(string:project_name)/channel/(string:channel_name)/
+   
+   :synopsis: Delete a channel
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
-   :param token_name: Token Name in NeuroData.
-   :type token_name: string
+   :param dataset_name: Dataset name
+   :type datset_name: string
+   :param project_name: Project name
+   :type project_name: string
+   :param channel_name: Channel name
+   :type channel_name: string
 
-   :statuscode 200: No error
-   :statuscode 400: Error in file format or if :ref:`channel <channel>` does not exist
-   :statuscode 404: Error in the syntax
-
+   :statuscode 204: No content. Resource deleted
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
    **Example Request**:
-
+   
    .. sourcecode:: http
       
-      POST /nd/ca/test_kat1/ HTTPS/1.1
-      Host: openconnecto.me
-      Content-Type: application/json
-
-      {
-        "channels": [
-                   "CHAN2",
-                   "CHAN3"
-        ]
-      }
+      DELETE /nd/resource/dataset/kasthuri11/project/kat11/channel/ch0 HTTPS/1.1
+      Host: cloud.neurodata.io
+      Content-Type: test/plain
 
    **Example Responses**:
 
    .. sourcecode:: http
 
-      HTTPS/1.1 200 OK
+      HTTPS/1.1 204 No Content
       Content-Type: text/plain
 
-      Success. Channels deleted.
-
    .. sourcecode:: http
-
+    
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
 
-      Missing. Required fields.
-
    .. sourcecode:: http
 
-      HTTPS/1.1 400 BadRequest
+      HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
-
-      Error saving models. The channels were not deleted.
