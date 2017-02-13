@@ -7,14 +7,14 @@
 sudo apt-get update && sudo apt-get upgrade -y
 
 # apt-get install mysql packages
-echo "mysql-server-5.6 mysql-server/root_password password neur0data" | sudo debconf-set-selections
-echo "mysql-server-5.6 mysql-server/root_password_again password neur0data" | sudo debconf-set-selections
+echo "mysql-server mysql-server/root_password password neur0data" | sudo debconf-set-selections
+echo "mysql-server mysql-server/root_password_again password neur0data" | sudo debconf-set-selections
 sudo debconf-set-selections <<< "postfix postfix/mailname string openconnecto.me"
 sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
-sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
+#sudo apt-get -y install mysql-client-core libhdf5-serial-dev mysql-client
 
 # apt-get install packages
-sudo apt-get -qq -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen
+sudo apt-get -qq -y install nginx git bash-completion libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python3-dev mysql-server libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen mysql-client-core libhdf5-serial-dev mysql-client
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -46,7 +46,7 @@ sudo -u neurodata git submodule update
 cd /home/neurodata/ndstore/setup/
 # temp patch to install pip on 14.04 broken because of old python version supposedly not safe
 sudo wget https://bootstrap.pypa.io/get-pip.py .
-sudo python get-pip.py
+sudo python3 get-pip.py
 sudo pip install -U cython numpy
 sudo pip install -U -r requirements.txt
 
@@ -88,10 +88,10 @@ sudo cp /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neu
 # migrate the database and create the superuser
 sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/
-sudo -u neurodata python manage.py migrate
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
-echo "from django.contrib.auth.models import User; User.objects.create_user('test', 'abc@xyz.com', 't3st')" | python manage.py shell
-sudo -u neurodata python manage.py collectstatic --noinput
+sudo -u neurodata python3 manage.py migrate
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python3 manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.create_user('test', 'abc@xyz.com', 't3st')" | python3 manage.py shell
+sudo -u neurodata python3 manage.py collectstatic --noinput
 
 # add openconnecto.me to django_sites
 if [ -z "$2" ]; then
@@ -161,10 +161,10 @@ sudo service ndmanager restart
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/
-echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token_super','wb'); f.write(token.key); f.close()" | python manage.py shell
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token_super','wb'); f.write(token.key); f.close()" | python3 manage.py shell
 
 cd /home/neurodata/ndstore/django/
-echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='test'); token = Token.objects.create(user=u); f = open('/tmp/token_user','wb'); f.write(token.key); f.close()" | python manage.py shell
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='test'); token = Token.objects.create(user=u); f = open('/tmp/token_user','wb'); f.write(token.key); f.close()" | python3 manage.py shell
 
 # running tests
 cd /home/neurodata/ndstore/test/
