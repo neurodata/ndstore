@@ -21,7 +21,6 @@ import random
 import csv
 import numpy as np
 import pytest
-import http.client
 from contextlib import closing
 import makeunitdb
 import ndlib.ndtype
