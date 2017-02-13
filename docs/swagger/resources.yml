@@ -1,0 +1,19 @@
+swagger: '2.0'
+info:
+  title: Resources API
+  description: Create, update, delete and list ndstore resources
+  version: 1.0.0
+host: cloud.neurodata.io
+schemes: 
+  - https
+basePath: /resource
+produces:
+  - application/json
+paths:
+  /dataset:
+    get:
+      summary: Dataset info
+      description: Dataset information
+      responses:
+        200:
+          description: Dataset info
