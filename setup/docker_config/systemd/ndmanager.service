@@ -1,0 +1,14 @@
+[Unit]
+Description=NDManger service
+
+[Service]
+User=www-data
+Group=www-data
+Type=simple
+WorkingDirectory=/home/neurodata/ndstore/spdb/ndmanager/
+Restart=always
+
+ExecStart=/usr/bin/python3 managerdaemon.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Installation script for ndstore backend
 # Maintainer: Kunal Lillaney <lillaney@jhu.edu>
+# Operating System: Ubuntu 16.04
 # Usage: ./ndstore_install BRANCH PRODUCTION DOMAIN EMAIL
 
 # update the sys packages and upgrade them
@@ -47,8 +48,8 @@ cd /home/neurodata/ndstore/setup/
 # temp patch to install pip on 14.04 broken because of old python version supposedly not safe
 sudo wget https://bootstrap.pypa.io/get-pip.py .
 sudo python3 get-pip.py
-sudo pip install -U cython numpy
-sudo pip install -U -r requirements.txt
+sudo -H pip install -U cython numpy
+sudo -H pip install -U -r requirements.txt
 
 # switch user to neurodata and make ctypes functions
 cd /home/neurodata/ndstore/ndlib/c_version
@@ -74,13 +75,12 @@ cd /home/neurodata/redis-stable/
 sudo -u neurodata make && sudo -u neurodata make test && sudo make install
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/systemd/redis.service /etc/systemd/system/redis.service
 
 # restart redis service
-sudo initctl reload-configuration
-sudo service redis stop
-sudo service redis start
-sudo service redis restart
+sudo systemctl daemon-reload
+sudo systemctl enable redis.service
+sudo systemctl service redis restart
 
 # setup the ndingest settings file
 sudo cp /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
@@ -103,7 +103,10 @@ else
 fi
 
 # setup the cache manager
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/ndmanager.conf /etc/init/ndmanager.conf
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/systemd/ndmanager.conf /etc/systemd/systems/ndmanager.conf
+sudo systemctl daemon-reload
+sudo systemctl enable ndmanager.service
+
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
@@ -149,15 +152,15 @@ else
 fi
 
 # reload all init configurations
-sudo initctl reload-configuration
+sudo systemctl daemon-reload
 # starting all the services
-sudo service nginx restart
-sudo service uwsgi restart
-sudo service supervisor restart
-sudo service rabbitmq-server restart
-sudo service memcached restart
-sudo service redis restart
-sudo service ndmanager restart
+sudo systemctl restart redis
+sudo service restart ndmanager
+sudo systemctl restart nginx
+sudo systemctl restart uwsgi
+sudo systemctl restart supervisor
+sudo systemctl restart rabbitmq-server
+sudo systemctl restart memcached
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/
