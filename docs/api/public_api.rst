@@ -6,11 +6,11 @@ Public Token API
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/public_tokens/
+.. http:get:: (string:server_name)/nd/sd/public_tokens/
    
    :synopsis: Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access :ref:`project information<jsoninfo-get>`
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
 
    :statuscode 200: No error
@@ -20,8 +20,8 @@ GET
 
    .. sourcecode:: http
       
-      GET /nd/ca/public_tokens HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/public_tokens HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -46,11 +46,11 @@ GET
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/public_datsets/
+.. http:get:: (string:server_name)/nd/sd/public_datsets/
    
    :synopsis: Get a list of all publicly avaliable datasets from the server.`
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
 
    :statuscode 200: No error
@@ -60,8 +60,8 @@ GET
    
    .. sourcecode:: http
       
-      GET /nd/ca/public_datasets HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/public_datasets HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 

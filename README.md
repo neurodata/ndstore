@@ -5,6 +5,7 @@ Scalable database cluster for the spatial analysis and annotation of high-throug
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Docs](https://img.shields.io/badge/Docs-latest-brightgreen.svg)](http://docs.neurodata.io/ndstore/)
 [![Build Status](https://travis-ci.org/neurodata/ndstore.svg?branch=microns)](https://travis-ci.org/neurodata/ndstore)
+[![Service Status](https://img.shields.io/badge/service-status-lightgrey.svg)](http://neurodata.statuspage.io/)
 
 Root directory of the cutout and annotation services.
 Major directories include:
