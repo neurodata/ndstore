@@ -16,4 +16,4 @@
   branch = master
 [submodule "setup/statuspage_config/statuspage-py"]
 	path = setup/statuspage_config/statuspage-py
-	url = git@github.com:kunallillaney/statuspage-py.git
+	url = https://github.com/kunallillaney/statuspage-py.git
