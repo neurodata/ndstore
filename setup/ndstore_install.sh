@@ -1,8 +1,10 @@
 #!/bin/bash
 # Installation script for ndstore backend
 # Maintainer: Kunal Lillaney <lillaney@jhu.edu>
-# Operating System: Ubuntu 16.04
+# Operating System: Ubuntu 14.04/16.04
 # Usage: ./ndstore_install BRANCH PRODUCTION DOMAIN EMAIL
+
+UBUNTU_VERSION="$(sudo lsb_release -rs)"
 
 # update the sys packages and upgrade them
 sudo apt-get update && sudo apt-get upgrade -y
@@ -15,7 +17,7 @@ sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Intern
 #sudo apt-get -y install mysql-client-core libhdf5-serial-dev mysql-client
 
 # apt-get install packages
-sudo apt-get -qq -y install nginx git bash-completion libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python3-dev mysql-server libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen mysql-client-core libhdf5-serial-dev mysql-client
+sudo apt-get -qq -y install nginx git bash-completion libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python3-dev mysql-server libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen libhdf5-serial-dev mysql-client ruby ruby-dev
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -75,12 +77,19 @@ cd /home/neurodata/redis-stable/
 sudo -u neurodata make && sudo -u neurodata make test && sudo make install
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/systemd/redis.service /etc/systemd/system/redis.service
-
-# restart redis service
-sudo systemctl daemon-reload
-sudo systemctl enable redis.service
-sudo systemctl service redis restart
+if [[ $UBUNTU_VERSION == "16.04" ]]; then
+  sudo ln -s /home/neurodata/ndstore/setup/docker_config/systemd/redis.service /etc/systemd/system/redis.service
+  # restart redis service
+  sudo systemctl daemon-reload
+  sudo systemctl enable redis.service
+  sudo systemctl service redis restart
+else
+  if [[ $UBUNTU_VERSION == "14.04" ]]; then
+  sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init.d/system/redis.conf
+  # restart redis service
+  sudo service redis restart
+  fi
+fi 
 
 # setup the ndingest settings file
 sudo cp /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
@@ -135,8 +144,8 @@ sudo ln -s /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/
 if [ -z "$2" ]; then
   sudo mkdir /etc/nginx/ssl
   cd /home/neurodata/ndstore/setup/
-  sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key -config ssl_config.txt
-  sudo openssl req -key /etc/nginx/ssl/server.key -new -x509 -out /etc/nginx/ssl/server.crt -config ssl_config.txt
+  sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/neurodata.io.key -config ssl_config.txt
+  sudo openssl req -key /etc/nginx/ssl/neurodata.io.key -new -x509 -out /etc/nginx/ssl/neurodata.io.crt -config ssl_config.txt
 else
   if [ "$2" == "PRODUCTION" ]; then
     sudo mkdir /etc/nginx/ssl
@@ -145,8 +154,8 @@ else
     chmod a+x certbot-auto
     echo "y" | sudo ./certbot-auto
     sudo ./certbot-auto certonly --noninteractive --agree-tos --email $4 --webroot -w /usr/share/nginx/html/ -d $3
-    sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
-    sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
+    sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/neurodata.io.key
+    sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/neurodata.io.crt
     sudo ./certbot-auto renew --quiet --no-self-upgrade
   fi
 fi
@@ -171,7 +180,7 @@ echo "from rest_framework.authtoken.models import Token; from django.contrib.aut
 
 # running tests
 cd /home/neurodata/ndstore/test/
-if [ ![ -z "$TRAVIS_BRANCH" ] ]; then
+if [[ -z "$TRAVIS_BRANCH" ]]; then
   py.test
 fi
 if [ "$?" != "0" ]; then
