@@ -280,6 +280,8 @@ def buildImageStack(proj, ch, res=None):
 
               cube.data = newdata
               # KL TODO test this
+              # KLTODO putCube/getCube to have neariso argument
+              # RBTODO do neariso for mysql end to end and then integrate with 
               if ch.channel_type in TIMESERIES_CHANNELS:
                 db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
               else:
