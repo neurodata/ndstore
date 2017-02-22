@@ -74,18 +74,14 @@ def cutout (imageargs, ch, proj, db):
   filterlist = args.getFilter()
   zscaling = args.getZScaling()
   timerange = args.getTimeRange()
+  windowrange = args.getWindowRange()
 
   # Perform the cutout
-#  if ch.channel_type in TIMESERIES_CHANNELS:
   # support for 3-d cutouts
   if timerange == None:
     cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1])
   else:
     cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
-
-# RB defunct code path
-#  else:
-#    cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
 
@@ -93,7 +89,17 @@ def cutout (imageargs, ch, proj, db):
     # convert 4-d to 3-d here for now
     cube.data = cube.data.reshape(cube.data.shape[1:])
   
-  return cube
+  # window range on cutout only when specified by argument -- no defaults for now
+  if windowrange!= None:
+    if ch.channel_datatype == 'float32':
+      windowrange = [float(x) for x in windowrange]
+    else:
+      windowrange = [int(x) for x in windowrange]
+    cbnew = TimeCube8 ( )
+    cbnew.data = window(cube.data, ch, window_range=windowrange)
+    return cbnew
+  else:
+    return cube
 
 
 def filterCube(ch, cube, filterlist=None):
@@ -144,7 +150,7 @@ def numpyZip ( chanargs, proj, db ):
 
   try:
     # argument of format channel/service/imageargs
-    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    m = re.match("([\w+,]+)/(\w+)/([\w\.,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
@@ -1618,7 +1624,7 @@ def getNIFTI ( webargs ):
     ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the nii file
-    with closing(tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+    with closing(tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:
       queryNIFTI ( tmpfile, ch, db, proj )
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1638,12 +1644,18 @@ def putNIFTI ( webargs, postdata ):
     else:
       createflag = False
       ch = NDChannel.fromName(proj, channel)
-    
+
       # Don't write to readonly channels
       if ch.readonly == READONLY_TRUE:
         logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
         raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
+
+    if "annotations" in optionsargs:
+      annotationsflag=True
+    else:
+      annotationsflag=False
+    
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
 
@@ -1652,7 +1664,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
     
     else:
 
@@ -1661,7 +1673,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""

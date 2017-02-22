@@ -23,9 +23,9 @@ import logging
 logger = logging.getLogger("neurodata")
 
 
-def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
+def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annotations=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
-
+  
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 
@@ -33,6 +33,9 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
   # create the channel if needed
   if create:
+
+   # RBTODO talk to Kunal about using channel creation routines.
+   # RBTODO exception handling and cleanup if load fails after channel creation
 
     from nduser.models import Channel
     from ndproj.ndchannel import NDChannel
@@ -44,11 +47,17 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     else:
       endtime = nifti_data.shape[3]
 
-    # reverse look the channel datatype 
-    channel_datatype = (key for key, value in ND_dtypetonp.items() if value == nifti_data.dtype).next()
+    if not annotations:
+      # reverse look the channel datatype 
+      channel_datatype = (key for key, value in ND_dtypetonp.items() if value == nifti_data.dtype).next()
+      channel_type = ndtype.TIMESERIES
+    else:
+      # annotation channel 
+      channel_datatype = 'uint32'
+      channel_type = ndtype.ANNOTATION
 
     try:
-      newch = NDChannel(Channel (channel_name=channel_name, channel_type=ndtype.TIMESERIES, channel_datatype=channel_datatype, channel_description=channel_name, project_id=proj.project_name, readonly=False, propagate=False, resolution=0, exceptions=0, starttime=0, endtime=endtime))
+      newch = NDChannel(Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description=channel_name, project_id=proj.project_name, readonly=False, propagate=False, resolution=0, exceptions=0, starttime=0, endtime=endtime))
     except Exception as e:
       logger.warning("Failed to create channel {}. Error{}".format(channel_name,e))
       raise NSWDError("Failed to create channel {}. Error {}".format(channel_name,e))
@@ -75,15 +84,28 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
   try:
 
+    # RBTODO Add this to function????? to get free memory
     # create the nifti header
     nh = NDNiftiHeader.fromImage(ch, nifti_img)
 
-    if len(nifti_data.shape) == 3:
-      # make 4-d for time cube
-      nifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
-      db.writeCuboid ( ch, (0,0,0), 0, nifti_data, timerange=[0,1] )
-    elif len(nifti_data.shape) == 4:
-      db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[0]))
+    # timeseries and image channels
+    if not annotations:
+      if len(nifti_data.shape) == 3:
+        # make 4-d for time cube
+        nifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
+        db.writeCuboid ( ch, (0,0,0), 0, nifti_data, timerange=[0,1] )
+      elif len(nifti_data.shape) == 4:
+        db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[0]))
+
+    # annotation channels
+    else:
+      if len(nifti_data.shape) == 3:
+        # make 4-d for time cube
+        niifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
+        db.annotateDense ( ch, 0, (0,0,0), 0, nifti_data )
+      elif len(nifti_data.shape) == 4:
+        db.annotateDense ( ch, 0, (0,0,0), 0, nifti_data[0,:,:,:] )
+
 
 
     # save the header if the data was written
@@ -93,10 +115,11 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     logger.error("Failed to load nii file. Error {}".format(str(e)))
     raise NDWSError("Failed to load nii file. Error {}".format(str(e)))
 
-def queryNIFTI ( tmpfile, ch, db, proj ):
+def queryNIFTI ( tmpfile, ch, db, proj ): 
   """ Return a NII file that contains the entire DB"""
   
   try:
+
     # get the header in a fileobj
     nh = NDNiftiHeader.fromChannel(ch)
 

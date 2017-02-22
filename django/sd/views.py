@@ -45,7 +45,7 @@ def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
   
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w\.,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -137,7 +137,7 @@ def nifti (request, webargs):
     if request.method == 'GET':
       fname = "".join([x if x.isalnum() else "_" for x in webargs])
       response = django.http.HttpResponse(ndwsrest.getNIFTI(webargs), content_type="product/nii" )
-      response['Content-Disposition'] = "attachment; filename={}.nii".format(fname)
+      response['Content-Disposition'] = "attachment; filename={}.nii.gz".format(fname)
       return response
     elif request.method == 'POST':
       return django.http.HttpResponse(ndwsrest.putNIFTI(webargs,request.body))
