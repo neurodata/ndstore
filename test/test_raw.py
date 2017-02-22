@@ -23,14 +23,6 @@ from test_settings import *
 # 1 - test_get_raw
 
 p = Params()
-p.token = 'unittest'
-p.resolution = 0
-p.channels = ['IMAGE1', 'IMAGE2']
-p.window = [0,500]
-p.channel_type = TIMESERIES
-p.datatype = UINT8
-p.voxel = [4.0,4.0,3.0]
-
 
 class Test_Raw:
 

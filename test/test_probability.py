@@ -42,13 +42,7 @@ from test_settings import *
 
 
 p = Params()
-p.token = 'unittest'
-p.resolution = 0
-p.channels = ['CHAN1', 'CHAN2']
-p.window = [0,500]
-p.channel_type = IMAGE
 p.datatype = FLOAT32
-#p.args = (3000,3100,4000,4100,500,510)
 
 
 class Test_Probability_Slice:
@@ -63,9 +57,9 @@ class Test_Probability_Slice:
   def test_xy (self):
     """Test the xy slice cutout"""
 
-    p.args = (3000,3100,4000,4100,200,201)
-    image_data = np.ones( [2,1,100,100], dtype=np.float32 ) * random.random()
-    response = postNPZ(p, image_data)
+    p.args = (3000,3100,4000,4100,200,201,10,12)
+    image_data = np.ones( [2,2,1,100,100], dtype=np.float32 ) * random.random()
+    response = postNPZ(p, image_data, time=True)
 
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
@@ -77,9 +71,9 @@ class Test_Probability_Slice:
   def test_yz (self):
     """Test the yz slice cutout"""
 
-    p.args = (4000,4001,3000,3100,200,300)
-    image_data = np.ones( [2,100,100,1], dtype=np.float32 ) * random.random()
-    response = postNPZ(p, image_data)
+    p.args = (4000,4001,3000,3100,200,300,10,12)
+    image_data = np.ones( [2,2,100,100,1], dtype=np.float32 ) * random.random()
+    response = postNPZ(p, image_data, time=True)
 
     url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
     f = getURL (url)
@@ -91,9 +85,9 @@ class Test_Probability_Slice:
   def test_xz (self):
     """Test the xz slice cutout"""
 
-    p.args = (5000,5100,2000,2001,200,300)
-    image_data = np.ones( [2,100,1,100], dtype=np.float32 ) * random.random()
-    response = postNPZ(p, image_data)
+    p.args = (5000,5100,2000,2001,200,300,10,12)
+    image_data = np.ones( [2,2,100,1,100], dtype=np.float32 ) * random.random()
+    response = postNPZ(p, image_data, time=True)
 
     url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
     f = getURL (url)
