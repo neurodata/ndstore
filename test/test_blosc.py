@@ -23,10 +23,7 @@ import makeunitdb
 from ndlib.ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test_Blosc
 # 1 - test_get_blosc
@@ -40,8 +37,6 @@ p.window = [0,500]
 p.channel_type = IMAGE
 p.datatype = UINT8
 p.voxel = [4.0,4.0,3.0]
-#p.args = (3000,3100,4000,4100,500,510)
-
 
 class Test_Blosc:
 

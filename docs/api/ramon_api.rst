@@ -13,7 +13,7 @@ getJSONObject
 
    :synopsis: Retrieve the RAMON object specified by ID as a JSON object.
 
-   :param server_name: NeuroData Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically cloud.neurodata.io
    :type server_name: string
    :param token_name: NeuroData Token
    :type token_name: string
@@ -54,7 +54,7 @@ getBoundingBox
 
       :synopsis: Retrieve the bounding box around the specified RAMON object along with the rest of the RAMON metadata and return it as a JSON object.
 
-      :param server_name: NeuroData Server Name (typically openconnecto.me)
+      :param server_name: NeuroData Server Name (typically cloud.neurodata.io
       :type server_name: string
       :param token_name: NeuroData Token
       :type token_name: string
@@ -111,7 +111,7 @@ query
 
    :synopsis: Retrieve a list of RAMON objects with the specified key/value combination.
 
-   :param server_name: NeuroData Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically cloud.neurodata.io
    :type server_name: string
    :param token_name: NeuroData Token
    :type token_name: string
@@ -136,7 +136,7 @@ topKeys
 
    :synopsis: Retrieve a list of the top RAMON keys for the specified project.
 
-   :param server_name: NeuroData Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically cloud.neurodata.io
    :type server_name: string
    :param token_name: NeuroData Token
    :type token_name: string
@@ -155,7 +155,7 @@ topKeysByType
 
    :synopsis: Retrieve a list of the top RAMON keys for the specified project restricted to a certain type of RAMON object.
 
-   :param server_name: NeuroData Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically cloud.neurodata.io
    :type server_name: string
    :param token_name: NeuroData Token
    :type token_name: string
@@ -179,7 +179,7 @@ setField
 
    :synopsis: Set the value of the RAMON field for the specified channel
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -200,7 +200,7 @@ getField
 
    :synopsis: Set the value of the RAMON field for the specified channel
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -222,7 +222,7 @@ GET
 
    :synopsis: Get an annotation from the server
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -245,7 +245,7 @@ POST
 
    :synopsis: Post an annotation to the server
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -267,7 +267,7 @@ GET
 
    :synopsis: Merge two annotation ids on the server.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string

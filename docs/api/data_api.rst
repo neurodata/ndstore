@@ -11,11 +11,11 @@ HDF5 Service
 POST
 ----
 
-.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a 3D/4D region of data for a single channel or multiple channels in HDF5 file format to the server. Form parameters describe the datasets within the HDF5 file.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -55,11 +55,11 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Get a 3D/4D region of data for a single channel or multiple channels in HDF5 file format from the server. Form parameters describe the datsets within the HDF5 file.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -101,11 +101,11 @@ Blosc Service
 POST
 ----
 
-.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in blosc compression format.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -138,11 +138,11 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Get a 3D/4D region of data for of a specified channel, resolution and bounds in the blosc compression format.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -180,11 +180,11 @@ Numpy Service
 POST
 ----
 
-.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -222,11 +222,11 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Download a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -263,11 +263,11 @@ RAW Service
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/raw/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/raw/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Download a 3D/4D region of data for of a specified channel, resolution and bounds in a web readable raw binary representation numpy array format. This service is used by KNOSSOS.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string

@@ -19,17 +19,10 @@ import h5py
 import tempfile
 from contextlib import closing
 from lxml import etree
-
-from pytesthelpers import makeAnno
-
+import makeunitdb
 from ndlib.restutil import *
 from params import Params
-import kvengine_to_test
-import site_to_test
-import makeunitdb
-
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test_Info
 # 1 - test_public_tokens - Test the public tokens interface

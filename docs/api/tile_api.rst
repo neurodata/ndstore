@@ -14,7 +14,7 @@ getSimpleTileXY
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -40,7 +40,7 @@ getSimpleTileXY
    .. sourcecode:: http
    
       GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
-      Host: openconnecto.me
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -63,7 +63,7 @@ getSimpleTileYZ
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -93,7 +93,7 @@ getSimpleTileXZ
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -122,7 +122,7 @@ getMcfcTile
    
    :synopsis: Get a 512x512 color tile from the database. This returns a color tile based on the requested color.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -152,7 +152,7 @@ getMcfcTile
    .. sourcecode:: http
    
       GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
-      Host: openconnecto.me
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -175,7 +175,7 @@ getVikingTile
    
    :synopsis: Get a 512x512 `Viking <https://connectomes.utah.edu/>`_ tile from the database
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -199,7 +199,7 @@ getVikingTile
    .. sourcecode:: http
    
       GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
-      Host: openconnecto.me
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
