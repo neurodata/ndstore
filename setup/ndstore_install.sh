@@ -17,7 +17,7 @@ sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Intern
 #sudo apt-get -y install mysql-client-core libhdf5-serial-dev mysql-client
 
 # apt-get install packages
-sudo apt-get -qq -y install nginx git bash-completion libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python3-dev mysql-server libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen libhdf5-serial-dev mysql-client ruby ruby-dev
+sudo apt-get -qq -y install nginx git bash-completion libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python3-dev mysql-server libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python3 liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen libhdf5-serial-dev mysql-client ruby ruby-dev
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -111,10 +111,17 @@ else
   fi
 fi
 
-# setup the cache manager
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/systemd/ndmanager.conf /etc/systemd/systems/ndmanager.conf
-sudo systemctl daemon-reload
-sudo systemctl enable ndmanager.service
+if [[ $UBUNTU_VERSION == "16.04" ]]; then
+  # setup the cache manager
+  sudo ln -s /home/neurodata/ndstore/setup/docker_config/systemd/ndmanager.conf /etc/systemd/systems/ndmanager.conf
+  sudo systemctl daemon-reload
+  sudo systemctl enable ndmanager.service
+else
+  if [[ $UBUNTU_VERSION == "14.04" ]]; then
+    sudo initctl reload-configuration
+    sudo service ndmanager restart
+  fi
+fi
 
 
 # move the nginx config files and start service
@@ -160,16 +167,30 @@ else
   fi
 fi
 
-# reload all init configurations
-sudo systemctl daemon-reload
-# starting all the services
-sudo systemctl restart redis
-sudo service restart ndmanager
-sudo systemctl restart nginx
-sudo systemctl restart uwsgi
-sudo systemctl restart supervisor
-sudo systemctl restart rabbitmq-server
-sudo systemctl restart memcached
+if [[ $UBUNTU_VERSION == "16.04" ]]; then
+  # reload all init configurations
+  sudo systemctl daemon-reload
+  # starting all the services
+  sudo systemctl restart redis
+  sudo systemctl restart ndmanager
+  sudo systemctl restart nginx
+  sudo systemctl restart uwsgi
+  sudo systemctl restart supervisor
+  sudo systemctl restart rabbitmq-server
+  sudo systemctl restart memcached
+else
+  if [[ $UBUNTU_VERSION == "14.04" ]]; then
+    # reload all init configurations
+    sudo initctl reload-configuration
+    # starting all the services
+    sudo service redis restart
+    sudo service ndmanager restart
+    sudo service nginx restart
+    sudo service uwsgi restart
+    sudo service supervisor restart
+    sudo service rabbitmq-server restart
+  fi
+fi
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/
