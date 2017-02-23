@@ -20,9 +20,9 @@ import numpy as np
 from PIL import Image
 from StringIO import StringIO
 import makeunitdb
-from ndlib.ndtype import TIMESERIES, UINT8, UINT16
+from ndlib.ndtype import *
 from params import Params
-from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
+from postmethods import *
 from test_settings import *
 
 # Test_Blosc
@@ -51,35 +51,35 @@ class Test_Blosc:
   def test_get_blosc (self):
     """Test the xy slice cutout"""
 
-    p.args = (3000,3100,4000,4100,200,201)
-    image_data = np.ones( [2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    response = postNPZ(p, image_data)
-    posted_data = getBlosc(p)
-
-    assert ( np.array_equal(image_data,posted_data) )
+    p.args = (3000,3100,4000,4100,200,201,10, 12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, time_data, time=True)
+    posted_data = getBlosc(p, time=True)
+    
+    assert (np.array_equal(time_data, posted_data))
   
   def test_post_blosc (self):
     """Test the xy slice cutout"""
 
-    p.args = (3000,3100,4000,4100,200,201)
-    image_data = np.ones( [2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    response = postBlosc(p, image_data)
-    posted_data = getNPZ(p)
+    p.args = (3000,3100,4000,4100,200,201,10,12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, time_data, time=True)
+    posted_data = getNPZ(p, time=True)
 
-    assert ( np.array_equal(image_data,posted_data) )
+    assert (np.array_equal(time_data, posted_data))
   
   def test_incorrect_dim_blosc (self):
     """Test the xy slice cutout"""
 
-    p.args = (3000,3100,4000,4100,200,201)
-    image_data = np.ones( [2,1,200,200], dtype=np.uint8 ) * random.randint(0,255)
-    response = postBlosc(p, image_data)
+    p.args = (3000,3100,4000,4100,200,201,10,12)
+    time_data = np.ones( [2,2,1,200,200], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, time_data, time=True)
     assert(response.status_code == 404)
   
   def test_incorrect_channel_blosc (self):
     """Test the xy slice cutout"""
 
-    p.args = (3000,3100,4000,4100,200,201)
-    image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    response = postBlosc(p, image_data)
+    p.args = (3000,3100,4000,4100,200,201,10,12)
+    time_data = np.ones( [2,1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, time_data, time=True)
     assert(response.status_code == 404)

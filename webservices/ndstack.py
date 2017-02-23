@@ -289,6 +289,7 @@ def buildImageStack(proj, ch, res=None):
               cube.data = newdata
               # KL TODO test this
 <<<<<<< HEAD
+<<<<<<< HEAD
               # KLTODO putCube/getCube to have neariso argument
               # RBTODO do neariso for mysql end to end and then integrate with 
               if ch.channel_type in TIMESERIES_CHANNELS:
@@ -296,9 +297,16 @@ def buildImageStack(proj, ch, res=None):
               else:
                 db.putCube(ch, zidx, cur_res, cube, timestamp=None, update=True)
 =======
+=======
+              # KLTODO putCube/getCube to have neariso argument
+              # RBTODO do neariso for mysql end to end and then integrate with 
+>>>>>>> 2a31d6b13a207c4f7639566813c86193ff962b4b
               s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
               # if ch.channel_type in TIMESERIES_CHANNELS:
                 # db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
               # else:
                 # db.putCube(ch, zidx, cur_res, cube, timestamp=None, update=True)
+<<<<<<< HEAD
 >>>>>>> microns
+=======
+>>>>>>> 2a31d6b13a207c4f7639566813c86193ff962b4b

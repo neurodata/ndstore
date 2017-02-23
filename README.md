@@ -5,6 +5,7 @@ Scalable database cluster for the spatial analysis and annotation of high-throug
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Docs](https://img.shields.io/badge/Docs-latest-brightgreen.svg)](http://docs.neurodata.io/ndstore/)
 [![Build Status](https://travis-ci.org/neurodata/ndstore.svg?branch=microns)](https://travis-ci.org/neurodata/ndstore)
+[![Service Status](https://img.shields.io/badge/service-status-lightgrey.svg)](http://neurodata.statuspage.io/)
 
 Root directory of the cutout and annotation services.
 Major directories include:
@@ -30,6 +31,16 @@ Major directories include:
 #### Architecture
 
 ![](./docs/images/neurodata_cluster.png)
+
+#### Installation
+
+* Use a fresh Ubuntu14.04 instance with sudo access.
+```console
+wget https://raw.githubusercontent.com/neurodata/ndstore/master/setup/ndstore_install.sh
+sudo chmod 7000 ndstore_install.sh
+sudo ./ndstore_install.sh
+```
+**Note:** *ndstore does not support Docker images because running custom systemd services needs some relaxation of security on the Docker engine leading to issues. We recommend using the install script used above*
 
 #### Benchmarks
 

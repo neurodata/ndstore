@@ -8,11 +8,11 @@ Slice API
 GET XY Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
    
    :synopsis: Download a single image of a specified canonical plane, XY, and specified channel, resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io.
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -41,8 +41,8 @@ GET XY Slice Cutout
    
    .. sourcecode:: http
       
-      GET /nd/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -62,11 +62,11 @@ GET XY Slice Cutout
 GET XZ Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
    
    :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel, resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io.
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -95,8 +95,8 @@ GET XZ Slice Cutout
    
    .. sourcecode:: http
       
-      GET /nd/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -115,11 +115,11 @@ GET XZ Slice Cutout
 GET YZ Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
    
    :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel, resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io.
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -154,8 +154,8 @@ GET YZ Slice Cutout
    
    .. sourcecode:: http
       
-      GET /nd/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -174,11 +174,11 @@ GET JPEG Stack Service for KNOSSOS
  
 .. _jpeg-get:
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
    
    :synopsis: Get a JPEG stack in `KNOSSOS <http://knossostool.org/>`_ format.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io.
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -207,8 +207,8 @@ GET JPEG Stack Service for KNOSSOS
    
    .. sourcecode:: http
       
-      GET /nd/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/ HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/ HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 

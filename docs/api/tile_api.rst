@@ -40,7 +40,7 @@ getSimpleTileXY
    .. sourcecode:: http
    
       GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
-      Host: openconnecto.me
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -152,7 +152,7 @@ getMcfcTile
    .. sourcecode:: http
    
       GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
-      Host: openconnecto.me
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -199,7 +199,7 @@ getVikingTile
    .. sourcecode:: http
    
       GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
-      Host: openconnecto.me
+      Host: cloud.neurodata.io
 
    **Example Response**:
 

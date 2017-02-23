@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-<<<<<<< HEAD:test/site_to_test.py
-#site = 'localhost/nd'
-# site = 'localhost:8080/nd'
-site = 'localhost:8000'
-=======
 import os
 import sys
 sys.path += [os.path.abspath('../django/')]
@@ -28,4 +23,3 @@ from ndlib.ndctypelib import *
 import pdb; pdb.set_trace()
 test1, test2 = boundary_morton([0,0,0], [1280,1280,160], [128,128,16])
 print len(test1), len(test2)
->>>>>>> microns:scripts/test_boundaryzindex.py
