@@ -52,13 +52,13 @@ class Test_Jpeg:
   def test_get_jpeg (self):
     """Test the jpeg volume cutout"""
 
-    p.args = (3000,3100,4000,4100,200,210,10,11)
-    image_data = np.ones( [1,2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    response = postNPZ(p, image_data, time=True)
+    p.args = (3000,3100,4000,4100,200,210)
+    image_data = np.ones( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data)
 
-    url = "https://{}/sd/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6], p.args[7])
+    url = "https://{}/sd/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])
     data = getURL(url)
     posted_data = np.asarray( Image.open(cStringIO.StringIO(data.content)) )
-    
-    image_data = image_data[0,0,:,:,:].reshape(1000,100)
+
+    image_data = image_data[0,:,:,:].reshape(1000,100)
     assert ( np.array_equal(image_data,posted_data) )
