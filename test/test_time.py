@@ -21,9 +21,7 @@ import makeunitdb
 from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test Time
 
@@ -263,7 +261,7 @@ class Test_Time_Simple_Catmaid:
     url = "https://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
-    scale_range = 512*p.voxel[2]/p.voxel[1]
+    scale_range = int(512*p.voxel[2]/p.voxel[1])
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,:,0]) )
 
@@ -283,7 +281,7 @@ class Test_Time_Simple_Catmaid:
     url = "https://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
-    scale_range = 512*p.voxel[2]/p.voxel[0]
+    scale_range = int(512*p.voxel[2]/p.voxel[0])
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,0,:]) )
 

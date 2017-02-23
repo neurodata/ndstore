@@ -27,9 +27,7 @@ from ndlib.ndtype import ANNOTATION, UINT32
 from params import Params
 from ramonmethods import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'
@@ -38,7 +36,7 @@ p.channels = ['ANNO1']
 p.channel_type = ANNOTATION
 p.datatype = UINT32
 
-
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_GraphGen:
 
   def setup_class(self):

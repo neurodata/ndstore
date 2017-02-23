@@ -1,8 +1,6 @@
 #!/bin/bash
-
 # Installation script for ndstore backend
 # Maintainer: Kunal Lillaney <lillaney@jhu.edu>
-
 # Usage: ./ndstore_install BRANCH PRODUCTION DOMAIN EMAIL
 
 # update the sys packages and upgrade them
@@ -13,11 +11,10 @@ echo "mysql-server-5.6 mysql-server/root_password password neur0data" | sudo deb
 echo "mysql-server-5.6 mysql-server/root_password_again password neur0data" | sudo debconf-set-selections
 sudo debconf-set-selections <<< "postfix postfix/mailname string openconnecto.me"
 sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
-
 sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
-sudo apt-get -qq -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl
+sudo apt-get -qq -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -37,24 +34,21 @@ sudo useradd -M --system -g redis redis
 cd /home/neurodata
 sudo -u neurodata git clone https://github.com/neurodata/ndstore -q
 cd /home/neurodata/ndstore
-
 if [ -z "$1" ]; then
   sudo -u neurodata git checkout microns -q
 else
   sudo -u neurodata git checkout "$1" -q
 fi
-
 sudo -u neurodata git submodule init
 sudo -u neurodata git submodule update
 
-
 # pip install packages
 cd /home/neurodata/ndstore/setup/
-#sudo pip install -U -r requirements.txt
+# temp patch to install pip on 14.04 broken because of old python version supposedly not safe
+sudo wget https://bootstrap.pypa.io/get-pip.py .
+sudo python get-pip.py
 sudo pip install -U cython numpy
 sudo pip install -U -r requirements.txt
-#sudo pip install django h5py pytest
-#sudo pip install pillow posix_ipc boto3 nibabel networkx requests lxml pylibmc blosc django-registration django-celery mysql-python libtiff jsonschema json-spec redis
 
 # switch user to neurodata and make ctypes functions
 cd /home/neurodata/ndstore/ndlib/c_version
@@ -63,7 +57,9 @@ sudo -u neurodata make -f makefile_LINUX
 # configure mysql
 cd /home/neurodata/ndstore/django/
 sudo service mysql start
-mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
+mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';"
+mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;"
+mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
 
 # configure django setttings
 cd /home/neurodata/ndstore/django/ND/
@@ -76,8 +72,6 @@ sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
 sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
 cd /home/neurodata/redis-stable/
 sudo -u neurodata make && sudo -u neurodata make test && sudo make install
-ls
-pwd
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
@@ -134,8 +128,7 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/su
 sudo rm /home/neurodata/ndstore/ndingest/settings/settings.ini
 sudo ln -s /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
 
-
-#Set up https
+# add ssl keys and certificates for https
 if [ -z "$2" ]; then
   sudo mkdir /etc/nginx/ssl
   cd /home/neurodata/ndstore/setup/
@@ -175,7 +168,9 @@ echo "from rest_framework.authtoken.models import Token; from django.contrib.aut
 
 # running tests
 cd /home/neurodata/ndstore/test/
-py.test
+if [ ![ -z "$TRAVIS_BRANCH" ] ]; then
+  py.test
+fi
 if [ "$?" != "0" ]; then
   cat /var/log/neurodata/ndstore.log
   exit 1

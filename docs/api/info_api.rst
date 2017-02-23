@@ -9,11 +9,11 @@ JSON Informatio Service
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/info/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/info/
    
    :synopsis: Get all metadata associated with a project that the specified token refers to, including metadata for the dataset it points to, as well as each channel it contains in JSON format.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -26,8 +26,8 @@ GET
    
    .. sourcecode:: http
       
-      GET /nd/ca/kasthuri11/info/ HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/kasthuri11/info/ HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 
@@ -265,11 +265,11 @@ HDF5 Information Service
 GET
 ----
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/projinfo/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/projinfo/
    
    :synopsis: Get all metadata associated with a project that the specified token refers to, including metadata for the dataset it points to, as well as each channel it contains in HDF5 format.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -282,8 +282,8 @@ GET
 
    .. sourcecode:: http
       
-      GET /nd/ca/kasthuri11/projinfo/ HTTP/1.1
-      Host: openconnecto.me
+      GET /nd/sd/kasthuri11/projinfo/ HTTP/1.1
+      Host: cloud.neurodata.io
 
    **Example Response**:
 

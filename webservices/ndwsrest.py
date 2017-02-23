@@ -675,12 +675,15 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
 def annId ( chanargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
+  # RBTODO timestamp should be in args 0 for now.
+  timestamp = 0
+
   [channel, service, imageargs] = chanargs.split('/',2)
   ch = NDChannel.fromName(proj, channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
   # Get the identifier
-  return db.getVoxel(ch, resolution, voxel)
+  return db.getVoxel(ch, timestamp, resolution, voxel)
 
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""

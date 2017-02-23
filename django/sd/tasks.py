@@ -34,7 +34,7 @@ def propagate (token, channel_name):
 @task(queue='ingest')
 def ingest (token_name, channel_name, resolution, data_url, file_format, file_type):
   """Call the remote ingest function here"""
-
+  
   try:
     ingest_data = IngestData(token_name, channel_name, resolution, data_url, file_format, file_type)
     ingest_data.ingest()

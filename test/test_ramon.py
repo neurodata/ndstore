@@ -29,9 +29,7 @@ from params import Params
 from ndlib.restutil import *
 from postmethods import *
 from ramonmethods import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'

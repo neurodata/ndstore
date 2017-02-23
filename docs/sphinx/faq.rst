@@ -54,6 +54,10 @@ First do the following: Check if it is propagated or not. Check the resolution. 
 **What if the API is down?**
 First make certain you actually cannot access the API and that it isn't just slow. Once you have verified that the API is unaccessible wait at least three hours before opening an issue, or if the issue is urgent send an email (with all of your issue details) to support@neurodata.io. This email or issue should include all relevent details such a when you tried accessing the APIs, what you tried to fix it and what api documentation you looked at. 
 
+**How do I download data?**
+
+You can download sub volumes of data using our RESTful API's. `Here <../api/data_api>`_ is the documentation for this. You catch fetch the data in HDF5, Numpy or Blosc format. It is also highly recommended to fetch this data in regions of 1024,1024,16. Alternatively there is a python library NDIO, which wraps around these RESTful API's.
+
 **How do I use the RESTful interface?**
 
 The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. Alternatively if you do not wish to use the api directly we recommend you use our python interface `ndio <https://github.com/neurodata/ndio>`_.
@@ -70,3 +74,7 @@ Yes, however it is highly not recommended and there is no formal support for it.
 **Is there a support forum?**
 
 Information on making a support request and archived questions and answers may be found `here <https://groups.google.com/a/neurodata.io/forum/#!forum/support>`_.
+
+**What do I do if a service is down?**
+
+If a service appears to be down, it is highly recommended that you wait some time and try to access it again later. If later the service is still down the fastest way to get a response will be to open an issue `here. <https://github.com/neurodata/ndstore/issues>`_
