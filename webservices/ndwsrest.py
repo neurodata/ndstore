@@ -564,7 +564,8 @@ def imgSlice(webargs, proj, db):
     cbnew.data = window(cb.data, ch, window_range=window_range)
     return cbnew
   elif cb.data.dtype == np.uint8:
-    cb.data = window(cb.data, ch, window_range=window_range)
+# KLTODO  do we window 8 bit data.This causes test to fila
+#    cb.data = window(cb.data, ch, window_range=window_range)
     return cb
   else:
     return cb

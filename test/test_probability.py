@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image
 from StringIO import StringIO
 import makeunitdb
-from ndlib.ndtype import IMAGE, FLOAT32
+from ndlib.ndtype import TIMESERIES, FLOAT32
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 from test_settings import *
@@ -46,7 +46,7 @@ p.token = 'unittest'
 p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
 p.window = [0,500]
-p.channel_type = IMAGE
+p.channel_type = TIMESERIES
 p.datatype = FLOAT32
 #p.args = (3000,3100,4000,4100,500,510)
 

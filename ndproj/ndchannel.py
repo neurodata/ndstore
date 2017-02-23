@@ -48,9 +48,7 @@ class NDChannel(NDObject):
       return cls(ch)
     except Channel.DoesNotExist as e:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
-#   RB this error message useless
-#      raise Channel.DoesNotExist
-      raise NDWSError("Channel {} does not exist".format(channel_name))
+      raise Channel.DoesNotExist
 
   @classmethod
   def fromJson(cls, project_name, channel):
