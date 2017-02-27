@@ -301,9 +301,9 @@ Dataset
       Content-Type: application/json
 
       {
-        'kat11'
-        'kat11cc'
-        'kat11test'
+        "kat11"
+        "kat11cc"
+        "kat11test"
       }
 
    .. sourcecode:: http

@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="sphinx/datamodel.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/console.html">Administrator Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ingesting.html">How to Ingest Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/authentication.html">Authentication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
@@ -108,7 +109,6 @@
 <li class="toctree-l1"><a class="reference internal" href="api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/autoingest_api.html">Auto-Ingest API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/tile_api.html">Tile API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/nifti_api.html">NIFTI API</a></li>
@@ -116,7 +116,6 @@
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -167,7 +166,7 @@
   <h1>NeuroData Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
 <br><p>NeuroData provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3D image stacks, time-series and multi-channel data (e.g., electron microscopy, array tomography, CLARITY, histology, and multimodal MRI data). The system is designed primarily for workloads that build connectomes&#8212;neural connectivity maps of the brain&#8212;using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open science data sets are publicly available at neurodata.io.</p>
 <p>The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems&#8212;reads to parallel disk arrays and writes to solid-state storage&#8212;to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.</p>
-<div class="figure align-center" id="id2">
+<div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="_images/neurodata_example.png"><img alt="Spatially Registered Databases in NeuroData." src="_images/neurodata_example.png" style="width: 1000px; height: 500px;" /></a>
 <p class="caption"><span class="caption-text">Spatially Registered Databases in NeuroData</span></p>
 <div class="legend">
@@ -189,6 +188,7 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <li class="toctree-l1"><a class="reference internal" href="sphinx/datamodel.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/console.html">Administrator Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ingesting.html">How to Ingest Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/authentication.html">Authentication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
@@ -203,7 +203,6 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <li class="toctree-l1"><a class="reference internal" href="api/slice_api.html">Slice API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/propagate_api.html">Propagate API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/autoingest_api.html">Auto-Ingest API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/resource_api.html">Resources API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/tile_api.html">Tile API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/nifti_api.html">NIFTI API</a></li>
@@ -213,7 +212,6 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/functions.html">NeuroData Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -223,7 +221,7 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <dl class="docutils">
 <dt>If you use NeuroData or its data derivatives, please cite:</dt>
 <dd><p class="first">R Burns, K Lillaney, E Perlman, P Manavalan, JT Vogelstein (2015). ocp v0.7. Zenodo. 10.5281/zenodo.15974 <a class="reference external" href="https://zenodo.org/record/15974?ln=en#.VYyl-XUVhBc">zenodo</a> <a class="reference external" href="https://zenodo.org/record/15974?ln=en#.VYyjE3UVhBc">bibtex</a></p>
-<p class="last">R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 <a class="reference external" href="http://dl.acm.org/citation.cfm?id=2484870">acm</a> <a class="reference external" href="http://dl.acm.org/citation.cfm?id=2484870">bibtex</a></p>
+<p class="last">R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 <a class="reference external" href="http://dl.acm.org/citation.cfm?id=2484870">acm</a> <a class="reference external" href="http://dl.acm.org/citation.cfm?id=2484870">bibtex2</a></p>
 </dd>
 </dl>
 

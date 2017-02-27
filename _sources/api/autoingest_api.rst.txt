@@ -10,7 +10,7 @@ autoIngest
 
    :synopsis: Create a dataset, project and channels with a JSON file.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is neurodata.io.
    :type server_name: string
 
    :form JSON: Look at the Tech Sheet
@@ -24,7 +24,7 @@ autoIngest
    .. sourcecode:: http
       
       POST /nd/ca/json/ HTTP/1.1
-      Host: openconnecto.me
+      Host: neurodata.io
       Content-Type: application/json
 
       {
