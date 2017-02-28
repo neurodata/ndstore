@@ -179,6 +179,9 @@ Dataset
       HTTP/1.1 403 Forbidden
       Content-Type: text/plain
 
+Project
+-------
+
 .. _json-createproject:
 
 .. http:post:: (string:server_name)/nd/resource/dataset/{string:dataset_name)}/project/
@@ -315,6 +318,9 @@ Dataset
 
       HTTP/1.1 200 OK
       Content-Type: text/plain
+
+Channel
+-------
 
 .. _json-createchannel:
 
