@@ -109,9 +109,27 @@
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Resources API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#dataset">Dataset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#project">Project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#channel">Channel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dataset">Dataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create">Create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get">Get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list">List</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-public">List Public</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete">Delete</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#project">Project</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Delete</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">List</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#channel">Channel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Delete</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
@@ -171,9 +189,11 @@
 <h1>Resources API<a class="headerlink" href="#resources-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="create">
+<h3>Create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-createdataset"></span><dl class="post">
-<dt id="post-(string-server_name)-nd-resource-dataset-">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-" title="Permalink to this definition">¶</a></dt>
+<dt id="post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -183,6 +203,7 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> (<em>string</em>) &#8211; Dataset name in NeuroData</li>
 </ul>
 </td>
 </tr>
@@ -196,7 +217,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/dataset/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
@@ -227,6 +248,69 @@
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="get">
+<h3>Get<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-getdataset"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a dataset</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> (<em>string</em>) &#8211; Dataset name in NeuroData</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; OK. Get dataset information</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/dataset/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;dataset_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;ximagesize&quot;</span> <span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+  <span class="nt">&quot;yimagesize&quot;</span> <span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+  <span class="nt">&quot;zimagesize&quot;</span> <span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+  <span class="nt">&quot;xvoxelres&quot;</span> <span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+  <span class="nt">&quot;yvoxelres&quot;</span> <span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+  <span class="nt">&quot;zvoxelres&quot;</span> <span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+  <span class="nt">&quot;public&quot;</span> <span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="list">
+<h3>List<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-listdataset"></span><dl class="get">
 <dt id="get-(string-server_name)-nd-resource-dataset-">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-" title="Permalink to this definition">¶</a></dt>
@@ -252,7 +336,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/dataset/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
@@ -278,6 +362,9 @@
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="list-public">
+<h3>List Public<a class="headerlink" href="#list-public" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-publicdataset"></span><dl class="get">
 <dt id="get-(string-server_name)-nd-resource-public-dataset-">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/public/dataset/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-public-dataset-" title="Permalink to this definition">¶</a></dt>
@@ -303,7 +390,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/public/dataset/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
@@ -327,6 +414,9 @@
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="delete">
+<h3>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-deletedataset"></span><dl class="delete">
 <dt id="delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-">
 <code class="descname">DELETE </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-" title="Permalink to this definition">¶</a></dt>
@@ -374,11 +464,14 @@
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="project">
 <h2>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Create<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-createproject"></span><dl class="post">
-<dt id="post-(string-server_name)-nd-resource-dataset-string-dataset_name)-project-">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/{string:dataset_name)}/project/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-string-dataset_name)-project-" title="Permalink to this definition">¶</a></dt>
+<dt id="post-(string-server_name)-nd-resource-dataset-string-dataset_name)-project-(string-project_name)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/{string:dataset_name)/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-string-dataset_name)-project-(string-project_name)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -389,6 +482,7 @@
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
 <li><strong>dataset_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
+<li><strong>project_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
 </ul>
 </td>
 </tr>
@@ -402,12 +496,12 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/ca/test_kat1/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
 <span class="p">{</span>
-  <span class="nt">&quot;project_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;project_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kat11&quot;</span><span class="p">,</span>
   <span class="nt">&quot;host&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
   <span class="nt">&quot;s3backend&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
   <span class="nt">&quot;public&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -431,6 +525,68 @@
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="id2">
+<h3>Get<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-getproject"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-resource-dataset-string-dataset_name)-project-(string-project_name)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/{string:dataset_name)/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-string-dataset_name)-project-(string-project_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a project</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
+<li><strong>project_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2">201 Created</a> &#8211; Resource created</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;project_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kat11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;host&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;s3backend&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;public&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;kvserver&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;kvengine&quot;</span> <span class="p">:</span> <span class="s2">&quot;Redis&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="id3">
+<h3>Delete<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-deleteproject"></span><dl class="delete">
 <dt id="delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)">
 <code class="descname">DELETE </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><a class="headerlink" href="#delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)" title="Permalink to this definition">¶</a></dt>
@@ -458,7 +614,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">test/plain</span>
 </pre></div>
@@ -478,6 +634,9 @@
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="id4">
+<h3>List<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-listproject"></span><dl class="get">
 <dt id="get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-" title="Permalink to this definition">¶</a></dt>
@@ -504,7 +663,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/ca/test_kat1/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/kasthuri11/project/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
@@ -531,11 +690,14 @@
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="channel">
 <h2>Channel<a class="headerlink" href="#channel" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>Create<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-createchannel"></span><dl class="post">
-<dt id="post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/channel/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-" title="Permalink to this definition">¶</a></dt>
+<dt id="post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-(string-channel_name)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/channel/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-(string-channel_name)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -552,7 +714,10 @@
 <tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body"><p class="first">project_name: Name of project</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body"><p class="first">channel_name: Name of channel</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2">201 Created</a> &#8211; Resource created</li>
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
@@ -562,7 +727,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/project/kat11/channel/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/project/kat11/channel/ch0/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
 
@@ -576,7 +741,7 @@
 </pre></div>
 </div>
 <p><strong>Example Responses</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
 </pre></div>
 </div>
@@ -590,6 +755,76 @@
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="id6">
+<h3>Get<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-getchannel"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-(string-channel_name)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/channel/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-(string-channel_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a channel</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body"><p class="first">project_name: Name of project</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body"><p class="first">channel_name: Name of channel</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; OK. Channel information returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/kasthuri11/project/kat11/channel/ch0/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;channel_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;ch0&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;channel_type&quot;</span> <span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;channel_datatype&quot;</span> <span class="p">:</span> <span class="s2">&quot;uint8&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;startwindow&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;endwindow&quot;</span> <span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="id7">
+<h3>Delete<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <span class="target" id="json-deletechannel"></span><dl class="delete">
 <dt id="delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-(string-channel_name)-">
 <code class="descname">DELETE </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/channel/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-channel-(string-channel_name)-" title="Permalink to this definition">¶</a></dt>
@@ -618,7 +853,7 @@
 </tbody>
 </table>
 <p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11/channel/ch0</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11/channel/ch0/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">test/plain</span>
 </pre></div>
@@ -638,6 +873,7 @@
 </div>
 </dd></dl>
 
+</div>
 </div>
 </div>
 
