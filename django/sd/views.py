@@ -23,7 +23,7 @@ import re
 from ndauth.authentication import PublicAuthentication
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from nduser.models import Token
 
 import webservices.ndwsrest as ndwsrest
@@ -200,6 +200,9 @@ def jsonramon (request, webargs):
     logger.exception("Unknown exception in jsonramon. {}".format(e))
     raise NDWSError("Unknown exception in jsonramon. {}".format(e))
 
+@api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)
@@ -284,6 +287,7 @@ def catmaid (request, webargs):
     raise NDWSError("Unknown exception in catmaid {}.".format(e))
 
 @api_view(['GET'])
+@permission_classes((AllowAny,))
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:
@@ -297,6 +301,7 @@ def publictokens (request, webargs):
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
 @api_view(['GET'])
+@permission_classes((AllowAny,))
 def publicdatasets (request, webargs):
   """Return list of public datasets"""
   try:
