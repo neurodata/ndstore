@@ -19,11 +19,17 @@ sys.path.append('..')
 sys.path.append(os.path.dirname(os.path.realpath(__file__))+"/statuspage-py")
 from statuspage.core.component import Component
 import pytest
+import logging
+logger = logging.getLogger('statuspage_refresh')
+logger.setLevel(logging.INFO)
+file_handle = logging.FileHandler('/var/log/neurodata/statuspage_refresh.log')
+logger.addHandler(file_handle)
 
 # changing into test directory
 os.chdir('../../test/')
 
 def update_component(test_name_list):
+  logger.info("Updating statuspage component")
   if (pytest.main(test_name_list) >= 1):
     # partial outage
     component.update('partial_outage')
