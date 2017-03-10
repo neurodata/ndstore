@@ -13,145 +13,71 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import os
 import sys
 sys.path.append('..')
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+"/statuspage-py")
 from statuspage.core.component import Component
-import os
+import pytest
 
+# changing into test directory
 os.chdir('../../test/')
+
+def update_component(test_name_list):
+  if (pytest.main(test_name_list) >= 1):
+    # partial outage
+    component.update('partial_outage')
+  else:
+    # operational
+    component.update('operational')
+
 component = Component.fromName('Blosc API')
-if (pytest.main(["test_blosc.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_blosc.py"])
 
 component = Component.fromName('Image API')
-if (pytest.main(["test_image.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_image.py"])
 
 component = Component.fromName('Jpeg API')
-if (pytest.main(["test_jpeg.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_jpeg.py"])
 
 component = Component.fromName('Raw API')
-if (pytest.main(["test_raw.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_raw.py"])
 
 component = Component.fromName('Propagate API')
-if (pytest.main(["test_propagate.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_propagate.py"])
 
 component = Component.fromName('Time API')
-if (pytest.main(["test_time.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_time.py"])
 
 component = Component.fromName('Autoingest API')
-if (pytest.main(["test_autoingest.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_autoingest.py"])
 
 component = Component.fromName('Anno IO')
-if (pytest.main(["test_io.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_io.py"])
 
 component = Component.fromName('Anno Query')
-if (pytest.main(["test_query.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_query.py"])
 
 component = Component.fromName('Annoid API')
-if (pytest.main(["test_annoid.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_annoid.py"])
 
 component = Component.fromName('Json Ramon')
-if (pytest.main(["test_jsonann.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_jsonann.py"])
 
 component = Component.fromName('HDF5 Ramon')
-if (pytest.main(["test_ramon.py"])+pytest.main(["test_neuron.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_ramon.py", "test_neuron.py"])
 
 component = Component.fromName('Graphgen API')
-if (pytest.main(["test_graphgen.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_graphgen.py"])
 
 component = Component.fromName('Probability API')
-if (pytest.main(["test_probability.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_probability.py"])
 
 component = Component.fromName('Stats API')
-if (pytest.main(["test_stats.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_stats.py"])
 
 component = Component.fromName('Info API')
-if (pytest.main(["test_info.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_info.py"])
 
 component = Component.fromName('Resource Manager')
-if (pytest.main(["test_resource.py"]) >= 1):
-  #Partial Outage
-  component.update('partial_outage')
-else:
-  #Operational
-  component.update('operational')
+update_component(["test_resource.py"])
