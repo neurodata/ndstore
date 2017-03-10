@@ -29,7 +29,7 @@ logger.addHandler(file_handle)
 os.chdir('../../test/')
 
 def update_component(test_name_list):
-  logger.info("Updating statuspage component")
+  logger.info("Updating statuspage component {}".format(test_name_list[0]))
   if (pytest.main(test_name_list) >= 1):
     # partial outage
     component.update('partial_outage')
