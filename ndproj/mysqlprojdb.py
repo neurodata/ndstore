@@ -41,7 +41,7 @@ class MySQLProjectDB:
 
   def newNDProject(self):
     """Create the database for a project"""
-    
+
     with closing(MySQLdb.connect (host = self.pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'], connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
 
@@ -70,6 +70,8 @@ class MySQLProjectDB:
           # tables specific to all other non time data
           for res in self.pr.datasetcfg.resolutions:
             cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
+            if self.pr.datasetcfg.scalingoption == ZSLICES:
+              cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getNearIsoTable(res)))
             cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getS3IndexTable(res)))
         
           # tables specific to annotation projects
@@ -128,6 +130,8 @@ class MySQLProjectDB:
     for res in self.pr.datasetcfg.resolutions:
       # delete the res tables
       table_list.append(ch.getTable(res))
+      if self.pr.datasetcfg.scalingoption == ZSLICES:
+        table_list.append(ch.getNearIsoTable(res))
       # delete the index tables
       table_list.append(ch.getS3IndexTable(res))
       if ch.channel_type in ANNOTATION_CHANNELS:

@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#RBTODO -- do under a txn
+
 import blosc
 import numpy as np
 from contextlib import closing
 import MySQLdb
 from PIL import Image
-from ndcube.cube import Cube
-import spatialdb
+from spdb.ndcube.cube import Cube
+from spdb import spatialdb
 from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndproj.ndproject import NDProject
@@ -44,13 +46,10 @@ def buildStack(token, channel_name, resolution=None):
       if pr.kvengine == MYSQL:
         clearStack(pr, ch, resolution)
       buildAnnoStack(pr, ch, resolution)
-    elif ch.channel_type in IMAGE_CHANNELS:
+    else: 
       buildImageStack(pr, ch, resolution)
-    elif ch.channel_type in TIMESERIES_CHANNELS:
-      buildImageStack(pr, ch, resolution)
-    else:
-      logger.error("Not Supported")
-      raise NDWSError("Not Supported")
+      if pr.datasetcfg.scalingoption == ZSLICES:
+        buildImageStack(pr, ch, resolution, neariso=True)
   
     ch.propagate = PROPAGATED
   
@@ -67,7 +66,7 @@ def buildStack(token, channel_name, resolution=None):
 
 def clearStack (proj, ch, res=None):
   """ Clear a ND stack for a given project """
-
+   
   with closing(spatialdb.SpatialDB(proj)) as db:
     
     # pick a resolution
@@ -197,13 +196,13 @@ def buildAnnoStack ( proj, ch, res=None ):
         outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.channel_datatype))
 
 
-def buildImageStack(proj, ch, res=None):
+def buildImageStack(proj, ch, res=None, neariso=False):
   """Build the hierarchy of images"""
-  
+
   with closing(spatialdb.SpatialDB(proj)) as db:
     
-    s3_io = S3IO(db)
-    cuboidindex_db = CuboidIndexDB(proj.project_name, endpoint_url=ndsettings.DYNAMO_ENDPOINT)
+#    s3_io = S3IO(db)
+#    cuboidindex_db = CuboidIndexDB(proj.project_name, endpoint_url=ndsettings.DYNAMO_ENDPOINT)
     # pick a resolution
     if res is None:
       res = 1
@@ -213,29 +212,40 @@ def buildImageStack(proj, ch, res=None):
 
     for cur_res in range (res, high_res+1):
 
+      # only run neariso for the tables beyond isotropic
+      if neariso and proj.datasetcfg.nearisoscaledown[cur_res] == 1:
+        continue
+
       # Get the source database sizes
       [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(cur_res)
       timerange = ch.time_range
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res)
       [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_supercubedim(cur_res)
 
-      if scaling == ZSLICES:
+      if scaling == ZSLICES and neariso==False:
         (xscale, yscale, zscale) = (2, 2, 1)
-      elif scaling == ISOTROPIC:
+      elif scaling == ISOTROPIC or neariso==True:
         (xscale, yscale, zscale) = (2, 2, 2)
       else:
         logger.error("Invalid scaling option in project = {}".format(scaling))
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
 
-      biggercubedim = [xsupercubedim*xscale, ysupercubedim*yscale, zsupercubedim*zscale]
+#      biggercubedim = [xsupercubedim*xscale, ysupercubedim*yscale, zsupercubedim*zscale]
+      biggercubedim = [xcubedim*xscale, ycubedim*yscale, zcubedim*zscale]
 
       # Set the limits for iteration on the number of cubes in each dimension
-      xlimit = (ximagesz-1) / xsupercubedim + 1
-      ylimit = (yimagesz-1) / ysupercubedim + 1
-      zlimit = (zimagesz-1) / zsupercubedim + 1
+#      xlimit = (ximagesz-1) / xsupercubedim + 1
+#      ylimit = (yimagesz-1) / ysupercubedim + 1
+#      zlimit = (zimagesz-1) / zsupercubedim + 1
+      xlimit = (ximagesz-1) / xcubedim + 1
+      ylimit = (yimagesz-1) / ycubedim + 1
+      if not neariso:
+        zlimit = (zimagesz-1) / zcubedim + 1
+      else:
+        zlimit = (zimagesz/(2**(cur_res))-1) / zcubedim + 1
 
       # Iterating over time
-      for ts in range(timerange[0], timerange[1]+1, 1):
+      for ts in range(timerange[0], timerange[1], 1):
         # Iterating over zslice
         for z in range(zlimit):
           # Iterating over y
@@ -243,70 +253,54 @@ def buildImageStack(proj, ch, res=None):
             # Iterating over x
             for x in range(xlimit):
 
-              # cutout the data at the resolution
-              if ch.channel_type not in TIMESERIES_CHANNELS:
-                olddata = db.cutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1).data
-              else:
-                olddata = db.timecutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
-                olddata = olddata[0,:,:,:]
+#              olddata = db.timecutout(ch, [x*xscale*xcubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
+              olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
+              olddata = olddata[0,:,:,:]
 
               #olddata target array for the new data (z,y,x) order
-              newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
+#              newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
+              newdata = np.zeros([zcubedim, ycubedim, xcubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
 
-              for sl in range(zsupercubedim):
+#              for sl in range(zsupercubedim):
+              for sl in range(zcubedim):
 
-                if scaling == ZSLICES:
+                if scaling == ZSLICES and neariso==False:
                   data = olddata[sl,:,:]
-                elif scaling == ISOTROPIC:
+                elif scaling == ISOTROPIC or neariso==True:
                   data = isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
 
                 # Convert each slice to an image
                 # 8-bit int option
-                if olddata.dtype == np.uint8:
-                  slimage = Image.frombuffer('L', (xsupercubedim*2, ysupercubedim*2), data.flatten(), 'raw', 'L', 0, 1)
+                if olddata.dtype in [np.uint8, np.int8]:
+#                  slimage = Image.frombuffer('L', (xsupercubedim*2, ysupercubedim*2), data.flatten(), 'raw', 'L', 0, 1)
+                  slimage = Image.frombuffer('L', (xcubedim*2, ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
                 # 16-bit int option
-                elif olddata.dtype == np.uint16:
-                  slimage = Image.frombuffer('I;16', (xsupercubedim*2,ysupercubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
+                elif olddata.dtype in [np.uint16, np.int16]:
+#                  slimage = Image.frombuffer('I;16', (xsupercubedim*2,ysupercubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
+                  slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
                 # 32-bit float option
                 elif olddata.dtype == np.float32:
-                  slimage = Image.frombuffer('F', (xsupercubedim * 2, ysupercubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
+#                  slimage = Image.frombuffer('F', (xsupercubedim * 2, ysupercubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
+                  slimage = Image.frombuffer('F', (xcubedim * 2, ycubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
                 # 32 bit RGBA data
                 elif olddata.dtype == np.uint32:
                   slimage = Image.fromarray( data, "RGBA" )
-                # KL TODO Add support for 32bit and 64bit RGBA data
 
                 # Resize the image and put in the new cube array
                 if olddata.dtype != np.uint32:
-                  newdata[sl, :, :] = np.asarray(slimage.resize([xsupercubedim, ysupercubedim]))
+#                  newdata[sl, :, :] = np.asarray(slimage.resize([xsupercubedim, ysupercubedim]))
+                  newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim, ycubedim]))
                 else:
                   tempdata = np.asarray(slimage.resize([xsupercubedim, ysupercubedim]))
                   newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
               zidx = XYZMorton ([x,y,z])
-              cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype)
+#              cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype)
+              cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
               cube.zeros()
 
               cube.data = newdata
-              # KL TODO test this
-<<<<<<< HEAD
-<<<<<<< HEAD
-              # KLTODO putCube/getCube to have neariso argument
-              # RBTODO do neariso for mysql end to end and then integrate with 
-              if ch.channel_type in TIMESERIES_CHANNELS:
-                db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
-              else:
-                db.putCube(ch, zidx, cur_res, cube, timestamp=None, update=True)
-=======
-=======
-              # KLTODO putCube/getCube to have neariso argument
-              # RBTODO do neariso for mysql end to end and then integrate with 
->>>>>>> 2a31d6b13a207c4f7639566813c86193ff962b4b
-              s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
-              # if ch.channel_type in TIMESERIES_CHANNELS:
-                # db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
-              # else:
-                # db.putCube(ch, zidx, cur_res, cube, timestamp=None, update=True)
-<<<<<<< HEAD
->>>>>>> microns
-=======
->>>>>>> 2a31d6b13a207c4f7639566813c86193ff962b4b
+
+#              s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
+             
+              db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)

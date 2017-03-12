@@ -100,8 +100,7 @@ class NDDataset(NDObject):
         if self._ds.ximagesize == 135424 and i == 5:
           self._cubedim[i] = [128, 128, 16]
       else:
-        # RB what should we use as a cubedim?
-        self._cubedim[i] = [512, 512, 16]
+        self._cubedim[i] = [64, 64, 64]
       
       self._supercubedim[i] = map(mul, self._cubedim[i], SUPERCUBESIZE)
 

@@ -87,6 +87,7 @@ class NDProject(NDObject):
     return cls(pr)
 
   def create(self, create_table=True):
+
     try:
       self.pr.save()
       if create_table:
