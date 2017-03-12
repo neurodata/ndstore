@@ -44,6 +44,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    sphinx/datamodel
    sphinx/console
    sphinx/ingesting
+   sphinx/authentication
    sphinx/config
    sphinx/faq
 
@@ -59,7 +60,6 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    api/slice_api
    api/ramon_api
    api/propagate_api
-   api/autoingest_api
    api/resource_api
    api/tile_api
    api/nifti_api
@@ -69,7 +69,6 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    :maxdepth: 1
    :caption: Further Reading
 
-   api/functions
    Mailing List <https://groups.google.com/forum/#!forum/ocp-support/> 
    Github repo <https://github.com/neurodata/ndstore>
    Release Notes <https://github.com/neurodata/ndstore/releases/>
@@ -79,4 +78,4 @@ All of the APIs enumerated here are RESTful calls that are used via the browser 
 If you use NeuroData or its data derivatives, please cite:
   R Burns, K Lillaney, E Perlman, P Manavalan, JT Vogelstein (2015). ocp v0.7. Zenodo. 10.5281/zenodo.15974 `zenodo <https://zenodo.org/record/15974?ln=en#.VYyl-XUVhBc>`_ `bibtex <https://zenodo.org/record/15974?ln=en#.VYyjE3UVhBc>`_
 
-  R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 `acm <http://dl.acm.org/citation.cfm?id=2484870>`_ `bibtex <http://dl.acm.org/citation.cfm?id=2484870>`_
+  R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 `acm <http://dl.acm.org/citation.cfm?id=2484870>`_ `bibtex2 <http://dl.acm.org/citation.cfm?id=2484870>`_

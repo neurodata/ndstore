@@ -856,11 +856,10 @@ def selectPost ( webargs, proj, db, postdata ):
             logger.error("Wrong datatype in POST")
             raise NDWSError("Wrong datatype in POST")
             
-          if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
-            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
-
-          elif ch.channel_type in ANNOTATION_CHANNELS:
+          if ch.channel_type in ANNOTATION_CHANNELS:
             db.annotateDense(ch, efftimerange[0], corner, resolution, voxarray[idx,:], conflictopt )
+          else:
+            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
       
       else:
         logger.error("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
