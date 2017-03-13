@@ -130,6 +130,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#id7">Delete</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#token">Token</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">Delete</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">List Public</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
@@ -861,6 +868,237 @@
 <p><strong>Example Responses</strong>:</p>
 <div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
 <span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="token">
+<h2>Token<a class="headerlink" href="#token" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id8">
+<h3>Create<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-createtoken"></span><dl class="post">
+<dt id="post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/token/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a token</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body"><p class="first">project_name: Name of project</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body"><p class="first">token_name: Name of token</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2">201 Created</a> &#8211; Resource created</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/nd/resource/kasthuri11/project/kat11/token/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;token_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;public&quot;</span> <span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="id9">
+<h3>Get<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-gettoken"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/token/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a token</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> (<em>string</em>) &#8211; Name of dataset</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body"><p class="first">project_name: Name of project</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body"><p class="first">token_name: Name of token</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; OK. Channel information returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/kasthuri11/project/kat11/token/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;token_name&quot;</span> <span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;public&quot;</span> <span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="id10">
+<h3>Delete<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-deletetoken"></span><dl class="delete">
+<dt id="delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-">
+<code class="descname">DELETE </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/dataset/</code><span class="sig-paren">(</span><em class="property">string: </em><em>dataset_name</em><span class="sig-paren">)</span><code class="descname">/project/</code><span class="sig-paren">(</span><em class="property">string: </em><em>project_name</em><span class="sig-paren">)</span><code class="descname">/token/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#delete-(string-server_name)-nd-resource-dataset-(string-dataset_name)-project-(string-project_name)-token-(string-token_name)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Delete a token</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+<li><strong>dataset_name</strong> &#8211; Dataset name</li>
+<li><strong>project_name</strong> (<em>string</em>) &#8211; Project name</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5">204 No Content</a> &#8211; No content. Resource deleted</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/nd/resource/dataset/kasthuri11/project/kat11/token/kasthuri11/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">test/plain</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">403</span> <span class="ne">Forbidden</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="id11">
+<h3>List Public<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="json-publictoken"></span><dl class="get">
+<dt id="get-(string-server_name)-nd-resource-public-token-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/nd/resource/public/token/</code><a class="headerlink" href="#get-(string-server_name)-nd-resource-public-token-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">List all public tokens</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is cloud.neurodata.io</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; OK. List of datasets returned</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Bad Request. Incorrect syntax</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> &#8211; Forbidden. Insufficient permissions.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/nd/resource/public/token/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">cloud.neurodata.io</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/plain</span>
+</pre></div>
+</div>
+<p><strong>Example Responses</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;bock11&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">BadRequest</span>
