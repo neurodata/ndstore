@@ -616,3 +616,208 @@ Delete
 
       HTTP/1.1 403 Forbidden
       Content-Type: text/plain
+
+Token
+=====
+
+Create
+------
+
+.. _json-createtoken:
+
+.. http:post:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/
+
+   :synopsis: Create a token
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param dataset_name: Name of dataset
+   :type dataset_name: string
+   :param: project_name: Name of project
+   :type project_name: string
+   :param: token_name: Name of token
+   :type token_name: string
+
+   :statuscode 201: Resource created
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      POST /nd/resource/kasthuri11/project/kat11/token/kasthuri11/ HTTP/1.1
+      Host: cloud.neurodata.io
+      Content-Type: application/json
+
+      {
+        "token_name" : "kasthuri11",
+        "public" : 1
+      }
+   
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 201 Created
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+    
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTP/1.1 403 Forbidden
+      Content-Type: text/plain
+
+Get
+---
+
+.. _json-gettoken:
+
+.. http:get:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/
+
+   :synopsis: Create a token
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param dataset_name: Name of dataset
+   :type dataset_name: string
+   :param: project_name: Name of project
+   :type project_name: string
+   :param: token_name: Name of token
+   :type token_name: string
+
+   :statuscode 200: OK. Channel information returned.
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /nd/resource/kasthuri11/project/kat11/token/kasthuri11/ HTTP/1.1
+      Host: cloud.neurodata.io
+      Content-Type: text/plain
+   
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "token_name" : "kasthuri11",
+        "public" : 1
+      }
+
+   .. sourcecode:: http
+    
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+      
+   .. sourcecode:: http
+      
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTP/1.1 403 Forbidden
+      Content-Type: text/plain
+
+Delete
+------
+
+.. _json-deletetoken:
+
+.. http:delete:: (string:server_name)/nd/resource/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/
+   
+   :synopsis: Delete a token
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+   :param dataset_name: Dataset name
+   :type datset_name: string
+   :param project_name: Project name
+   :type project_name: string
+   :param channel_name: Channel name
+   :type channel_name: string
+
+   :statuscode 204: No content. Resource deleted
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      DELETE /nd/resource/dataset/kasthuri11/project/kat11/token/kasthuri11/ HTTP/1.1
+      Host: cloud.neurodata.io
+      Content-Type: test/plain
+
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 204 No Content
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+    
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTP/1.1 403 Forbidden
+      Content-Type: text/plain
+
+List Public
+-----------
+
+.. _json-publictoken:
+
+.. http:get:: (string:server_name)/nd/resource/public/token/
+   
+   :synopsis: List all public tokens
+   
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
+   :type server_name: string
+
+   :statuscode 200: OK. List of datasets returned
+   :statuscode 400: Bad Request. Incorrect syntax
+   :statuscode 403: Forbidden. Insufficient permissions.
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /nd/resource/public/token/ HTTP/1.1
+      Host: cloud.neurodata.io
+      Content-Type: text/plain
+
+   **Example Responses**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "kasthuri11",
+        "bock11"
+      }
+
+   .. sourcecode:: http
+    
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+   .. sourcecode:: http
+
+      HTTP/1.1 403 Forbidden
+      Content-Type: text/plain
