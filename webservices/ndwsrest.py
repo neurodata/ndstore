@@ -541,8 +541,15 @@ def imgSlice(webargs, proj, db):
   # Perform the cutout
   ch = proj.getChannelObj(channel)
   cb = cutout(cutoutargs, ch, proj, db)
+ 
+  # perform default window if not specified 
+  if not re.search("window", extra_args) and (cb.data.dtype == np.uint16 or cb.data.dtype == np.float32):
+    cbnew = TimeCube8 ( )
+    cbnew.data = window ( cb.data, ch )
+    return cbnew
+  else:
+    return cb
 
-  return cb
 
 def imgPNG (proj, webargs, cb):
   """Return a png object for any plane"""
@@ -991,7 +998,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, timestamp, resolut
     h5anno.addCutout ( resolution, retcorner, cb.data.reshape(cb.data.shape[1:]))
 
   elif dataoption == AR_TIGHTCUTOUT:
- 
+
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
       dataids = rdb.getSegments(ch, annoid) 
