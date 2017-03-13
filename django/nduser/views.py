@@ -40,7 +40,7 @@ from contextlib import closing
 from webservices import ndwsrest
 from webservices import ndwsjson
 from ndproj.ndprojdb import NDProjectsDB
-from ndlib.ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE
+from ndlib.ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE, S3_TRUE, REDIS
 from models import Project
 from models import Dataset
 from models import Token

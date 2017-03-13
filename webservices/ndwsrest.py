@@ -1,4 +1,4 @@
-#) Copyright 2014 NeuroData (http://neurodata.io)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 #Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,9 +80,9 @@ def cutout (imageargs, ch, proj, db):
   # Perform the cutout
   # support for 3-d cutouts
   if timerange == None:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1])
+    cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1], zscaling=zscaling)
   else:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, zscaling=zscaling)
 
   # import pdb; pdb.set_trace()
   filterCube(ch, cube, filterlist)
@@ -502,19 +502,10 @@ def imgSlice(webargs, proj, db):
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(.*)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
     imageargs = resolution + '/' + imageargs
     extra_args = m.groups()[-1]
-    filter_args = None
-    window_args = None
-    if extra_args is not None:
-      if re.match("window/\d+,\d+/$", extra_args):
-        window_args = extra_args
-      elif re.match("filter/[\d+,]+/$", extra_args):
-        filter_args = extra_args
-      else:
-        raise
   except Exception as e:
     logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -547,27 +538,16 @@ def imgSlice(webargs, proj, db):
     logger.error ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
+  cutoutargs = cutoutargs + extra_args
   # Perform the cutout
   ch = proj.getChannelObj(channel)
-  cb = cutout(cutoutargs + (filter_args if filter_args else ""), ch, proj, db)
-
-  if window_args is not None:
-    try:
-      window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
-    except Exception as e:
-      logger.error ("Illegal window arguments={}. Error={}".format(imageargs,e))
-      raise NDWSError ("Illegal window arguments={}. Error={}".format(imageargs,e))
-  else:
-    window_range = None
-  
-  if cb.data.dtype == np.uint16 or cb.data.dtype == np.int16:
+  cb = cutout(cutoutargs, ch, proj, db)
+ 
+  # perform default window if not specified 
+  if not re.search("window", extra_args) and (cb.data.dtype == np.uint16 or cb.data.dtype == np.float32):
     cbnew = TimeCube8 ( )
-    cbnew.data = window(cb.data, ch, window_range=window_range)
+    cbnew.data = window ( cb.data, ch )
     return cbnew
-  elif cb.data.dtype == np.uint8:
-# KLTODO  do we window 8 bit data.This causes test to fila
-#    cb.data = window(cb.data, ch, window_range=window_range)
-    return cb
   else:
     return cb
 
@@ -578,14 +558,21 @@ def imgPNG (proj, webargs, cb):
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(.*)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception as e:
     logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
+  # window argument
+  result = re.search (r"/window/([\d\.]+),([\d\.]+)/", webargs)
+  if result != None:
+    window = [str(i) for i in result.groups()]
+  else:
+    window = None
+
   if service == 'xy':
-    img = cb.xyImage()
+    img = cb.xyImage(window=window)
   elif service == 'yz':
     img = cb.yzImage(proj.datasetcfg.scale[int(resolution)][service])
   elif service == 'xz':
@@ -1012,7 +999,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, timestamp, resolut
     h5anno.addCutout ( resolution, retcorner, cb.data.reshape(cb.data.shape[1:]))
 
   elif dataoption == AR_TIGHTCUTOUT:
- 
+
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
       dataids = rdb.getSegments(ch, annoid) 
