@@ -22,11 +22,11 @@ from ndlib.ndtype import *
 DEV_MODE = True
 
 # kvengine settings
-KV_ENGINE = MYSQL
+# KV_ENGINE = MYSQL
 # kvengine = CASSANDRA
 # kvengine = RIAK
 # kvengine = DYNAMODB
-# KV_ENGINE = REDIS
+KV_ENGINE = REDIS
 
 MD_ENGINE = MYSQL
 
@@ -34,5 +34,5 @@ MD_ENGINE = MYSQL
 KV_SERVER = 'localhost'
 
 # server to check against
-SITE_HOST = 'localhost:8000'
-# SITE_HOST = 'localhost/nd'
+# SITE_HOST = 'localhost:8080'
+SITE_HOST = 'localhost/nd'
