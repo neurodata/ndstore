@@ -57,10 +57,11 @@ def datasetdict ( dataset ):
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
   # Stephan projinfo
-  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
-  dsdict['neariso_offset'] = dataset.neariso_offset
-  dsdict['neariso_voxelres'] = dataset.neariso_voxelres
-  dsdict['neariso_imagesize'] = dataset.neariso_imagesz
+  if dataset.scalingoption == ZSLICES:
+    dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+    dsdict['neariso_offset'] = dataset.neariso_offset
+    dsdict['neariso_voxelres'] = dataset.neariso_voxelres
+    dsdict['neariso_imagesize'] = dataset.neariso_imagesz
   # Figure out neariso in new design
   dsdict['description'] = dataset.dataset_description
 
