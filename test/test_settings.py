@@ -28,6 +28,8 @@ KV_ENGINE = MYSQL
 # kvengine = DYNAMODB
 # KV_ENGINE = REDIS
 
+MD_ENGINE = MYSQL
+
 # kvserver settings
 KV_SERVER = 'localhost'
 
