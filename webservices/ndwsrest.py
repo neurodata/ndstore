@@ -84,6 +84,7 @@ def cutout (imageargs, ch, proj, db):
   else:
     cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
 
+  # import pdb; pdb.set_trace()
   filterCube(ch, cube, filterlist)
 
   if timerange==None:
