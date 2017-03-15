@@ -293,9 +293,10 @@ def getDatasets(request):
 
                     # refresh to remove deleted
                     if request.user.is_superuser:
-                        visible_datasets=Dataset.objects.all()
+                        visible_datasets = Dataset.objects.all()
                     else:
-                        visible_datasets=Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
+                        # KL TODO Fix queryset bug
+                        visible_datasets = Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
                 context = {
                     'dts': visible_datasets
                 }
