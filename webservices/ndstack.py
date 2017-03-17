@@ -51,7 +51,7 @@ def buildStack(token, channel_name, resolution=None):
     else:
       logger.error("Not Supported")
       raise NDWSError("Not Supported")
-  
+    
     ch.propagate = PROPAGATED
   
   except Exception as e:
@@ -216,8 +216,10 @@ def buildImageStack(proj, ch, res=None):
       # Get the source database sizes
       [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(cur_res)
       timerange = ch.time_range
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res)
-      [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_supercubedim(cur_res)
+      if proj.s3backend == S3_TRUE:
+        [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_supercubedim(cur_res)
+      else:
+        [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_cubedim(cur_res)
 
       if scaling == ZSLICES:
         (xscale, yscale, zscale) = (2, 2, 1)
@@ -288,7 +290,10 @@ def buildImageStack(proj, ch, res=None):
 
               cube.data = newdata
               # KL TODO test this
-              s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
+              if proj.s3backend == S3_TRUE:
+                s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
+              else:
+                db.putCube(ch, zidx, cur_res, cube, timestamp=None, update=True)
               # if ch.channel_type in TIMESERIES_CHANNELS:
                 # db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
               # else:
