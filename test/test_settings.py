@@ -22,11 +22,11 @@ from ndlib.ndtype import *
 DEV_MODE = True
 
 # kvengine settings
-# KV_ENGINE = MYSQL
+KV_ENGINE = MYSQL
 # kvengine = CASSANDRA
 # kvengine = RIAK
 # kvengine = DYNAMODB
-KV_ENGINE = REDIS
+# KV_ENGINE = REDIS
 
 MD_ENGINE = MYSQL
 
