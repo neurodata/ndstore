@@ -186,32 +186,8 @@ class NDChannel(NDObject):
   def channel_model ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.project_name)
 
-  # def getDataType ( self ):
-    # return self.ch.channel_datatype
-
-  # def getChannelName ( self ):
-    # return self.ch.channel_name
-
-  # def getChannelType ( self ):
-    # return self.ch.channel_type
-
-  # def getChannelDescription ( self ):
-    # return self.ch.channel_description
-
   def getExceptions ( self ):
     return self.ch.exceptions
-
-  # def getReadOnly (self):
-    # return self.ch.readonly
-
-  # def getResolution (self):
-    # return self.ch.resolution
-
-  # def getWindowRange (self):
-    # return [int(self.ch.startwindow),int(self.ch.endwindow)]
-
-  # def getPropagate (self):
-    # return self.ch.propagate
 
   def isDefault (self):
     return self.ch.default
