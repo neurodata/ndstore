@@ -171,6 +171,10 @@ class NDChannel(NDObject):
     return [int(self.ch.starttime),int(self.ch.endtime)]
 
   @property
+  def default_time_range(self):
+    return [int(self.ch.starttime),int(self.ch.starttime+1)]
+  
+  @property
   def window_range(self):
     return [int(self.ch.startwindow),int(self.ch.endwindow)]
   

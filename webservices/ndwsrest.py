@@ -80,11 +80,10 @@ def cutout (imageargs, ch, proj, db):
   # Perform the cutout
   # support for 3-d cutouts
   if timerange == None:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1], zscaling=zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=ch.default_time_range, zscaling=zscaling)
   else:
     cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, zscaling=zscaling)
 
-  # import pdb; pdb.set_trace()
   filterCube(ch, cube, filterlist)
 
   if timerange==None:
@@ -543,7 +542,7 @@ def imgSlice(webargs, proj, db):
   ch = proj.getChannelObj(channel)
   cb = cutout(cutoutargs, ch, proj, db)
  
-  # perform default window if not specified 
+  # perform default window if not specified
   if not re.search("window", extra_args) and (cb.data.dtype == np.uint16 or cb.data.dtype == np.float32):
     cbnew = TimeCube8 ( )
     cbnew.data = window ( cb.data, ch )
@@ -803,9 +802,9 @@ def selectPost ( webargs, proj, db, postdata ):
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.channel_name, proj.project_name, webargs))
            
             # reshape the data to 4d if no timerange
-            if timerange==None:
+            if timerange == None:
               voxarray = voxarray.reshape((1,voxarray.shape[0],voxarray.shape[1],voxarray.shape[2]))
-              efftimerange=[0,1]
+              efftimerange = ch.default_time_range
             else:
               efftimerange = timerange
 
@@ -815,11 +814,10 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
               raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
             
-            if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
-              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
-            
-            elif ch.channel_type in ANNOTATION_CHANNELS:
+            if ch.channel_type in ANNOTATION_CHANNELS: 
               db.annotateDense ( ch, efftimerange[0], corner, resolution, voxarray, conflictopt)
+            else:
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
 
           h5f.flush()
           h5f.close()
