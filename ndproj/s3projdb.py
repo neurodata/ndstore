@@ -31,7 +31,7 @@ class S3ProjectDB:
     self.pr = pr
     # create connections for cuboid bucket and cuboid dyanmo table
     self.cuboid_bucket = CuboidBucket(self.pr.project_name, endpoint_url=ndingest_settings.S3_ENDPOINT)
-    self.self.cuboidindex_db = CuboidIndexDB(self.pr.project_name, endpoint_url=ndingest_settings.DYNAMO_ENDPOINT)
+    self.cuboidindex_db = CuboidIndexDB(self.pr.project_name, endpoint_url=ndingest_settings.DYNAMO_ENDPOINT)
 
   def __del__(self):
     """Close the database connection"""
@@ -68,7 +68,7 @@ class S3ProjectDB:
     """Delete a channel in s3 and dynamo"""
     
     try:
-      for item in self.cuboidindex_db.queryChannelItems():
+      for item in self.cuboidindex_db.queryChannelItems(channel_name):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key'])
     except Exception as e:
