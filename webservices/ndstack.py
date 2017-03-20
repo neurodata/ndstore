@@ -32,7 +32,6 @@ ndsettings = Settings.load()
 import logging
 logger=logging.getLogger("neurodata")
 
-
 """Construct a hierarchy off of a completed database."""
 
 def buildStack(token, channel_name, resolution=None):
@@ -45,16 +44,20 @@ def buildStack(token, channel_name, resolution=None):
     if ch.channel_type in ANNOTATION_CHANNELS:
       if pr.kvengine == MYSQL:
         clearStack(pr, ch, resolution)
+      import pdb; pdb.set_trace() 
       buildAnnoStack(pr, ch, resolution)
     else: 
       buildImageStack(pr, ch, resolution)
+      # build neariso stack separately if this is a zslice stack
       if pr.datasetcfg.scalingoption == ZSLICES:
         buildImageStack(pr, ch, resolution, neariso=True)
-  
+    
+    # mark channel as propagated after it is done 
     ch.propagate = PROPAGATED
   
   except Exception as e:
     clearStack(pr, ch, resolution)
+    # mark it as not propagated if there is an error
     ch.propagate = NOT_PROPAGATED
   except MySQLdb.Error as e:
     clearStack(pr, ch, resolution)
@@ -146,17 +149,14 @@ def buildAnnoStack ( proj, ch, res=None ):
       for mortonidx in range(0, lastzindex, 64): 
 
         # call the range query
-        cuboids = db.getCubes(ch, range(mortonidx,mortonidx+64), cur_res-1)
+        cuboids = db.getCubes(ch, [0], range(mortonidx,mortonidx+64), cur_res-1)
         cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
 
         # get the first cube
-        for idx, datastring in cuboids:
+        for idx, timestamp, datastring in cuboids:
 
           xyz = MortonXYZ(idx)
-          if db.NPZ:
-            cube.fromNPZ(datastring)
-          else:
-            cube.fromBlosc(datastring)
+          cube.deserialize(datastring)
 
           if scaling == ZSLICES:
 
@@ -201,8 +201,8 @@ def buildImageStack(proj, ch, res=None, neariso=False):
 
   with closing(spatialdb.SpatialDB(proj)) as db:
     
-#    s3_io = S3IO(db)
-#    cuboidindex_db = CuboidIndexDB(proj.project_name, endpoint_url=ndsettings.DYNAMO_ENDPOINT)
+    s3_io = S3IO(db)
+    cuboidindex_db = CuboidIndexDB(proj.project_name, endpoint_url=ndsettings.DYNAMO_ENDPOINT)
     # pick a resolution
     if res is None:
       res = 1
@@ -219,8 +219,10 @@ def buildImageStack(proj, ch, res=None, neariso=False):
       # Get the source database sizes
       [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(cur_res)
       timerange = ch.time_range
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res)
-      [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_supercubedim(cur_res)
+      if proj.s3backend == S3_TRUE:
+        [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_supercubedim(cur_res)
+      else:
+        [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = proj.datasetcfg.get_cubedim(cur_res)
 
       if scaling == ZSLICES and neariso==False:
         (xscale, yscale, zscale) = (2, 2, 1)
@@ -230,22 +232,26 @@ def buildImageStack(proj, ch, res=None, neariso=False):
         logger.error("Invalid scaling option in project = {}".format(scaling))
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
 
-#      biggercubedim = [xsupercubedim*xscale, ysupercubedim*yscale, zsupercubedim*zscale]
-      biggercubedim = [xcubedim*xscale, ycubedim*yscale, zcubedim*zscale]
+      biggercubedim = [xsupercubedim*xscale, ysupercubedim*yscale, zsupercubedim*zscale]
+      #biggercubedim = [xcubedim*xscale, ycubedim*yscale, zcubedim*zscale]
 
       # Set the limits for iteration on the number of cubes in each dimension
-#      xlimit = (ximagesz-1) / xsupercubedim + 1
-#      ylimit = (yimagesz-1) / ysupercubedim + 1
-#      zlimit = (zimagesz-1) / zsupercubedim + 1
-      xlimit = (ximagesz-1) / xcubedim + 1
-      ylimit = (yimagesz-1) / ycubedim + 1
+      xlimit = (ximagesz-1) / xsupercubedim + 1
+      ylimit = (yimagesz-1) / ysupercubedim + 1
       if not neariso:
-        zlimit = (zimagesz-1) / zcubedim + 1
+        zlimit = (zimagesz-1) / zsupercubedim + 1
       else:
-        zlimit = (zimagesz/(2**(cur_res))-1) / zcubedim + 1
+        zlimit = (zimagesz/(2**(cur_res))-1) / zsupercubedim + 1
+      #xlimit = (ximagesz-1) / xcubedim + 1
+      #ylimit = (yimagesz-1) / ycubedim + 1
+      #if not neariso:
+        #zlimit = (zimagesz-1) / zcubedim + 1
+      #else:
+        #zlimit = (zimagesz/(2**(cur_res))-1) / zcubedim + 1
 
       # Iterating over time
       for ts in range(timerange[0], timerange[1], 1):
+        #print ch.channel_name, ts, cur_res, neariso
         # Iterating over zslice
         for z in range(zlimit):
           # Iterating over y
@@ -253,54 +259,57 @@ def buildImageStack(proj, ch, res=None, neariso=False):
             # Iterating over x
             for x in range(xlimit):
 
-#              olddata = db.timecutout(ch, [x*xscale*xcubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
-              olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
+              olddata = db.cutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1], neariso).data
+              #olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
               olddata = olddata[0,:,:,:]
 
-              #olddata target array for the new data (z,y,x) order
-#              newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
-              newdata = np.zeros([zcubedim, ycubedim, xcubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
+              # olddata target array for the new data (z,y,x) order
+              newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
+              #newdata = np.zeros([zcubedim, ycubedim, xcubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
 
-#              for sl in range(zsupercubedim):
-              for sl in range(zcubedim):
+              for sl in range(zsupercubedim):
+              #for sl in range(zcubedim):
 
-                if scaling == ZSLICES and neariso==False:
+                if scaling == ZSLICES and neariso is False:
                   data = olddata[sl,:,:]
-                elif scaling == ISOTROPIC or neariso==True:
+                elif scaling == ISOTROPIC or neariso is True:
                   data = isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
 
                 # Convert each slice to an image
                 # 8-bit int option
                 if olddata.dtype in [np.uint8, np.int8]:
-#                  slimage = Image.frombuffer('L', (xsupercubedim*2, ysupercubedim*2), data.flatten(), 'raw', 'L', 0, 1)
-                  slimage = Image.frombuffer('L', (xcubedim*2, ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
+                  slimage = Image.frombuffer('L', (xsupercubedim*2, ysupercubedim*2), data.flatten(), 'raw', 'L', 0, 1)
+                  #slimage = Image.frombuffer('L', (xcubedim*2, ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
                 # 16-bit int option
                 elif olddata.dtype in [np.uint16, np.int16]:
-#                  slimage = Image.frombuffer('I;16', (xsupercubedim*2,ysupercubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
-                  slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
+                  slimage = Image.frombuffer('I;16', (xsupercubedim*2,ysupercubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
+                  #slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
                 # 32-bit float option
                 elif olddata.dtype == np.float32:
-#                  slimage = Image.frombuffer('F', (xsupercubedim * 2, ysupercubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
-                  slimage = Image.frombuffer('F', (xcubedim * 2, ycubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
+                  slimage = Image.frombuffer('F', (xsupercubedim * 2, ysupercubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
+                  #slimage = Image.frombuffer('F', (xcubedim * 2, ycubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
                 # 32 bit RGBA data
                 elif olddata.dtype == np.uint32:
                   slimage = Image.fromarray( data, "RGBA" )
 
                 # Resize the image and put in the new cube array
                 if olddata.dtype != np.uint32:
-#                  newdata[sl, :, :] = np.asarray(slimage.resize([xsupercubedim, ysupercubedim]))
-                  newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim, ycubedim]))
+                  newdata[sl, :, :] = np.asarray(slimage.resize([xsupercubedim, ysupercubedim]))
+                  #newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim, ycubedim]))
                 else:
                   tempdata = np.asarray(slimage.resize([xsupercubedim, ysupercubedim]))
                   newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
               zidx = XYZMorton ([x,y,z])
-#              cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype)
-              cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
+              cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype)
+              #cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
               cube.zeros()
 
               cube.data = newdata
 
-#              s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
-             
-              db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
+              if proj.s3backend == S3_TRUE:
+                # KL TODO test this
+                s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
+                cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+              else:
+                db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)

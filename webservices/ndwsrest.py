@@ -2003,8 +2003,8 @@ def setPropagate(webargs):
         ch.propagate = UNDER_PROPAGATION
         from sd.tasks import propagate
         # then call propagate
-        # propagate(token, channel_name)
-        propagate.delay(token, channel_name)
+        propagate(token, channel_name)
+        #propagate.delay(token, channel_name)
       else:
         logger.error("Cannot Propagate this project. It is set to Read Only.")
         raise NDWSError("Cannot Propagate this project. It is set to Read Only.")
