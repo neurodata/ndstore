@@ -86,11 +86,7 @@ class NDDataset(NDObject):
       self._scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
       
       # choose the cubedim as a function of the zscale
-      #self._cubedim[i] = [128, 128, 16]
-      # this may need to be changed.  
       if self._ds.scalingoption == ZSLICES:
-        #self._cubedim[i] = [512, 512, 16]
-        self._cubedim[i] = [128, 128, 16]
         if float(self._ds.zvoxelres/self._ds.xvoxelres)/(2**i) >  0.5:
           self._cubedim[i] = [128, 128, 16]
         else: 
