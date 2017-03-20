@@ -16,6 +16,7 @@ import redis
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from webservices.ndwserror import NDWSError
+from ndproj.s3projdb import S3ProjectDB
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -29,6 +30,8 @@ class RedisProjectDB:
     try:
       self.client = redis.StrictRedis(host=self.pr.host, port=6379, db=0)
       self.pipe = self.client.pipeline(transaction=False)
+      # delete from S3 when deleting from Redis
+      self.s3_proj = S3ProjectDB(pr)
     except redis.ConnectionError as e:
       logger.error("Cannot connect to Redis server. {}".format(e))
       raise NDWSError("Cannot connect to Redis server. {}".format(e))
@@ -66,6 +69,8 @@ class RedisProjectDB:
       # delete all the keys with the pattern
       if project_keys:
         self.client.delete(*project_keys)
+      # delete project from s3
+      self.s3_proj.deleteNDProject()
     except Exception as e:
       logger.error("Error in deleting Redis project {}. {}".format(self.pr.project_name, e))
       raise NDWSError("Error in deleting Redis project {}. {}".format(self.pr.project_name, e))
@@ -82,6 +87,12 @@ class RedisProjectDB:
       # delete all the keys with the pattern
       if channel_keys:
         self.client.delete(*channel_keys)
+      # deleting from s3
+      self.s3_proj.deleteNDChannel(channel_name)
     except Exception as e:
       logger.error("Error in deleting channel {}. {}".format(channel_name, e))
       raise NDWSError("Error in deleting channel {}. {}".format(channel_name, e))
+
+  def deleteNDResolution(self, channel_name, resolution):
+    """Delete the resolution for a channel"""
+    self.s3_proj.deleteNDResolution(channel_name, resolution)
