@@ -334,7 +334,7 @@ class IngestData:
 
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
-                cuboidindex_db.putItem(ch.channel_name, self.resolution, x, y, slice_number)
+                cuboidindex_db.putItem(ch.channel_name, self.resolution, x, y, slice_number, ch.time_range[0])
                 s3_io.putCube(ch, self.resolution, zidx, blosc.pack_array(cube.data))
                 
                 # if ch.channel_type in IMAGE_CHANNELS:

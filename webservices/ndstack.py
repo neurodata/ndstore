@@ -22,13 +22,13 @@ from PIL import Image
 from spdb.ndcube.cube import Cube
 from spdb import spatialdb
 from spdb.s3io import S3IO
-from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
+# from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndproj.ndproject import NDProject
 from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, addDataToZSliceStack_ctype, addDataToIsotropicStack_ctype
 from ndlib.ndtype import *
 from ndwserror import NDWSError
-from ndingest.settings.settings import Settings
-ndsettings = Settings.load()
+# from ndingest.settings.settings import Settings
+# ndsettings = Settings.load()
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -201,7 +201,7 @@ def buildImageStack(proj, ch, res=None, neariso=False):
   with closing(spatialdb.SpatialDB(proj)) as db:
     
     s3_io = S3IO(db)
-    cuboidindex_db = CuboidIndexDB(proj.project_name, endpoint_url=ndsettings.DYNAMO_ENDPOINT)
+    # cuboidindex_db = CuboidIndexDB(proj.project_name, endpoint_url=ndsettings.DYNAMO_ENDPOINT)
     # pick a resolution
     if res is None:
       res = 1
@@ -308,7 +308,7 @@ def buildImageStack(proj, ch, res=None, neariso=False):
 
               if proj.s3backend == S3_TRUE:
                 # KL TODO test this
-                s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
-                cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                s3_io.putCube(ch, ts, zidx, cur_res, blosc.pack_array(cube.data), neariso=neariso)
+                # cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z, ts, neariso=neariso)
               else:
                 db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
