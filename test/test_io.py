@@ -364,6 +364,7 @@ def countCuboidVoxels ( annid, h5 ):
   return voxsum
 
 
+@pytest.mark.skipif(KV_ENGINE == REDIS, reason='Annotation not supported in Redis')
 class TestRW:
 
 # Per method setup/teardown

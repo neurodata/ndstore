@@ -31,6 +31,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 from postmethods import getURL, postNPZ, getNPZ
 from ndlib.ndtype import *
+from ndlib.ndctypelib import *
 from params import Params
 import makeunitdb
 from test_settings import *
@@ -40,10 +41,7 @@ from test_settings import *
 # 1 - test_update_propagate - Test the propagate service set values
 
 p = Params()
-p.token = 'unittest'
 p.channels = ['chan1']
-#p.channel_type = "image"
-p.datatype = "uint8"
 
 @pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Zslice_Propagate:
@@ -51,7 +49,7 @@ class Test_Image_Zslice_Propagate:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=10)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=100)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -94,6 +92,25 @@ class Test_Image_Zslice_Propagate:
     f = getURL(url)
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:2,:2]) )
+    
+    # checking at res5 for neariso data
+    # extract data from res4 slice 4
+    p.args = (14,18,14,18,4,5)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+4, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    f = getURL(url)
+    slice_data_1 = np.asarray ( Image.open(StringIO(f.content)) )
+    # extract data from res4 slice 5
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+4, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4]+1)
+    f = getURL(url)
+    slice_data_2 = np.asarray ( Image.open(StringIO(f.content)) )
+    # generate isotropic slice from this
+    new_slicedata = isotropicBuild_ctype(slice_data_1, slice_data_2)
+    p.args = (7,9,7,9,2,3)
+    data = getNPZ(p, neariso=True)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution+5, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    f = getURL(url)
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    assert ( np.array_equal(slice_data, new_slicedata[:2,:2]) )
 
 @pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Readonly_Propagate:

@@ -41,7 +41,6 @@ from test_settings import *
 # 7 - test_npz_incorrect_channel
 # 8 - test_hdf5_incorrect_channel
 
-
 p = Params()
 
 class Test_Time_Slice:
