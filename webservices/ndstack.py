@@ -44,7 +44,6 @@ def buildStack(token, channel_name, resolution=None):
     if ch.channel_type in ANNOTATION_CHANNELS:
       if pr.kvengine == MYSQL:
         clearStack(pr, ch, resolution)
-      import pdb; pdb.set_trace() 
       buildAnnoStack(pr, ch, resolution)
     else: 
       buildImageStack(pr, ch, resolution)
