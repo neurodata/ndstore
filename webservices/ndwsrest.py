@@ -77,12 +77,16 @@ def cutout (imageargs, ch, proj, db):
   timerange = args.getTimeRange()
   windowrange = args.getWindowRange()
 
+  if zscaling == 'nearisotropic':
+    neariso = True
+  else:
+    neariso = False
   # Perform the cutout
   # support for 3-d cutouts
   if timerange == None:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=ch.default_time_range, zscaling=zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=ch.default_time_range, neariso=neariso)
   else:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, zscaling=zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, neariso=neariso)
 
   filterCube(ch, cube, filterlist)
 
@@ -2003,8 +2007,8 @@ def setPropagate(webargs):
         ch.propagate = UNDER_PROPAGATION
         from sd.tasks import propagate
         # then call propagate
-        propagate(token, channel_name)
-        #propagate.delay(token, channel_name)
+        # propagate(token, channel_name)
+        propagate.delay(token, channel_name)
       else:
         logger.error("Cannot Propagate this project. It is set to Read Only.")
         raise NDWSError("Cannot Propagate this project. It is set to Read Only.")

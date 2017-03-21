@@ -303,12 +303,14 @@ def buildImageStack(proj, ch, res=None, neariso=False):
               cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype)
               #cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
               cube.zeros()
-
+              # copying array into cube.data
               cube.data = newdata
-
-              if proj.s3backend == S3_TRUE:
-                # KL TODO test this
-                s3_io.putCube(ch, ts, zidx, cur_res, blosc.pack_array(cube.data), neariso=neariso)
-                # cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z, ts, neariso=neariso)
-              else:
-                db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
+              
+              # checking if the cube is empty or not
+              if cube.isNotZeros():
+                if proj.s3backend == S3_TRUE:
+                  # KL TODO test this
+                  s3_io.putCube(ch, ts, zidx, cur_res, blosc.pack_array(cube.data), neariso=neariso)
+                  # cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z, ts, neariso=neariso)
+                else:
+                  db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)

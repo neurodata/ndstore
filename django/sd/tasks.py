@@ -21,7 +21,7 @@ from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 
-#@task(queue='propagate')
+@task(queue='propagate')
 def propagate (token, channel_name):
   """Propagate the given project for all resolutions"""
 
