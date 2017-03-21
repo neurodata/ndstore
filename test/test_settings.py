@@ -19,7 +19,7 @@ import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from ndlib.ndtype import *
 
-DEV_MODE = True
+DEV_MODE = False
 
 # kvengine settings
 KV_ENGINE = MYSQL
