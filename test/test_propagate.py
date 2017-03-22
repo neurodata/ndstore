@@ -30,7 +30,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 from postmethods import getURL, postNPZ, getNPZ
-from ndlib.ndtype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
+from ndlib.ndtype import *
 from params import Params
 import makeunitdb
 from test_settings import *
@@ -41,9 +41,8 @@ from test_settings import *
 
 p = Params()
 p.token = 'unittest'
-p.resolution = 0
 p.channels = ['chan1']
-p.channel_type = "image"
+#p.channel_type = "image"
 p.datatype = "uint8"
 
 @pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')

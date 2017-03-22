@@ -42,11 +42,6 @@ from test_settings import *
 
 
 p = Params()
-p.token = 'unittest'
-p.resolution = 0
-p.channels = ['CHAN1', 'CHAN2']
-p.window = [0,500]
-p.channel_type = TIMESERIES
 p.datatype = FLOAT32
 
 
@@ -66,13 +61,14 @@ class Test_Probability_Slice:
     time_data = np.ones( [2,2,1,100,100], dtype=np.float32 ) * random.random()
     response = postNPZ(p, time_data, time=True)
 
-    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
-
-    import pdb; pdb.set_trace()
-    time_data = np.uint8(time_data*256)
+    
+    from ndlib.windowcutout import windowCutout
+    time_data = windowCutout(time_data, p.window).astype(np.uint8)
+    # time_data = np.uint8(time_data*256)
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
-    assert ( np.array_equal(slice_data[:,:,0],time_data[0][0]) )
+    assert ( np.array_equal(slice_data, time_data[0][0][0]) )
 
   def test_yz (self):
     """Test the yz slice cutout"""
@@ -81,13 +77,14 @@ class Test_Probability_Slice:
     time_data = np.ones( [2,2,100,100,1], dtype=np.float32 ) * random.random()
     response = postNPZ(p, time_data, time=True)
 
-    url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
+    url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
-    import pdb; pdb.set_trace()
-    time_data = np.uint8(time_data*256)
+    from ndlib.windowcutout import windowCutout
+    time_data = windowCutout(time_data, p.window).astype(np.uint8)
+    # time_data = np.uint8(time_data*256)
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
-    assert ( np.array_equal(slice_data[:,:,0], time_data[0][0][:75][:].reshape(75,100)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
     """Test the xz slice cutout"""
@@ -96,12 +93,14 @@ class Test_Probability_Slice:
     time_data = np.ones( [2,2,100,1,100], dtype=np.float32 ) * random.random()
     response = postNPZ(p, time_data, time=True)
 
-    url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
+    url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
-    time_data = np.uint8(time_data*256)
+    from ndlib.windowcutout import windowCutout
+    time_data = windowCutout(time_data, p.window).astype(np.uint8)
+    # time_data = np.uint8(time_data*256)
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
-    assert ( np.array_equal(slice_data[:,:,0], time_data[0][0][:75][:].reshape(75,100)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][:75][:].reshape(75,100)) )
 
   def test_xy_incorrect (self):
     """Test the xy slice cutout with incorrect cutout arguments"""
