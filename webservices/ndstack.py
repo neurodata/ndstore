@@ -24,7 +24,7 @@ from spdb import spatialdb
 from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndproj.ndproject import NDProject
-from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, addDataToZSliceStack_ctype, addDataToIsotropicStack_ctype, ZSliceStackCube_ctype, IsotropicStackCube_ctype
+from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, ZSliceStackCube_ctype, IsotropicStackCube_ctype
 from ndlib.ndtype import *
 from ndwserror import NDWSError
 from ndingest.settings.settings import Settings
@@ -55,6 +55,7 @@ def buildStack(token, channel_name, resolution=None):
   
   except Exception as e:
     clearStack(pr, ch, resolution)
+#RB This is a a thorny issue.  anno propagate doesn't work when not PROPAGATED
     ch.propagate = NOT_PROPAGATED
   except MySQLdb.Error as e:
     clearStack(pr, ch, resolution)
@@ -67,6 +68,8 @@ def buildStack(token, channel_name, resolution=None):
 def clearStack (proj, ch, res=None):
   """ Clear a ND stack for a given project """
    
+  assert(0)
+
   with closing(spatialdb.SpatialDB(proj)) as db:
     
     # pick a resolution
@@ -256,6 +259,8 @@ def buildImageStack(proj, ch, res=None, neariso=False):
 #              olddata = db.timecutout(ch, [x*xscale*xcubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
               olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
               olddata = olddata[0,:,:,:]
+ 
+#              print("Reading data from corner, res", str([x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ]), cur_res-1, biggercubedim)
 
               #olddata target array for the new data (z,y,x) order
 #              newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
@@ -307,15 +312,25 @@ def buildImageStack(proj, ch, res=None, neariso=False):
 
   #              s3_io.putCube(ch, cur_res, zidx, blosc.pack_array(cube.data))
                 
-                print("PutCube", zidx, cur_res, "neariso", neariso)
-                 
                 db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
 
               # annotation channel
               else:
+    
+                try:
 
-                if scaling == ZSLICES and neariso==False:
-                  ZSliceStackCube_ctype(olddata, newdata)
-                else:
-                  IsotropicStackCube_ctype(olddata, newdata)
+                  if scaling == ZSLICES and neariso==False:
+                    ZSliceStackCube_ctype(olddata, newdata)
+                  else:
+                    IsotropicStackCube_ctype(olddata, newdata)
+
+                  corner = [ x*xcubedim, y*ycubedim, z*zcubedim ] 
+
+                  # add resized data to cube
+                  db.annotateDense(ch, ts, corner, cur_res, newdata, 'O', neariso)
+
+                except Exception, e:
+      
+                  print("Exception {}".format(str(e)))
+                  
 
