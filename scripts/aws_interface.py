@@ -46,7 +46,6 @@ from spdb.spatialdb import SpatialDB
 from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
-from ndlib.s3util import generateS3BucketName, generateS3Key
 from ingest.core.config import Configuration
 import logging
 
@@ -206,7 +205,7 @@ class AwsInterface:
     self.token = token
     try:
       self.proj = NDProject.fromTokenName(self.token)
-      # raise ValueError()
+      self.s3_projdb = S3ProjectDB(self.proj)
     except Exception as e:
       response = getJson('http://{}/sd/{}/info/'.format(host_name, token))
       if response.status_code != 200:
@@ -228,8 +227,6 @@ class AwsInterface:
     with closing (SpatialDB(self.proj)) as self.db:
       # create the s3 I/O and index objects
       self.s3_io = S3IO(self.db)
-      self.cuboid_bucket = CuboidBucket(self.proj.project_name, endpoint_url=ndingest_settings.S3_ENDPOINT)
-      self.cuboidindex_db = CuboidIndexDB(self.proj.project_name, endpoint_url=ndingest_settings.DYNAMO_ENDPOINT)
       # self.file_type = result.file_type
       # self.tile_size = result.tile_size
       # self.data_location = result.data_location
@@ -243,10 +240,10 @@ class AwsInterface:
 
   def deleteProject(self):
     """Delete the project"""
-
-    for item in self.cuboidindex_db.queryProjectItems():
-      self.cuboid_bucket.deleteObject(item['supercuboid_key'])
-      self.cuboidindex_db.deleteItem(item['supercuboid_key'])
+    
+    # delete the project from s3 and dynamo
+    self.s3_projdb.deleteNDProject()
+    # deleting the meta-data via resource interface
     self.resource_interface.deleteToken()
     self.resource_interface.deleteProject()
     print 'Delete successful for project {}'.format(self.proj.project_name)
@@ -255,9 +252,9 @@ class AwsInterface:
   def deleteChannel(self, channel_name):
     """Delete the channel"""
 
-    for item in self.cuboidindex_db.queryChannelItems():
-      self.cuboid_bucket.deleteObject(item['supercuboid_key'])
-      self.cuboidindex_db.deleteItem(item['supercuboid_key'])
+    # delete the channel from s3 and dynamo
+    self.s3_projdb.deleteNDChannel(channel_name)
+    # deleting the meta-data via resource interface
     self.resource_interface.deleteChannel(channel_name)
     print 'Delete successful for channel {}'.format(channel_name)
 
@@ -265,9 +262,8 @@ class AwsInterface:
   def deleteResolution(self, channel_name, resolution):
     """Delete an existing resolution"""
     
-    for item in self.cuboidindex_db.queryResolutionItems(channel_name, resolution):
-      self.cuboid_bucket.deleteObject(item['supercuboid_key'])
-      self.cuboidindex_db.deleteItem(item['supercuboid_key'])
+    # delete the project from s3 and dynamo
+    self.s3_projdb.deleteNDResolution(channel_name, resolution)
     print 'Delete successful for resolution {} for channel {}'.format(resolution, channel_name)
 
   
@@ -281,7 +277,7 @@ class AwsInterface:
   # def readExistingProject():
     # data = db.cutout(ch, [x*xsupercubedim, y*ysupercubedim, z*zsupercubedim], [xsupercubedim, ysupercubedim, zsupercubedim], cur_res).data
 
-  def uploadExistingProject(self, channel_name, resolution, start_values):
+  def uploadExistingProject(self, channel_name, resolution, start_values, neariso=False):
     """Upload an existing project to S3"""
       
     self.setupNewProject()
@@ -331,9 +327,9 @@ class AwsInterface:
 
                 self.logger.info("[{},{},{}] at res {}".format(x*xsupercubedim, y*ysupercubedim, z*zsupercubedim, cur_res))
                 # updating the index
-                self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                # self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z, ch.time_range[0])
                 # inserting the cube
-                self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
+                self.s3_io.putCube(ch, ch.time_stamp[0], morton_index, cur_res, blosc.pack_array(data), neariso=neariso)
               
               except Exception as e:
                 # checkpoint the ingest
@@ -407,7 +403,7 @@ class AwsInterface:
                   morton_index = XYZMorton([x_index+(x*x_tilesz/xsupercubedim), y_index+(y*y_tilesz/ysupercubedim), z])
                   self.logger.info("[{},{},{}]".format((x_index+x)*x_tilesz, (y_index+y)*y_tilesz, z))
                   # updating the index
-                  self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                  self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z, ch.time_range[0])
                   # inserting the cube
                   self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(insert_data))
 
@@ -433,7 +429,7 @@ def main():
   parser.add_argument('--channel', dest='channel_name', action='store', type=str, default=None, help='Channel Name in the project')
   parser.add_argument('--res', dest='resolution', action='store', type=int, default=None, help='Resolution to upload')
   parser.add_argument('--action', dest='action', action='store', choices=['upload-existing', 'upload-new', 'delete-channel', 'delete-res', 'delete-project'], default='upload', help='Specify action for the given project')
-  parser.add_argument('--host', dest='host_name', action='store', type=str, default='cloud.neurodata.io/nd', help='Server host name')
+  parser.add_argument('--host', dest='host_name', action='store', type=str, default='localhost:8080', help='Server host name')
   parser.add_argument('--start', dest='start_values', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[0, 0, 0], help='Resume upload from co-ordinates')
   parser.add_argument('--data', dest='data_location', action='store', type=str, default=None, help='Data Location')
   parser.add_argument('--config', dest='config_file', action='store', default=None, help='Config file name')

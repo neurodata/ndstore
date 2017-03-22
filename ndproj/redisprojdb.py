@@ -62,14 +62,14 @@ class RedisProjectDB:
     """Delete the database for a project"""
     
     # KL TODO Is this redundant?
-    # project pattern to fetch all the keys with project_name
-    project_pattern = "{}_*".format(self.pr.project_name)
+    # project pattern to fetch all the keys with project_name&
+    project_pattern = "{}&*".format(self.pr.project_name)
     try:
       project_keys = self.client.keys(project_pattern)
       # delete all the keys with the pattern
       if project_keys:
         self.client.delete(*project_keys)
-      # delete project from s3
+      # deleteting from s3 and dynamo
       self.s3_proj.deleteNDProject()
     except Exception as e:
       logger.error("Error in deleting Redis project {}. {}".format(self.pr.project_name, e))
@@ -80,14 +80,14 @@ class RedisProjectDB:
     """Delete the keys for a channel"""
     
     # KL TODO Maybe do this as a transaction?
-    # channel pattern to fetch all the keys with project_name_channel_name
+    # channel pattern to fetch all the keys with project_name&channel_name&
     channel_pattern = "{}&{}&*".format(self.pr.project_name, channel_name)
     try:
       channel_keys = self.client.keys(channel_pattern)
       # delete all the keys with the pattern
       if channel_keys:
         self.client.delete(*channel_keys)
-      # deleting from s3
+      # deleteting from s3 and dynamo
       self.s3_proj.deleteNDChannel(channel_name)
     except Exception as e:
       logger.error("Error in deleting channel {}. {}".format(channel_name, e))
@@ -95,4 +95,16 @@ class RedisProjectDB:
 
   def deleteNDResolution(self, channel_name, resolution):
     """Delete the resolution for a channel"""
-    self.s3_proj.deleteNDResolution(channel_name, resolution)
+    
+    # resolution pattern to fetch all keys with project_name&channel_name&resolution&
+    resolution_pattern = "{}&{}&{}&*".format(self.pr.project_name, channel_name, resolution)
+    try:
+      resolution_keys = self.client.keys(channel_pattern)
+      # delete all the keys with pattern
+      if resolution_keys:
+        self.client.delete(*resolution_keys)
+      # deleteting from s3 and dynamo
+      self.s3_proj.deleteNDResolution(channel_name, resolution)
+    except Exception as e:
+      logger.error("Error in deleting resolution {} channel {}. {}".format(resolution, channel_name, e))
+      raise NDWSError("Error in deleting resolution {} channel {}. {}".format(resolution, channel_name, e))
