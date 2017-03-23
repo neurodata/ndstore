@@ -143,7 +143,6 @@ class NDChannel(NDObject):
   def propagate(self, value):
     # TODO KL port logic
     self.ch.propagate = value
-    print "updating"
     self.update()
 
   @property

@@ -23,16 +23,14 @@ DEV_MODE = False
 
 # kvengine settings
 KV_ENGINE = MYSQL
-# kvengine = CASSANDRA
-# kvengine = RIAK
-# kvengine = DYNAMODB
 # KV_ENGINE = REDIS
 
+# mdengine settings
 MD_ENGINE = MYSQL
 
 # kvserver settings
 KV_SERVER = 'localhost'
 
 # server to check against
-# SITE_HOST = 'localhost:8080'
 SITE_HOST = 'localhost/nd'
+# SITE_HOST = 'localhost:8080'
