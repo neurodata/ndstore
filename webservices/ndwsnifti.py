@@ -23,12 +23,37 @@ import logging
 logger = logging.getLogger("neurodata")
 
 
+def _3dby8toRGB ( indata ):
+  """Convert a numpy array of 3d, 8-bit data to 32bit RGB"""
+
+  rgbdata = np.zeros ( indata.shape[0:2], dtype=np.uint32)
+
+  rgbdata = np.uint32(0xFF000000) + np.left_shift(np.uint32(indata[:,:,:,0]),16) + np.left_shift(np.uint32(indata[:,:,:,1]),8) + np.uint32(indata[:,:,:,2])
+
+  return rgbdata
+
+def _RGBto3dby8 ( indata ):
+  """Convert a numpy array of 32bit RGB to 3d, 8-bit data"""
+
+  _3ddata = np.zeros ( [indata.shape[0],indata.shape[1],indata.shape[2],3], dtype=np.uint8)
+
+  _3ddata[:,:,:,0] = np.uint8(indata&0x000000FF) 
+  _3ddata[:,:,:,1] = np.uint8(np.right_shift(indata&0x0000FF00,8)) 
+  _3ddata[:,:,:,2] = np.uint8(np.right_shift(indata&0x00FF0000,16)) 
+  
+  return _3ddata
+
+
 def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annotations=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 
   nifti_data = np.array(nifti_img.get_data())
+
+  # FA map 3 8-bit channels
+  if nifti_data.shape[3] == 3:
+    nifti_data = _3dby8toRGB ( nifti_data )
 
   # create the channel if needed
   if create:
@@ -123,8 +148,14 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
     nh = NDNiftiHeader.fromChannel(ch)
 
     cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.dataset_dim(0), 0, timerange=ch.time_range) 
+
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()
+
+    # for 3-channel FA
+    if niidata.dtype == np.uint32:
+      niidata = _RGBto3dby8 ( niidata[:,:,:,0] )
+      
 
     # assemble the header and the data and create a nii file
     nii = nibabel.Nifti1Image(niidata, affine=nh.affine, header=nh.header ) 

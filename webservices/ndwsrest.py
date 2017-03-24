@@ -553,7 +553,7 @@ def imgSlice(webargs, proj, db):
 
 def imgPNG (proj, webargs, cb):
   """Return a png object for any plane"""
-  
+
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
