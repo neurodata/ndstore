@@ -15,8 +15,9 @@
 import redis
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
-from webservices.ndwserror import NDWSError
 from ndproj.s3projdb import S3ProjectDB
+from django.conf import settings
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -62,13 +63,18 @@ class RedisProjectDB:
     """Delete the database for a project"""
     
     # KL TODO Is this redundant?
-    # project pattern to fetch all the keys with project_name&
-    project_pattern = "{}&*".format(self.pr.project_name)
     try:
+      # removing keys for kvio data
+      # project pattern to fetch all the keys with project_name&
+      project_pattern = "{}&*".format(self.pr.project_name)
       project_keys = self.client.keys(project_pattern)
       # delete all the keys with the pattern
       if project_keys:
         self.client.delete(*project_keys)
+      # removing keys for kvindex data
+      index_min_pattern = "[{}".format(self.pr.project_name)
+      index_max_pattern = "+"
+      self.client.zremrangebylex(settings.REDIS_INDEX_KEY, index_min_pattern, index_max_pattern)
       # deleteting from s3 and dynamo
       self.s3_proj.deleteNDProject()
     except Exception as e:
@@ -80,13 +86,18 @@ class RedisProjectDB:
     """Delete the keys for a channel"""
     
     # KL TODO Maybe do this as a transaction?
-    # channel pattern to fetch all the keys with project_name&channel_name&
-    channel_pattern = "{}&{}&*".format(self.pr.project_name, channel_name)
     try:
+      # removing keys related to kvio data
+      # channel pattern to fetch all the keys with project_name&channel_name&
+      channel_pattern = "{}&{}&*".format(self.pr.project_name, channel_name)
       channel_keys = self.client.keys(channel_pattern)
       # delete all the keys with the pattern
       if channel_keys:
         self.client.delete(*channel_keys)
+      # removing keys related to kvindex data
+      index_min_pattern = "[{}&{}".format(self.pr.project_name, channel_name)
+      index_max_pattern = "+"
+      self.client.zremrangebylex(settings.REDIS_INDEX_KEY, index_min_pattern, index_max_pattern)
       # deleteting from s3 and dynamo
       self.s3_proj.deleteNDChannel(channel_name)
     except Exception as e:
@@ -96,13 +107,18 @@ class RedisProjectDB:
   def deleteNDResolution(self, channel_name, resolution):
     """Delete the resolution for a channel"""
     
-    # resolution pattern to fetch all keys with project_name&channel_name&resolution&
-    resolution_pattern = "{}&{}&{}&*".format(self.pr.project_name, channel_name, resolution)
     try:
+      # removing keys for kvio
+      # resolution pattern to fetch all keys with project_name&channel_name&resolution&
+      resolution_pattern = "{}&{}&{}&*".format(self.pr.project_name, channel_name, resolution)
       resolution_keys = self.client.keys(channel_pattern)
       # delete all the keys with pattern
       if resolution_keys:
         self.client.delete(*resolution_keys)
+      # removing keys for kvindex data
+      index_min_pattern = "[{}&{}&{}".format(self.pr.project_name, channel_name, resolution)
+      index_max_pattern = "+"
+      self.client.zremrangebylex(settings.REDIS_INDEX_KEY, index_min_pattern, index_max_pattern)
       # deleteting from s3 and dynamo
       self.s3_proj.deleteNDResolution(channel_name, resolution)
     except Exception as e:
