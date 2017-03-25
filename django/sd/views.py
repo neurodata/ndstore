@@ -108,7 +108,7 @@ def cutout (request, webargs):
     elif request.method == 'POST':
 
       if service in POST_SERVICES:
-        django.http.HttpResponse(ndwsrest.putCutout(webargs, request.body))
+        django.http.HttpResponse(ndwsrest.postCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')
       else:
         logger.warning("HTTP Bad request. Could not find service {}".format(service))

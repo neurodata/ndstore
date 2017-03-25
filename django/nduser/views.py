@@ -515,7 +515,10 @@ def createProject(request):
                     new_project.schema_version = SCHEMA_VERSION
                     # TODO input from form
                     new_project.mdengine = MYSQL
-                    new_project.s3backend = S3_FALSE
+                    if new_project.kvengine == REDIS:
+                      new_project.s3backend = S3_FALSE
+                    else:
+                      new_project.kvegnine = S3_TRUE
                     pr = NDProject(new_project)
                     try:
                         # create a database when not linking to an existing databases
