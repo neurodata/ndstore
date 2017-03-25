@@ -54,4 +54,19 @@ class Test_Jpeg:
     posted_data = np.asarray( Image.open(cStringIO.StringIO(data.content)) )
 
     image_data = image_data[0,:,:,:].reshape(1000,100)
-    assert ( np.array_equal(image_data,posted_data) )
+    assert ( np.array_equal(image_data, posted_data) )
+
+  def test_get_neariso_jpeg(self):
+    """Test the jpeg volume cutout for neariso"""
+
+    p.resolution = 4
+    p.args = (375,400,500,575,50,55)
+    image_data = np.ones( [2,5,75,25], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data, neariso=True)
+
+    url = "https://{}/sd/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])
+    data = getURL(url)
+    posted_data = np.asarray( Image.open(cStringIO.StringIO(data.content)) )
+
+    image_data = image_data[0,:,:,:].reshape(375,25)
+    assert ( np.array_equal(image_data, posted_data) )

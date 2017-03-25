@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
-import h5py
-import tempfile
+import pytest
 import random
 import numpy as np
-from PIL import Image
-from StringIO import StringIO
 import makeunitdb
 from ndlib.ndtype import *
 from params import Params
@@ -64,6 +60,17 @@ class Test_Blosc:
     p.args = (3000,3100,4000,4100,200,201,10,12)
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postBlosc(p, time_data, time=True)
+    posted_data = getNPZ(p, time=True)
+
+    assert (np.array_equal(time_data, posted_data))
+  
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL') 
+  def test_post_direct_blosc (self):
+    """Test the xy slice cutout"""
+
+    p.args = (3000,3100,4000,4100,200,201,10,12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, time_data, time=True, direct=True)
     posted_data = getNPZ(p, time=True)
 
     assert (np.array_equal(time_data, posted_data))

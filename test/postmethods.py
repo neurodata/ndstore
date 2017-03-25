@@ -27,7 +27,7 @@ from ndlib.restutil import *
 from ndlib.ndtype import UINT8, ND_dtypetonp
 from test_settings import *
 
-def postNPZ (p, post_data, time=False, neariso=False):
+def postNPZ (p, post_data, time=False, neariso=False, direct=False):
   """Post data using npz"""
 
   # Build the url and then create a npz object
@@ -39,7 +39,10 @@ def postNPZ (p, post_data, time=False, neariso=False):
     url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
+
+  if direct:
+    url = url + DIRECT
 
   fileobj = cStringIO.StringIO ()
   np.save (fileobj, post_data)
@@ -54,7 +57,7 @@ def postNPZ (p, post_data, time=False, neariso=False):
   except Exception as e:
     return e
 
-def getNPZ (p, time=False, neariso=False):
+def getNPZ (p, time=False, neariso=False, direct=False):
   """Get data using npz. Returns a numpy array"""
 
   # Build the url to get the npz object
@@ -66,7 +69,10 @@ def getNPZ (p, time=False, neariso=False):
     url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
+
+  if direct:
+    url = url + DIRECT
   
   resp = getURL(url)
   rawdata = zlib.decompress (resp.content)
@@ -91,7 +97,7 @@ def postBlaze (p, post_data, time=False):
   except Exception as e:
     return e
 
-def postBlosc (p, post_data, time=False, neariso=False):
+def postBlosc (p, post_data, time=False, neariso=False, direct=False):
   """Post data using blosc packed numpy array"""
 
   # Build the url and then create a npz object
@@ -103,7 +109,10 @@ def postBlosc (p, post_data, time=False, neariso=False):
     url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
+
+  if direct:
+    url = url + DIRECT
   
   try:
     # Build a post request
@@ -112,7 +121,7 @@ def postBlosc (p, post_data, time=False, neariso=False):
   except Exception as e:
     return e
 
-def getBlosc (p, time=False, neariso=False):
+def getBlosc (p, time=False, neariso=False, direct=False):
   """Get data using blosc. Returns a blosc packed numpy array"""
 
   # Build the url to get the npz object
@@ -124,14 +133,17 @@ def getBlosc (p, time=False, neariso=False):
     url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
+
+  if direct:
+    url = url + DIRECT
   
   # Get the image back
   resp = getURL(url)
   return blosc.unpack_array(resp.content)
 
 
-def postHDF5 (p, post_data, time=False, neariso=False):
+def postHDF5 (p, post_data, time=False, neariso=False, direct=False):
   """Post data using the hdf5"""
 
   # Build the url and then create a hdf5 object
@@ -143,7 +155,10 @@ def postHDF5 (p, post_data, time=False, neariso=False):
     url = 'https://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
+
+  if direct:
+    url = url + DIRECT
   
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
@@ -165,7 +180,7 @@ def postHDF5 (p, post_data, time=False, neariso=False):
   except Exception as e:
     return e
 
-def getHDF5 (p, time=False, neariso=False):
+def getHDF5 (p, time=False, neariso=False, direct=False):
   """Get data using npz. Returns a hdf5 file"""
 
   # Build the url and then create a hdf5 object
@@ -175,7 +190,10 @@ def getHDF5 (p, time=False, neariso=False):
     url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
+
+  if direct:
+    url = url + DIRECT
   
   # Get the image back
   resp = getURL(url)
@@ -186,7 +204,7 @@ def getHDF5 (p, time=False, neariso=False):
 
   return h5f
 
-def getRAW (p, time=False, neariso=False):
+def getRAW (p, time=False, neariso=False, direct=False):
   """Get data using raw format. Returns a numpy array"""
 
   # Build the url and then create a raw object
@@ -196,8 +214,11 @@ def getRAW (p, time=False, neariso=False):
     url = 'https://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   if neariso:
-    url+NEARISO
+    url = url + NEARISO
   
+  if direct:
+    url = url + DIRECT
+
   # Get the data back
   resp = getURL(url)
   rawdata = resp.content

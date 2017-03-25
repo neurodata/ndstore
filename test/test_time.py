@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 import random
 import blosc
 import numpy as np
@@ -43,21 +44,22 @@ from test_settings import *
 
 p = Params()
 
+# @pytest.mark.parametrize("direct, kvengine", [False, MYSQL], [False, REDIS], [True, REDIS])
 class Test_Time_Slice:
 
   def setup_class(self):
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
+    # self.direct = direct
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
-
 
   def test_xy (self):
     """Test the xy slice cutout"""
 
     p.args = (3000,3100,4000,4100,200,201,10,12)
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    response = postNPZ(p, time_data, time=True)
+    response = postNPZ(p, time_data, time=True, direct=False)
     assert(response.status_code == 200)
 
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
@@ -96,15 +98,104 @@ class Test_Time_Slice:
 
     slice_data = np.asarray ( Image.open(StringIO(response.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
+  
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_xy (self):
+    """Test the xy slice cutout"""
 
-  #def test_xy_incorrect (self):
-    #"""Test the xy slice cutout with incorrect cutout arguments"""
+    p.args = (3000,3100,4000,4100,200,201,10,12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, time_data, time=True, direct=True)
+    assert(response.status_code == 200)
 
-    #p.args = (11000,11100,4000,4100,200,201)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    response = getURL(url)
+    
+    assert(response.status_code == 200)
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][0]) )
 
-    #url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    #assert ( 404 == getURL (url) )
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_xz (self):
+    """Test the xz slice cutout"""
 
+    p.args = (5000,5100,2000,2001,200,300,15,16)
+    image_data = np.ones( [2,1,100,1,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data, time=True, direct=True)
+    assert(response.status_code == 200)
+
+    url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
+    response = getURL (url)
+    assert(response.status_code == 200)
+
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
+  
+  def test_neariso_xy (self):
+    """Test the xy slice cutout"""
+    
+    p.resolution = 3
+    p.args = (1000,1100,500,600,200,201,10,12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, time_data, time=True, neariso=True)
+    assert(response.status_code == 200)
+
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    response = getURL(url)
+    
+    assert(response.status_code == 200)
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][0]) )
+  
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_neariso_xy (self):
+    """Test the xy slice cutout"""
+    
+    p.resolution = 3
+    p.args = (1000,1100,500,600,200,201,10,12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, time_data, time=True, neariso=True, direct=True)
+    assert(response.status_code == 200)
+
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    response = getURL(url)
+    
+    assert(response.status_code == 200)
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][0]) )
+  
+  def test_neariso_yz (self):
+    """Test the yz slice cutout"""
+    
+    p.resolution = 2
+    p.args = (200,201,500,600,1,21,10,11)
+    image_data = np.ones( [2,1,20,100,1], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data, time=True, neariso=True)
+    assert(response.status_code == 200)
+
+    url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
+    response = getURL (url)
+    assert(response.status_code == 200)
+
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, image_data[0][0][:3][:].reshape(3,100)) )
+  
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_neariso_yz (self):
+    """Test the yz slice cutout"""
+    
+    p.resolution = 2
+    p.args = (200,201,500,600,1,21,2,3)
+    image_data = np.ones( [2,1,20,100,1], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data, time=True, neariso=True, direct=True)
+    assert(response.status_code == 200)
+
+    url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
+    response = getURL (url)
+    assert(response.status_code == 200)
+
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, image_data[0][0][:3][:].reshape(3,100)) )
 
 class Test_Time_Post:
 
@@ -116,7 +207,8 @@ class Test_Time_Post:
 
   def test_npz (self):
     """Post npz data to correct region with correct datatype"""
-
+    
+    p.resolution = 0
     p.args = (3000,3100,4000,4100,500,510,20,24)
     # upload some image data
     image_data = np.ones ( [2,4,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
@@ -127,7 +219,22 @@ class Test_Time_Post:
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
+  
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_npz (self):
+    """Post npz data to correct region with correct datatype"""
 
+    p.args = (3000,3100,4000,4100,500,510,30,34)
+    # upload some image data
+    image_data = np.ones ( [2,4,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+
+    response = postNPZ(p, image_data, time=True, direct=True)
+    # Checking for successful post
+    assert( response.status_code == 200 )
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+  
   def test_npz_incorrect_region (self):
     """Post npz to incorrect region"""
 
@@ -169,9 +276,41 @@ class Test_Time_Post:
     for idx, channel_name in enumerate(p.channels):
       assert ( np.array_equal(h5f.get(channel_name).get('CUTOUT').value, image_data[idx,:]) )
 
+  def test_neariso_npz (self):
+    """Post npz data to correct region with correct datatype"""
+    
+    p.resolution = 2
+    p.args = (1000,1100,500,600,100,110,8,12)
+    # upload some image data
+    image_data = np.ones ( [2,4,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+
+    response = postNPZ(p, image_data, time=True, neariso=True)
+    # Checking for successful post
+    assert( response.status_code == 200 )
+    voxarray = getNPZ(p, time=True, neariso=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+  
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_neariso_npz (self):
+    """Post npz data to correct region with correct datatype"""
+    
+    p.resolution = 2
+    p.args = (1000,1100,500,600,100,110,10,14)
+    # upload some image data
+    image_data = np.ones ( [2,4,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+
+    response = postNPZ(p, image_data, time=True, neariso=True, direct=True)
+    # Checking for successful post
+    assert( response.status_code == 200 )
+    voxarray = getNPZ(p, time=True, neariso=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+  
   def test_hdf5_incorrect_region (self):
     """Post hdf5 file to an incorrect region"""
-
+    
+    p.resolution = 0
     p.args = (8000,7000,4000,4100,500,510,110,115)
     image_data = np.ones ( [2,5,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data, time=True)
@@ -204,6 +343,7 @@ class Test_Time_Post:
     image_data = np.ones ( [3,2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data, time=True)
     assert (response.status_code == 404)
+  
 
 class Test_Time_Simple_Catmaid:
 
@@ -351,21 +491,3 @@ class Test_Time_Diff:
 
     image_data = np.subtract(np.float32(image_data1),np.float32(image_data2))
     assert( np.array_equal(image_data[0,:], voxarray[0,:]) )
-
-
-  #def test_xy_default_channel (self):
-    #"""Test the xy slice cutout"""
-
-    #p.args = (3000,3100,4000,4100,200,201)
-    #image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    #response = postNPZ(p, image_data)
-    #assert (response.status_code == 200)
-    #voxarray = getNPZ(p)
-    ## check that the return matches
-    #assert ( np.array_equal(voxarray,image_data) )
-
-    #url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    #f = getURL (url)
-
-    #slice_data = np.asarray ( Image.open(StringIO(f.content)) )
-    #assert ( np.array_equal(slice_data,image_data[0][0]) )
