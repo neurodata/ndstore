@@ -57,36 +57,34 @@ logger = logging.getLogger("neurodata")
 
 #RBTODO check all the zoom in zoom out and write unittests.
 
-def cutout (imageargs, ch, proj, db):
+def cutout (image_args, ch, proj, db):
   """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output. """
   
   # Perform argument processing
   try:
-    args = restargs.BrainRestArgs ()
-    args.cutoutArgs(imageargs, proj.datasetcfg)
+    rest_args = restargs.BrainRestArgs ()
+    rest_args.cutoutArgs(image_args, proj.datasetcfg)
   except restargs.RESTArgsError as e:
-    logger.error("REST Arguments {} failed: {}".format(imageargs,e))
+    logger.error("REST Arguments {} failed: {}".format(image_args, e))
     raise NDWSError(str(e))
 
   # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-  filterlist = args.getFilter()
-  zscaling = args.getZScaling()
-  timerange = args.getTimeRange()
-  windowrange = args.getWindowRange()
+  corner = rest_args.getCorner()
+  dim = rest_args.getDim()
+  resolution = rest_args.getResolution()
+  filterlist = rest_args.getFilter()
+  neariso = rest_args.getZScaling()
+  direct = rest_args.getDirect()
+  timerange = rest_args.getTimeRange()
+  windowrange = rest_args.getWindowRange()
 
-  if zscaling == 'nearisotropic':
-    neariso = True
-  else:
-    neariso = False
   # Perform the cutout
-  # support for 3-d cutouts
   if timerange == None:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=ch.default_time_range, neariso=neariso)
+    # support for 3-d cutouts
+    cube = db.cutout(ch, corner, dim, resolution, timerange=ch.default_time_range, neariso=neariso, direct=direct)
   else:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, neariso=neariso)
+    # 4-d cutouts
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, neariso=neariso, direct=direct)
 
   filterCube(ch, cube, filterlist)
 
@@ -240,7 +238,7 @@ def JPEG ( chanargs, proj, db ):
 
 def BLOSC ( chanargs, proj, db ):
   """Return a web readable blosc file"""
-
+  
   try:
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
@@ -738,7 +736,7 @@ def selectService ( service, webargs, proj, db ):
 
 def selectPost ( webargs, proj, db, postdata ):
   """Identify the service and pass on the arguments to the appropiate service."""
-
+    
   [channel, service, postargs] = webargs.split('/', 2)
 
   # Create a list of channels from the comma separated argument
@@ -750,16 +748,18 @@ def selectPost ( webargs, proj, db, postdata ):
 
   # Process the arguments
   try:
-    args = restargs.BrainRestArgs ();
-    args.cutoutArgs ( postargs, proj.datasetcfg )
+    rest_args = restargs.BrainRestArgs ();
+    rest_args.cutoutArgs ( postargs, proj.datasetcfg )
   except restargs.RESTArgsError as e:
     logger.error( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
-    
-  corner = args.getCorner()
-  dimension = args.getDim()
-  resolution = args.getResolution()
-  timerange = args.getTimeRange()
+   
+  corner = rest_args.getCorner()
+  dimension = rest_args.getDim()
+  resolution = rest_args.getResolution()
+  timerange = rest_args.getTimeRange()
+  neariso = rest_args.getZScaling()
+  direct = rest_args.getDirect()
   conflictopt = restargs.conflictOption ( "" )
   
   while not done and tries < 5:
@@ -821,7 +821,7 @@ def selectPost ( webargs, proj, db, postdata ):
             if ch.channel_type in ANNOTATION_CHANNELS: 
               db.annotateDense ( ch, efftimerange[0], corner, resolution, voxarray, conflictopt)
             else:
-              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange, neariso=neariso, direct=direct) 
 
           h5f.flush()
           h5f.close()
@@ -841,22 +841,24 @@ def selectPost ( webargs, proj, db, postdata ):
           logger.error("The data has some missing channels")
           raise NDWSError("The data has some missing channels")
         
-        # checking if the dimension for x,y,z,t(optional) are correct
-      
         # reshape the data to 4d if no timerange
-        if timerange==None:
+        if timerange is None:
           voxarray = voxarray.reshape((voxarray.shape[0],1,voxarray.shape[1],voxarray.shape[2],voxarray.shape[3]))
-          efftimerange=[0,1]
+          # need to create a temporary channel here for fetching timerange
+          ch = proj.getChannelObj(channel_list[0])
+          efftimerange = ch.default_time_range
         else:
-          efftimerange=timerange
+          efftimerange = timerange
 
+        # checking if the dimension for x,y,z,t(optional) are correct
         if voxarray.shape[1:][::-1] != tuple(dimension + [efftimerange[1]-efftimerange[0]]):
           logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
           raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
+    
 
         for idx, channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
-  
+        
           # Don't write to readonly channels
           if ch.readonly == READONLY_TRUE:
             logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.channel_name, proj.project_name, webargs))
@@ -869,7 +871,7 @@ def selectPost ( webargs, proj, db, postdata ):
           if ch.channel_type in ANNOTATION_CHANNELS:
             db.annotateDense(ch, efftimerange[0], corner, resolution, voxarray[idx,:], conflictopt )
           else:
-            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
+            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange, neariso=neariso, direct=direct)
       
       else:
         logger.error("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
@@ -905,9 +907,9 @@ def getCutout ( webargs ):
     return selectService ( service, webargs, proj, db )
 
 
-def putCutout ( webargs, postdata ):
+def postCutout ( webargs, postdata ):
   """Interface to the write cutout data. Load the annotation project and invoke the appropriate dataset"""
-
+  
   [ token, rangeargs ] = webargs.split('/',1)
   # get the project 
   proj = NDProject.fromTokenName(token)

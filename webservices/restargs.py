@@ -35,26 +35,29 @@ class RESTArgsError(Exception):
 class BrainRestArgs:
 
   # Accessors to get corner and dimensions
-  def getCorner (self):
+  def getCorner(self):
     return self.corner
 
-  def getDim (self):
+  def getDim(self):
    return self.dim
    
-  def getResolution (self):
+  def getResolution(self):
    return self.resolution
 
-  def getFilter ( self ):
+  def getFilter(self):
     return self.filterlist
 
-  def getWindowRange ( self ):
+  def getWindowRange(self):
     return self.window
   
-  def getTimeRange ( self ):
+  def getTimeRange(self):
     return self.time
   
-  def getZScaling ( self ):
+  def getZScaling(self):
     return self.zscaling
+  
+  def getDirect(self):
+    return self.direct
 
   def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
@@ -109,12 +112,18 @@ class BrainRestArgs:
       self.filterlist = None
      
     # See if it is an integral cutout request
-    result = re.search ("/neariso/",rest)
+    result = re.search ("/neariso/", rest)
     if result is not None:
-      self.zscaling = 'nearisotropic'
+      self.zscaling = True
     else:
-      self.zscaling = datasetcfg.scalingoption
-      print(self.zscaling)
+      # self.zscaling = datasetcfg.scalingoption
+      self.zscaling = False
+
+    result = re.search('/direct/', rest)
+    if result is not None:
+      self.direct = True
+    else:
+      self.direct = False
 
 
 def voxel ( imageargs, datasetcfg ):

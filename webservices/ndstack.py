@@ -52,13 +52,13 @@ def buildStack(token, channel_name, resolution=None):
     ch.propagate = PROPAGATED
   
   except Exception as e:
-    import pdb; pdb.set_trace()
-    clearStack(pr, ch, resolution)
+    # import pdb; pdb.set_trace()
+    # clearStack(pr, ch, resolution)
     # RB This is a a thorny issue.  anno propagate doesn't work when not PROPAGATED
     # mark it as not propagated if there is an error
     ch.propagate = NOT_PROPAGATED
   except MySQLdb.Error as e:
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     # clearStack(pr, ch, resolution)
     ch.propagate = NOT_PROPAGATED
     logger.error("Error in building image stack {}".format(token))
@@ -120,7 +120,7 @@ def buildImageStack(proj, ch, res=None, neariso=False):
     scaling = proj.datasetcfg.scalingoption
 
     for cur_res in range (res, high_res+1):
-
+      
       # only run neariso for the tables beyond isotropic
       if neariso and proj.datasetcfg.nearisoscaledown[cur_res] == 1:
         continue
@@ -197,10 +197,13 @@ def buildImageStack(proj, ch, res=None, neariso=False):
                     newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
                 zidx = XYZMorton ([x,y,z])
-                cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype)
+                cube = Cube.CubeFactory(supercubedim, ch.channel_type, ch.channel_datatype, time_range=[ts, ts+1])
                 cube.zeros()
                 # copying array into cube.data
-                cube.data = newdata
+                # we have to ensure that we always insert 4D data into the database
+                # we convert 4D data to 3D data since we cannot process 4D data in ctypes
+                # removing this breaks caching since caching expects there to be 4D cuboids
+                cube.data[0,:] = newdata
                 
                 # checking if the cube is empty or not
                 if cube.isNotZeros():
