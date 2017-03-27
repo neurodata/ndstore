@@ -62,7 +62,7 @@ class RedisProjectDB:
   def deleteNDProject(self):
     """Delete the database for a project"""
     
-    # KL TODO Is this redundant?
+    # KL TODO Is this redundant since all channels must be deleted before project is dropped?
     try:
       # removing keys for kvio data
       # project pattern to fetch all the keys with project_name&
@@ -85,7 +85,7 @@ class RedisProjectDB:
   def deleteNDChannel(self, channel_name):
     """Delete the keys for a channel"""
     
-    # KL TODO Maybe do this as a transaction?
+    # KL TODO Maybe do this as a transaction or lock the cache when we drop the channel?
     try:
       # removing keys related to kvio data
       # channel pattern to fetch all the keys with project_name&channel_name&
@@ -107,6 +107,7 @@ class RedisProjectDB:
   def deleteNDResolution(self, channel_name, resolution):
     """Delete the resolution for a channel"""
     
+    # KL TODO Maybe do this as a transaction or lock the cache when we drop the channel?
     try:
       # removing keys for kvio
       # resolution pattern to fetch all keys with project_name&channel_name&resolution&

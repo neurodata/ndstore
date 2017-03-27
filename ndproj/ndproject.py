@@ -34,8 +34,7 @@ class NDProject(NDObject):
     
     self.pr = pr
     self.datasetcfg = NDDataset.fromName(self.dataset_name)
-    with closing (NDProjectsDB.getProjDB(self)) as db:
-      self.db = db
+    self.loadDB()
 
     # if isinstance(token_name, str) or isinstance(token_name, unicode):
       # try:
@@ -85,6 +84,10 @@ class NDProject(NDObject):
     pr = Project(**cls.deserialize(project))
     pr.dataset_id = dataset_name
     return cls(pr)
+  
+  def loadDB(self):
+    with closing (NDProjectsDB.getProjDB(self)) as db:
+      self.db = db
 
   def create(self, create_table=True):
 
@@ -166,6 +169,7 @@ class NDProject(NDObject):
   @kvengine.setter
   def kvengine(self, value):
     self.pr.kvengine = value
+    self.loadDB()
 
   @property
   def mdengine(self):

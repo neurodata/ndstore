@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import botocore
+import boto3
 import redis
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
@@ -59,6 +61,12 @@ class S3ProjectDB:
       for item in self.cuboidindex_db.queryProjectItems():
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key'])
+    except botocore.exceptions.ClientError as e:
+      if e.response['Error']['Code'] == 'ResourceNotFoundException':
+        logger.warning("Resource was not accessible {}".format(e))
+        pass
+      else:
+        raise e
     except Exception as e:
       logger.error("Error in deleting S3 project {}. {}".format(self.pr.project_name, e))
       raise NDWSError("Error in deleting S3 project {}. {}".format(self.pr.project_name, e))
@@ -71,6 +79,12 @@ class S3ProjectDB:
       for item in self.cuboidindex_db.queryChannelItems(channel_name):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key'])
+    except botocore.exceptions.ClientError as e:
+      if e.response['Error']['Code'] == 'ResourceNotFoundException':
+        logger.warning("Resource was not accessible {}".format(e))
+        pass
+      else:
+        raise e
     except Exception as e:
       logger.error("Error in deleting S3 channel {}. {}".format(channel_name, e))
       raise NDWSError("Error in deleting S3 channel {}. {}".format(channel_name, e))
@@ -82,6 +96,12 @@ class S3ProjectDB:
       for item in self.cuboidindex_db.queryResolutionItems(channel_name, resolution):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key'])
+    except botocore.exceptions.ClientError as e:
+      if e.response['Error']['Code'] == 'ResourceNotFoundException':
+        logger.warning("Resource was not accessible {}".format(e))
+        pass
+      else:
+        raise e
     except Exception as e:
       logger.error("Error in deleting S3 channel resolution {},{}. {}".format(channel_name, resolution, e))
       raise NDWSError("Error in deleting S3 channel resolution {},{}. {}".format(channel_name, resolution, e))
