@@ -51,6 +51,12 @@ class Dataset ( models.Model):
      """ Meta """
      db_table = u"datasets"
      managed = True
+     permissions = (
+       ("r_dataset", "Can Read Dataset")
+       ("w_dataset", "Can Write to Dataset")
+       ("u_dataset", "Can Update the Dataset")
+       ("d_dataset", "Can Delete the Dataset")
+     )
 
    def __unicode__(self):
      return self.dataset_name
@@ -100,6 +106,12 @@ class Project ( models.Model):
     """ Meta """
     db_table = u"projects"
     managed = True
+    permissions = (
+      ("r_project", "Can Read Project")
+      ("w_project", "Can Write to Project")
+      ("u_project", "Can Update the Project")
+      ("d_project", "Can Delete the Project")
+    )
 
   def __unicode__(self):
     return self.project_name
@@ -180,6 +192,12 @@ class Channel ( models.Model):
     db_table = u"channels"
     managed = True
     unique_together = ('project', 'channel_name',)
+    permissions = (
+      ("r_channel", "Can Read Channel")
+      ("w_channel", "Can Write to Channel")
+      ("u_channel", "Can Update the Channel")
+      ("d_channel", "Can Delete the Channel")
+    )
 
   def __unicode__(self):
     return self.channel_name
