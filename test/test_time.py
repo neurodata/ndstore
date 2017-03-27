@@ -197,6 +197,52 @@ class Test_Time_Slice:
     slice_data = np.asarray ( Image.open(StringIO(response.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:3][:].reshape(3,100)) )
 
+@pytest.mark.skipif(True, reason='Zoom in and Zoom out not supported for Imaga datasets yet')
+class Test_Time_Base_Resolution:
+
+  def setup_class(self):
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time, base_resolution=3)
+    # self.direct = direct
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_xy_zoom_in (self):
+    """Test the xy slice cutout"""
+    
+    p.resolution = 3
+    p.args = (1000,1100,500,600,200,201,10,12)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, time_data, time=True, direct=False)
+    assert(response.status_code == 200)
+    
+    p.resolution = 0
+    p.args = (8000,8800,4000,4800,200,201,10,12)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    response = getURL(url)
+    
+    assert(response.status_code == 200)
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][0]) )
+
+  def test_xy_zoom_out (self):
+    """Test the xy slice cutout"""
+    
+    p.resolution = 3
+    p.args = (500,600,200,300,200,201,6,7)
+    time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, time_data, time=True, direct=False)
+    assert(response.status_code == 200)
+    
+    p.resolution = 5
+    p.args = (125,150,50,75,200,201,6,7)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    response = getURL(url)
+    
+    assert(response.status_code == 200)
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
+    assert ( np.array_equal(slice_data, time_data[0][0][0]) )
+  
 class Test_Time_Post:
 
   def setup_class(self):

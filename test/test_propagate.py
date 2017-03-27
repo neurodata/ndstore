@@ -118,6 +118,81 @@ class Test_Image_Zslice_Propagate:
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, new_slicedata[:2,:2]) )
 
+
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
+class Test_Image_Zslice_Base_Resolution_Propagate:
+  """Test image propagation"""
+
+  def setup_class(self):
+    """Create the unittest database"""
+    # testing the propagation by setting the channel base resolution as 1
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=100, base_resolution=1)
+
+  def teardown_class (self):
+    """Destroy the unittest database"""
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_web_propagate(self):
+    """Test the web update propogate function"""
+    
+    p.resolution = 1
+    # Posting some data at res1 to propagate
+    p.args = (100, 150, 100, 150, 4, 5, 6, 7)
+    image_data = np.ones( [1, 1, 1, 50, 50], dtype=np.uint8) * random.randint(0,255)
+    if KV_ENGINE == REDIS:
+      response = postNPZ(p, image_data, time=True, direct=True)
+    else:
+      response = postNPZ(p, image_data, time=True)
+
+    # Check if the project is not proagated
+    f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+    value = int(f.content)
+    assert(value == NOT_PROPAGATED)
+
+    # Start propagating
+    f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
+    for iter_value in range(1, 500, 1):
+      time.sleep(1)
+      # Checking if the PROPGATED value is set correctly
+      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.content)
+      if value == PROPAGATED:
+        break
+    assert(value == PROPAGATED)
+
+    # Checking at res1
+    # p.args = (100, 150, 100, 150, 4, 5, 6, 7)
+    # url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+1, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    # f = getURL(url)
+    # slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    # assert ( np.array_equal(slice_data, image_data[0][0][0][:50,:50]) )
+    
+    # Checking at res5
+    p.args = (7, 9, 7, 9, 4, 5, 6, 7)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+4, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    f = getURL(url)
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0][:2,:2]) )
+    
+    # checking at res5 for neariso data
+    # extract data from res4 slice 4
+    p.args = (14, 18, 14, 18, 4, 5, 6, 7)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+3, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    f = getURL(url)
+    slice_data_1 = np.asarray ( Image.open(StringIO(f.content)) )
+    # extract data from res4 slice 5
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+3, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4]+1, p.args[6])
+    f = getURL(url)
+    slice_data_2 = np.asarray ( Image.open(StringIO(f.content)) )
+    # generate isotropic slice from this
+    new_slicedata = isotropicBuild_ctype(slice_data_1, slice_data_2)
+    p.args = (7, 9, 7, 9, 2, 3, 6, 7)
+    data = getNPZ(p, neariso=True)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/neariso/".format(SITE_HOST, p.token, p.channels[0], p.resolution+4, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    f = getURL(url)
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    assert ( np.array_equal(slice_data, new_slicedata[:2,:2]) )
+
 @pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Readonly_Propagate:
   """Test image propagation"""
@@ -132,7 +207,8 @@ class Test_Image_Readonly_Propagate:
 
   def test_web_propagate(self):
     """Test the web update propogate function"""
-
+    
+    p.resolution = 0
     # Posting some data at res0 to propagate
     p.args = (200,300,200,300,4,5)
     image_data = np.ones( [1,1,100,100], dtype=np.uint8) * random.randint(0,255)
