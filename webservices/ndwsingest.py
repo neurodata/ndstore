@@ -184,7 +184,7 @@ class IngestData:
               if cube.isNotZeros():
                 # cuboidindex_db.putItem(ch.channel_name, self.resolution, x, y, slice_number, ch.time_range[0])
                 # s3_io.putCube(ch, self.resolution, zidx, blosc.pack_array(cube.data))
-                s3_io.putCube(ch, timestamp, zidx, self.resolution, blosc.pack_array(cube.data[0,:,:,:]), neariso=False)
+                s3_io.putCube(ch, timestamp, zidx, self.resolution, blosc.pack_array(cube.data), neariso=False)
                 
           # clean up the slices fetched
           self.cleanData(range(slice_number, slice_number+zsupercubedim) if slice_number + zsupercubedim<=zimagesz else range(slice_number, zimagesz))

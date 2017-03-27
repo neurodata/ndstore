@@ -398,9 +398,9 @@ def getChannels(request):
             }
             return render(request, 'channels.html', context)
 
-    except NDWSError, e:
+    except NDWSError as e:
         messages.error(request, "Exception in administrative interface = {}".format(e))
-        datasets = pd.getDatasets()
+        # datasets = pd.getDatasets()
         context = {
             'channels': all_channels,
             'project': proj
@@ -484,7 +484,7 @@ def getTokens(request):
             return render(request, 'tokens.html', context)
             #return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj })
 
-    except NDWSError, e:
+    except NDWSError as e:
         messages.error(request, "Exception in administrative interface = {}".format(e))
         # datasets = pd.getDatasets()
 
@@ -530,7 +530,7 @@ def createProject(request):
                             tk = NDToken(Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public))
                             tk.create()
 
-                    except Exception, e:
+                    except Exception as e:
                         pr.delete()
                         logger.error("Failed to create project {}. Error {}".format(new_project.project_name, e))
                         messages.error(request,"Failed to create project {}. Error {}".format(new_project.project_name, e))
@@ -558,7 +558,7 @@ def createProject(request):
             }
             return render(request, 'createproject.html', context)
 
-    except Exception, e:
+    except Exception as e:
         messages.error(request, "Exception in administrative interface = {}".format(e))
         return redirect(getProjects)
 
@@ -591,7 +591,7 @@ def createDataset(request):
             }
             return render(request, 'createdataset.html', context)
 
-    except Exception, e:
+    except Exception as e:
         messages.error(request, "Exception in administrative interface = {}".format(e))
         return redirect(getDatasets)
 
@@ -822,7 +822,7 @@ def updateChannel(request):
                 context = {'form': form, 'project': prname }
                 return render(request, 'createchannel.html', context)
 
-    except Exception, e:
+    except Exception as e:
         messages.error(request, "Exception in administrative interface = {}".format(e))
         return redirect(getProjects)
 
