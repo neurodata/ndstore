@@ -15,30 +15,43 @@
 import sys
 import os
 import argparse
-
+import json
 sys.path.append(os.path.abspath('../django/'))
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 import django
 django.setup()
-
 from webservices.ndstack import buildStack, clearStack
+from ndproj.ndproject import NDProject
+from ndproj.ndchannel import NDChannel
+from scripts_helper import *
+HOST_NAME = 'localhost:8080'
 
 def main():
   """Take arguments from user"""
   
-  parser = argparse.ArgumentParser(description="Run the propagate script for OCP")
-  parser.add_argument('token', action='store', help="Token Name")
-  parser.add_argument('channel', action='store', help="Channel Name")
-  parser.add_argument('--clear', action='store_true')
-
+  parser = argparse.ArgumentParser(description="Run the propagate script for neurodata")
+  parser.add_argument('project_name', action='store', type=str, help="Project Name")
+  parser.add_argument('channel_name', action='store', type=str, help="Channel Name")
+  parser.add_argument('--host', dest='host_name', action='store', default=HOST_NAME, type=str, help="Host Name")
+  parser.add_argument('--neariso', dest='neariso', action='store_true', default=False, help="Only propagate neariso")
   result = parser.parse_args()
+  import pdb; pdb.set_trace()
+  info = get_info(result.host_name, result.project_name)
+  dataset_name = info['dataset']['name']
+  project_name = info['project']['name']
+  proj = NDProject.fromJson(dataset_name, json.dumps(info['project']))
+  ch = NDChannel.fromJson(info['channels'][result.channel_name])
 
-  if result.clear:
-    clearStack(result.token, result.channel) 
+  if result.neariso:
+    # buiild 
+    buildStack(proj, ch, neariso=result.neariso)
+  else:
+    # build stack twice, once for zslice and once for neariso
+    buildStack(proj, ch, neariso=False)
+    buildStack(proj, ch, neariso=True)
 
-  buildStack(result.token, result.channel)
 
 if __name__ == '__main__':
   main()

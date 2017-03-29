@@ -24,6 +24,7 @@ from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from ndlib.restutil import *
 from ndlib.ndctypelib import *
+from scripts_helper import *
 import logging
 HOST_NAME = 'localhost:8080'
 
@@ -38,20 +39,7 @@ class S3Cuboid(object):
 
     self.cuboidindex_db = CuboidIndexDB(project_name)
     self.cuboid_bucket = CuboidBucket(project_name)
-
-    try:
-      # setting up the project info
-      response = getJson('https://{}/sd/{}/info/'.format(host_name, project_name))
-      if response.status_code != 200:
-        raise ValueError("Error. The server returned status code {}".response.status_code)
-      self.info = response.json()
-    except Exception as e:
-      self.logger.error(e)
-      raise e
-
-  def supercuboid_dimension(self, resolution):
-    """Return a supercuboid size for a given resolution in the specified project"""
-    return self.info['dataset']['supercube_dimension'][str(resolution)]
+    self.info = JsonInfo(host_name, project_name)
 
   def upload(self, file_name, project_name, channel_name, resolution, x_index, y_index, z_index, time_index=0, neariso=False):
     """Upload a 4D supercuboid directly to dynamo and s3"""
@@ -78,7 +66,7 @@ def main():
   
   s3_cuboid = S3Cuboid(result.project_name, result.host_name)
   if result.super_cube:
-    print (s3_cuboid.supercuboid_dimension(result.resolution))
+    print (s3_cuboid.info.supercuboid_dimension(result.resolution))
   else:
     s3_cuboid.upload(result.file_name, result.project_name, result.channel_name, result.resolution, result.indexes[0], result.indexes[1], result.indexes[2], result.time_index, result.neariso)
 
