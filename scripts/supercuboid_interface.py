@@ -15,6 +15,7 @@
 import os
 import sys
 import numpy as np
+import blosc
 import argparse
 sys.path.append(os.path.abspath('../django'))
 import ND.settings
@@ -22,6 +23,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from ndlib.restutil import *
+from ndlib.ndctypelib import *
 import logging
 HOST_NAME = 'localhost:8080'
 
