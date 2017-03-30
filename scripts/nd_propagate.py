@@ -22,7 +22,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 import django
 django.setup()
-from webservices.ndstack import buildStack, clearStack
+from webservices.ndstack import *
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from scripts_helper import *
@@ -37,20 +37,19 @@ def main():
   parser.add_argument('--host', dest='host_name', action='store', default=HOST_NAME, type=str, help="Host Name")
   parser.add_argument('--neariso', dest='neariso', action='store_true', default=False, help="Only propagate neariso")
   result = parser.parse_args()
-  import pdb; pdb.set_trace()
-  info = get_info(result.host_name, result.project_name)
-  dataset_name = info['dataset']['name']
-  project_name = info['project']['name']
-  proj = NDProject.fromJson(dataset_name, json.dumps(info['project']))
-  ch = NDChannel.fromJson(info['channels'][result.channel_name])
+  info_interface = InfoInterface(result.host_name, result.project_name)
+  resource_interface = ResourceInterface(info_interface.dataset_name, info_interface.project_name, result.host_name)
+
+  proj = resource_interface.getProject()
+  ch = resource_interface.getChannel(result.channel_name)
 
   if result.neariso:
     # buiild 
-    buildStack(proj, ch, neariso=result.neariso)
+    buildImageStack(proj, ch, neariso=result.neariso, direct=True)
   else:
     # build stack twice, once for zslice and once for neariso
-    buildStack(proj, ch, neariso=False)
-    buildStack(proj, ch, neariso=True)
+    buildImageStack(proj, ch, neariso=False, direct=True)
+    buildImageStack(proj, ch, neariso=True, direct=True)
 
 
 if __name__ == '__main__':

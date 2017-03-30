@@ -105,7 +105,7 @@ def clearStack (proj, ch, res=None):
       db.kvio.conn.cursor().close()
 
 
-def buildImageStack(proj, ch, res=None, neariso=False):
+def buildImageStack(proj, ch, res=None, neariso=False, direct=False):
   """Build the hierarchy of images"""
 
   with closing(spatialdb.SpatialDB(proj)) as db:
@@ -161,7 +161,7 @@ def buildImageStack(proj, ch, res=None, neariso=False):
             for x in range(xlimit):
 
               # olddata target array for the new data (z,y,x) order
-              olddata = db.cutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
+              olddata = db.cutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1], direct=direct).data
               olddata = olddata[0,:,:,:]
  
               newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))

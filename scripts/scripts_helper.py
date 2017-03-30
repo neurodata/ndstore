@@ -14,47 +14,50 @@
 
 import json
 from ndlib.restutil import *
+from ndproj.ndproject import NDProject
+from ndproj.nddataset import NDDataset
+from ndproj.ndchannel import NDChannel
 
 class InfoInterface(object):
 
   def __init__(self, host_name, project_name):
-    self.host_name = host_name
-    self.project_name = project_name
+    
+    # self._host_name = host_name
+    # self._project_name = project_name
 
     try:
       # setting up the project info
       response = getJson('https://{}/sd/{}/info/'.format(host_name, project_name))
       if response.status_code != 200:
         raise ValueError("Error. The server returned status code {}".response.status_code)
-      self.info = response.json()
+      self._info = response.json()
     except Exception as e:
       raise e
 
-    @property
-    def info(self):
-      return self.info
-    
-    @property
-    def dataset_name(self):
-      return self.info['dataset']['name']
-    
-    @property
-    def project_name(self):
-      return self.info['project']['name']
+  @property
+  def info(self):
+    return self._info
+  
+  @property
+  def dataset_name(self):
+    return self._info['dataset']['name']
+  
+  @property
+  def project_name(self):
+    return self._info['project']['name']
 
-    def supercuboid_dimension(self, resolution):
-      return self.info['dataset']['supercube_dimension'][str(resolution)]
+  def supercuboid_dimension(self, resolution):
+    return self._info['dataset']['supercube_dimension'][str(resolution)]
 
-    def get_channel(self, channel_name):
-      return self.info['channels'][channel_name]
+  def get_channel(self, channel_name):
+    return self._info['channels'][channel_name]
 
 
 class ResourceInterface(object):
 
-  def __init__(self, dataset_name, project_name, token_name, host_name, logger):
+  def __init__(self, dataset_name, project_name, host_name, logger=None):
     self.dataset_name = dataset_name
     self.project_name = project_name
-    self.token_name = token_name
     self.host = host_name
     self.logger = logger
   
@@ -71,7 +74,18 @@ class ResourceInterface(object):
       return NDChannel.fromJson(self.project_name, json.dumps(channel_json))
     except Exception as e:
       self.logger.error(e)
-      sys.exit(0)
+      raise e
+  
+  def getProject(self):
+    try:
+      response = getJson('https://{}/resource/dataset/{}/project/{}/'.format(self.host, self.dataset_name, self.project_name))
+      project_json = response.json()
+      del project_json['user']
+      del project_json['dataset']
+      return NDProject.fromJson(self.dataset_name, json.dumps(project_json))
+    except Exception as e:
+      self.logger.error(e)
+      raise e
 
   def createDataset(self):
     dataset_obj = NDDataset.fromName(self.dataset_name)
