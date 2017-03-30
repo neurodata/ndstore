@@ -196,6 +196,10 @@ class NDDataset(NDObject):
   @property
   def cubedim(self):
     return self._cubedim
+  
+  @property
+  def supercubedim(self):
+    return self._supercubedim
 
   def dataset_dim(self, res):
     return self._image_size[res]

@@ -56,6 +56,7 @@ def datasetdict ( dataset ):
   dsdict['offset'] = dataset.offset
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
+  dsdict['supercube_dimension'] = dataset.supercubedim
   # Stephan projinfo
   if dataset.scalingoption == ZSLICES:
     dsdict['neariso_scaledown'] = dataset.nearisoscaledown
