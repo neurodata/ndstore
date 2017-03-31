@@ -90,10 +90,21 @@ class BrainRestArgs:
     if result is not None:
       self.time = [int(i) for i in result.groups()]
 
+    # See if it is an integral cutout request
+    result = re.search ("/neariso/", rest)
+    if result is not None:
+      self.zscaling = True
+    else:
+      # self.zscaling = datasetcfg.scalingoption
+      self.zscaling = False
+    
     # Check arguments for legal values
     try:
-      if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim) ):
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.dataset_dim(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
+      if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim, neariso=self.zscaling) ):
+        if self.zscaling:
+          raise RESTArgsError ( "Illegal range. Neariso Image size: {} at offset {}".format(str(datasetcfg.neariso_imagesz[self.resolution]),str(datasetcfg.get_offset(self.resolution))))
+        else:  
+          raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.dataset_dim(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
     except Exception, e:
       raise RESTArgsError ( "Illegal arguments to cutout. Check cube failed {}".format(str(e)))
 
@@ -110,14 +121,6 @@ class BrainRestArgs:
       self.filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
     else:
       self.filterlist = None
-     
-    # See if it is an integral cutout request
-    result = re.search ("/neariso/", rest)
-    if result is not None:
-      self.zscaling = True
-    else:
-      # self.zscaling = datasetcfg.scalingoption
-      self.zscaling = False
 
     result = re.search('/direct/', rest)
     if result is not None:
