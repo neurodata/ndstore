@@ -14,9 +14,9 @@
 
 import json
 from ndlib.restutil import *
-from ndproj.ndproject import NDProject
-from ndproj.nddataset import NDDataset
-from ndproj.ndchannel import NDChannel
+# from ndproj.ndproject import NDProject
+# from ndproj.nddataset import NDDataset
+# from ndproj.ndchannel import NDChannel
 
 class InfoInterface(object):
 
@@ -51,7 +51,12 @@ class InfoInterface(object):
 
   def get_channel(self, channel_name):
     return self._info['channels'][channel_name]
+  
+  def get_channel_datatype(self, channel_name):
+    return self._info['channels'][channel_name]['datatype']
 
+  def get_channel_channeltype(self, channel_name):
+    return self._info['channels'][channel_name]['channel_type']
 
 class ResourceInterface(object):
 

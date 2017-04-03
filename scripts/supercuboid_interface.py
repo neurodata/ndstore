@@ -17,9 +17,10 @@ import sys
 import numpy as np
 import blosc
 import argparse
-sys.path.append(os.path.abspath('../django'))
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+sys.path.append('../')
+# sys.path.append(os.path.abspath('../django'))
+# import ND.settings
+# os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from ndlib.restutil import *
@@ -39,15 +40,16 @@ class S3Cuboid(object):
 
     self.cuboidindex_db = CuboidIndexDB(project_name)
     self.cuboid_bucket = CuboidBucket(project_name)
-    self.info = JsonInfo(host_name, project_name)
+    self.info_interface = InfoInterface(host_name, project_name)
 
-  def upload(self, file_name, project_name, channel_name, resolution, x_index, y_index, z_index, time_index=0, neariso=False):
+  def upload(self, file_name, project_name, channel_name, resolution, x_index, y_index, z_index, dimensions=[1, 64, 512,512], time_index=0, neariso=False):
     """Upload a 4D supercuboid directly to dynamo and s3"""
-    with open(file_name) as file_handle:
-      super_zidx = XYZMorton(x_index, y_index, z_index)
-      self.logger.info("Inserting cube {},{},{}".format(x_index, y_index, z_index))
-      self.cuboidindex_db.putItem(channel_name, resolution, x_index, y_index, z_index, time_index, neariso=neariso)
-      self.cuboid_bucket.putObject(channel_name, resolution, super_zidx, time_index, blosc.pack_array(file_handle.read()), neariso=neariso)
+    cuboid_data = np.fromfile(file_name, dtype=self.info_interface.get_channel_datatype(channel_name))
+    cuboid_data = cuboid_data.reshape(dimensions)
+    super_zidx = XYZMorton([x_index, y_index, z_index])
+    self.logger.info("Inserting cube {},{},{}".format(x_index, y_index, z_index))
+    self.cuboidindex_db.putItem(channel_name, resolution, x_index, y_index, z_index, time_index, neariso=neariso)
+    self.cuboid_bucket.putObject(channel_name, resolution, super_zidx, time_index, blosc.pack_array(cuboid_data), neariso=neariso)
 
 
 def main():
@@ -59,6 +61,7 @@ def main():
   parser.add_argument('resolution', action='store', type=int, help='Resolution')
   parser.add_argument('indexes', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[0, 0, 0], help='X, Y, Z co-ordinates of the supercuboid')
   parser.add_argument('--time', dest='time_index', action='store', type=int, default=0, help='Time index')
+  parser.add_argument('--dims', dest='dimensions', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[1, 64, 512, 512], help='Supercuboid dimensions')
   parser.add_argument('--neariso', dest='neariso', action='store', type=bool, default=False, help='Neariso')
   parser.add_argument('--host', dest='host_name', action='store', type=str, default=HOST_NAME, help='Server host name')
   parser.add_argument('--supercube', dest='super_cube', action='store_true', default=False, help='Return supercube dimension')
@@ -68,7 +71,7 @@ def main():
   if result.super_cube:
     print (s3_cuboid.info.supercuboid_dimension(result.resolution))
   else:
-    s3_cuboid.upload(result.file_name, result.project_name, result.channel_name, result.resolution, result.indexes[0], result.indexes[1], result.indexes[2], result.time_index, result.neariso)
+    s3_cuboid.upload(result.file_name, result.project_name, result.channel_name, result.resolution, result.indexes[0], result.indexes[1], result.indexes[2], result.dimensions, result.time_index, result.neariso)
 
 if __name__ == '__main__':
   main()

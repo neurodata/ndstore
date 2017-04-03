@@ -45,7 +45,7 @@ def main():
 
   if result.neariso:
     # buiild 
-    buildImageStack(proj, ch, neariso=result.neariso, direct=True)
+    buildImageStack(proj, ch, neariso=result.neariso, direct=False)
   else:
     # build stack twice, once for zslice and once for neariso
     buildImageStack(proj, ch, neariso=False, direct=True)
