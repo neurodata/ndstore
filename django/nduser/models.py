@@ -72,9 +72,6 @@ class Project ( models.Model):
   host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
   KVENGINE_CHOICES = (
     (MYSQL, 'MySQL'),
-    (CASSANDRA, 'Cassandra'),
-    (RIAK, 'Riak'),
-    (DYNAMODB, 'DynamoDB'),
     (REDIS, 'Redis'),
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default=MYSQL)
