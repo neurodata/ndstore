@@ -14,6 +14,7 @@
 
 import os
 import sys
+import pytest
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -31,7 +32,7 @@ p.channel_type = TIMESERIES
 p.datatype = UINT8
 p.dataset = 'unittest'
 
-
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Resource():
 
   def setup_class(self):
