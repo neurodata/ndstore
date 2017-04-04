@@ -237,7 +237,8 @@ class AwsInterface:
                 # calculate the morton index 
                 insert_data = data[:, y_index*ysupercubedim:(y_index+1)*ysupercubedim, x_index*xsupercubedim:(x_index+1)*xsupercubedim]
                 if np.any(insert_data):
-                  morton_index = XYZMorton([x_index+(x*x_tilesz/xsupercubedim), y_index+(y*y_tilesz/ysupercubedim), z])
+                  morton_index = XYZMorton([x_index+(x*x_tilesz/xsupercubedim), y_index+(y*y_tilesz/ysupercubedim), z/zsupercubedim])
+                  print "Morton Index {}".format(morton_index)
                   self.logger.info("[{},{},{}]".format((x_index+x)*x_tilesz, (y_index+y)*y_tilesz, z))
                   self.s3_io.putCube(ch, t, morton_index, cur_res, blosc.pack_array(insert_data), update=False, neariso=False)
 
