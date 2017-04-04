@@ -14,9 +14,9 @@
 
 import json
 from ndlib.restutil import *
-# from ndproj.ndproject import NDProject
-# from ndproj.nddataset import NDDataset
-# from ndproj.ndchannel import NDChannel
+from ndproj.ndproject import NDProject
+from ndproj.nddataset import NDDataset
+from ndproj.ndchannel import NDChannel
 
 class InfoInterface(object):
 

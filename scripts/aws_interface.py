@@ -46,97 +46,73 @@ from spdb.spatialdb import SpatialDB
 from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
+from scripts_helper import *
 from ingest.core.config import Configuration
 import logging
-
+HOST_NAME = 'localhost:8080'
 
 
 
 class AwsInterface:
 
-  def __init__(self, token, host_name):
+  def __init__(self, token_name, host_name=HOST_NAME):
     """Create the bucket and intialize values"""
   
     # configuring the logger based on the dataset we are uploading
-    self.logger = logging.getLogger(token)
+    self.logger = logging.getLogger(token_name)
     self.logger.setLevel(logging.INFO)
-    fh = logging.FileHandler('{}.log'.format(token))
+    fh = logging.FileHandler('{}.log'.format(token_name))
     self.logger.addHandler(fh)
     # setting up the project metadata
-    self.token = token
-    try:
-      self.proj = NDProject.fromTokenName(self.token)
-      self.s3_projdb = S3ProjectDB(self.proj)
-    except Exception as e:
-      response = getJson('http://{}/sd/{}/info/'.format(host_name, token))
-      if response.status_code != 200:
-        raise ValueError("The server returned status code {}".response.status_code)
-      
-      project_name = response.json()['project']['name']
-      dataset_name = response.json()['dataset']['name']
-      response = getJson('http://{}/resource/dataset/{}/project/{}/'.format(host_name, dataset_name, project_name))
-      if response.status_code != 200:
-        raise ValueError("The server returned status code {}".response.status_code)
-      project_json = response.json()
-      del project_json['user']
-      del project_json['dataset']
-      self.proj = NDProject.fromJson(dataset_name, json.dumps(project_json))
+    self.info_interface = InfoInterface(host_name, token_name)
     # creating the resource interface to the remote server
-    self.resource_interface = ResourceInterface(self.proj.dataset_name, self.proj.project_name, self.token, host_name, self.logger)
-
-    
-    with closing (SpatialDB(self.proj)) as self.db:
-      # create the s3 I/O and index objects
-      self.s3_io = S3IO(self.db)
-      # self.file_type = result.file_type
-      # self.tile_size = result.tile_size
-      # self.data_location = result.data_location
-      # self.url = result.url
+    self.resource_interface = ResourceInterface(self.info_interface.dataset_name, self.info_interface.project_name, host_name, logger=self.logger)
+    self.proj = self.resource_interface.getProject()
+    # create the s3 I/O and index objects
+    self.s3_io = S3IO(SpatialDB(self.proj))
   
-  def deleteToken(self):
-    """Delete the Token"""
+  # def deleteToken(self):
+    # """Delete the Token"""
     
-    self.resource_interface.deleteToken()
-    print 'Delete successful for token {}'.format(self.token)
+    # self.resource_interface.deleteToken()
+    # print 'Delete successful for token {}'.format(self.token)
 
-  def deleteProject(self):
-    """Delete the project"""
+  # def deleteProject(self):
+    # """Delete the project"""
     
-    # delete the project from s3 and dynamo
-    self.s3_projdb.deleteNDProject()
-    # deleting the meta-data via resource interface
-    self.resource_interface.deleteToken()
-    self.resource_interface.deleteProject()
-    print 'Delete successful for project {}'.format(self.proj.project_name)
+    # # delete the project from s3 and dynamo
+    # self.s3_projdb.deleteNDProject()
+    # # deleting the meta-data via resource interface
+    # self.resource_interface.deleteToken()
+    # self.resource_interface.deleteProject()
+    # print 'Delete successful for project {}'.format(self.proj.project_name)
   
   
-  def deleteChannel(self, channel_name):
-    """Delete the channel"""
+  # def deleteChannel(self, channel_name):
+    # """Delete the channel"""
 
-    # delete the channel from s3 and dynamo
-    self.s3_projdb.deleteNDChannel(channel_name)
-    # deleting the meta-data via resource interface
-    self.resource_interface.deleteChannel(channel_name)
-    print 'Delete successful for channel {}'.format(channel_name)
+    # # delete the channel from s3 and dynamo
+    # self.s3_projdb.deleteNDChannel(channel_name)
+    # # deleting the meta-data via resource interface
+    # self.resource_interface.deleteChannel(channel_name)
+    # print 'Delete successful for channel {}'.format(channel_name)
 
 
-  def deleteResolution(self, channel_name, resolution):
-    """Delete an existing resolution"""
+  # def deleteResolution(self, channel_name, resolution):
+    # """Delete an existing resolution"""
     
-    # delete the project from s3 and dynamo
-    self.s3_projdb.deleteNDResolution(channel_name, resolution)
-    print 'Delete successful for resolution {} for channel {}'.format(resolution, channel_name)
+    # # delete the project from s3 and dynamo
+    # self.s3_projdb.deleteNDResolution(channel_name, resolution)
+    # print 'Delete successful for resolution {} for channel {}'.format(resolution, channel_name)
 
   
-  def setupNewProject(self):
-    """Setup a new project if it does not exist"""
+  # def setupNewProject(self):
+    # """Setup a new project if it does not exist"""
     
-    self.resource_interface.createDataset()
-    self.resource_interface.createProject()
-    self.resource_interface.createToken()
+    # self.resource_interface.createDataset()
+    # self.resource_interface.createProject()
+    # self.resource_interface.createToken()
   
-  # def readExistingProject():
-    # data = db.cutout(ch, [x*xsupercubedim, y*ysupercubedim, z*zsupercubedim], [xsupercubedim, ysupercubedim, zsupercubedim], cur_res).data
 
   def uploadExistingProject(self, channel_name, resolution, start_values, neariso=False):
     """Upload an existing project to S3"""
@@ -263,10 +239,7 @@ class AwsInterface:
                 if np.any(insert_data):
                   morton_index = XYZMorton([x_index+(x*x_tilesz/xsupercubedim), y_index+(y*y_tilesz/ysupercubedim), z])
                   self.logger.info("[{},{},{}]".format((x_index+x)*x_tilesz, (y_index+y)*y_tilesz, z))
-                  # updating the index
-                  self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z, ch.time_range[0])
-                  # inserting the cube
-                  self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(insert_data))
+                  self.s3_io.putCube(ch, t, morton_index, cur_res, blosc.pack_array(insert_data), update=False, neariso=False)
 
 
   def checkpoint_ingest(self, channel_name, resolution, x, y, z, e, time=0):
