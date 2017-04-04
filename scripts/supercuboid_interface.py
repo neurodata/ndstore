@@ -31,18 +31,20 @@ HOST_NAME = 'localhost:8080'
 
 class S3Cuboid(object):
 
-  def __init__(self, project_name, host_name=HOST_NAME):
+  def __init__(self, token_name, host_name=HOST_NAME):
     # configuring the logger based on the dataset we are uploading
-    self.logger = logging.getLogger(project_name)
+    self.logger = logging.getLogger(token_name)
     self.logger.setLevel(logging.INFO)
-    fh = logging.FileHandler('{}_upload.log'.format(project_name))
+    fh = logging.FileHandler('{}_upload.log'.format(token_name))
     self.logger.addHandler(fh)
 
-    self.cuboidindex_db = CuboidIndexDB(project_name)
-    self.cuboid_bucket = CuboidBucket(project_name)
-    self.info_interface = InfoInterface(host_name, project_name)
+    self.info_interface = InfoInterface(host_name, token_name)
+    self.project_name = self.info_interface.project_name
+    self.cuboidindex_db = CuboidIndexDB(self.project_name)
+    self.cuboid_bucket = CuboidBucket(self.project_name)
 
-  def upload(self, file_name, project_name, channel_name, resolution, x_index, y_index, z_index, dimensions=[1, 64, 512,512], time_index=0, neariso=False):
+
+  def upload(self, file_name, channel_name, resolution, x_index, y_index, z_index, dimensions=[1, 64, 512,512], time_index=0, neariso=False):
     """Upload a 4D supercuboid directly to dynamo and s3"""
     cuboid_data = np.fromfile(file_name, dtype=self.info_interface.get_channel_datatype(channel_name))
     cuboid_data = cuboid_data.reshape(dimensions)
@@ -56,7 +58,7 @@ def main():
 
   parser = argparse.ArgumentParser(description="Upload a supercuboid to S3")
   parser.add_argument('file_name', action='store', type=str, help='File Name')
-  parser.add_argument('project_name', action='store', type=str, help='Project Name')
+  parser.add_argument('token_name', action='store', type=str, help='Token Name')
   parser.add_argument('channel_name', action='store', type=str, help='Channel Name')
   parser.add_argument('resolution', action='store', type=int, help='Resolution')
   parser.add_argument('indexes', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[0, 0, 0], help='X, Y, Z co-ordinates of the supercuboid')
@@ -67,11 +69,11 @@ def main():
   parser.add_argument('--supercube', dest='super_cube', action='store_true', default=False, help='Return supercube dimension')
   result = parser.parse_args()
   
-  s3_cuboid = S3Cuboid(result.project_name, result.host_name)
+  s3_cuboid = S3Cuboid(result.token_name, result.host_name)
   if result.super_cube:
     print (s3_cuboid.info.supercuboid_dimension(result.resolution))
   else:
-    s3_cuboid.upload(result.file_name, result.project_name, result.channel_name, result.resolution, result.indexes[0], result.indexes[1], result.indexes[2], result.dimensions, result.time_index, result.neariso)
+    s3_cuboid.upload(result.file_name, result.channel_name, result.resolution, result.indexes[0], result.indexes[1], result.indexes[2], result.dimensions, result.time_index, result.neariso)
 
 if __name__ == '__main__':
   main()

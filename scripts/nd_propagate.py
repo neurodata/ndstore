@@ -32,12 +32,12 @@ def main():
   """Take arguments from user"""
   
   parser = argparse.ArgumentParser(description="Run the propagate script for neurodata")
-  parser.add_argument('project_name', action='store', type=str, help="Project Name")
+  parser.add_argument('token_name', action='store', type=str, help="Token Name")
   parser.add_argument('channel_name', action='store', type=str, help="Channel Name")
   parser.add_argument('--host', dest='host_name', action='store', default=HOST_NAME, type=str, help="Host Name")
   parser.add_argument('--neariso', dest='neariso', action='store_true', default=False, help="Only propagate neariso")
   result = parser.parse_args()
-  info_interface = InfoInterface(result.host_name, result.project_name)
+  info_interface = InfoInterface(result.host_name, result.token_name)
   resource_interface = ResourceInterface(info_interface.dataset_name, info_interface.project_name, result.host_name)
 
   proj = resource_interface.getProject()
