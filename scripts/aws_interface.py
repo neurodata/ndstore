@@ -43,7 +43,6 @@ from ndproj.ndchannel import NDChannel
 from ndproj.ndproject import NDProject
 from ndproj.ndtoken import NDToken
 from spdb.spatialdb import SpatialDB
-from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from scripts_helper import *
@@ -69,7 +68,8 @@ class AwsInterface:
     self.resource_interface = ResourceInterface(self.info_interface.dataset_name, self.info_interface.project_name, host_name, logger=self.logger)
     self.proj = self.resource_interface.getProject()
     # create the s3 I/O and index objects
-    self.s3_io = S3IO(SpatialDB(self.proj))
+    self.cuboidindex_db = CuboidIndexDB(self.info_interface.project_name)
+    self.cuboid_bucket = CuboidBucket(self.info_interface.project_name)
   
   # def deleteToken(self):
     # """Delete the Token"""
@@ -175,7 +175,7 @@ class AwsInterface:
                 raise e
   
   
-  def uploadNewProject(self, config_file, start_values):
+  def uploadNewProject(self, config_file, start_values, neariso=False):
     """Upload a new project"""
     
     # loading the config file and assdociated params and processors
@@ -238,9 +238,12 @@ class AwsInterface:
                 insert_data = data[:, y_index*ysupercubedim:(y_index+1)*ysupercubedim, x_index*xsupercubedim:(x_index+1)*xsupercubedim]
                 if np.any(insert_data):
                   morton_index = XYZMorton([x_index+(x*x_tilesz/xsupercubedim), y_index+(y*y_tilesz/ysupercubedim), z/zsupercubedim])
+                  [s3_x, s3_y, s3_z] = MortonXYZ(morton_index)
                   print "Morton Index {}".format(morton_index)
                   self.logger.info("[{},{},{}]".format((x_index+x)*x_tilesz, (y_index+y)*y_tilesz, z))
-                  self.s3_io.putCube(ch, t, morton_index, cur_res, blosc.pack_array(insert_data), update=False, neariso=False)
+                  self.cuboidindex_db.putItem(ch.channel_name, cur_res, s3_x, s3_y, s3_z, t, neariso=neariso)
+                  self.cuboid_bucket.putObject(ch.channel_name, cur_res, morton_index, t, blosc.pack_array(insert_data), neariso=neariso)
+                  # self.s3_io.putCube(ch, t, morton_index, cur_res, blosc.pack_array(insert_data), update=False, neariso=False)
 
 
   def checkpoint_ingest(self, channel_name, resolution, x, y, z, e, time=0):
