@@ -64,7 +64,7 @@ class AwsInterface:
     # setting up the project metadata
     self.info_interface = InfoInterface(host_name, token_name)
     # creating the resource interface to the remote server
-    self.resource_interface = ResourceInterface(self.info_interface.dataset_name, self.info_interface.project_name, host_name, logger=self.logger)
+    # self.resource_interface = ResourceInterface(self.info_interface.dataset_name, self.info_interface.project_name, host_name, logger=self.logger)
     # self.proj = self.resource_interface.getProject()
     # create the s3 I/O and index objects
     self.cuboidindex_db = CuboidIndexDB(self.info_interface.project_name)
