@@ -14,9 +14,6 @@
 
 import json
 from ndlib.restutil import *
-from ndproj.ndproject import NDProject
-from ndproj.nddataset import NDDataset
-from ndproj.ndchannel import NDChannel
 
 class InfoInterface(object):
 
@@ -61,6 +58,9 @@ class InfoInterface(object):
 class ResourceInterface(object):
 
   def __init__(self, dataset_name, project_name, host_name, logger=None):
+    from ndproj.ndproject import NDProject
+    from ndproj.nddataset import NDDataset
+    from ndproj.ndchannel import NDChannel
     self.dataset_name = dataset_name
     self.project_name = project_name
     self.host = host_name
