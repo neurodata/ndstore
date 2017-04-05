@@ -42,7 +42,6 @@ from ndproj.nddataset import NDDataset
 from ndproj.ndchannel import NDChannel
 from ndproj.ndproject import NDProject
 from ndproj.ndtoken import NDToken
-from spdb.spatialdb import SpatialDB
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from scripts_helper import *
@@ -66,7 +65,7 @@ class AwsInterface:
     self.info_interface = InfoInterface(host_name, token_name)
     # creating the resource interface to the remote server
     self.resource_interface = ResourceInterface(self.info_interface.dataset_name, self.info_interface.project_name, host_name, logger=self.logger)
-    self.proj = self.resource_interface.getProject()
+    # self.proj = self.resource_interface.getProject()
     # create the s3 I/O and index objects
     self.cuboidindex_db = CuboidIndexDB(self.info_interface.project_name)
     self.cuboid_bucket = CuboidBucket(self.info_interface.project_name)
@@ -191,7 +190,7 @@ class AwsInterface:
     
     # creating the channel object from resource service
     channel_name = config.config_data['database']['channel']
-    ch = self.resource_interface.getChannel(channel_name)
+    channel_datatype = self.info_interface.get_channel_datatype(channel_name)
     cur_res = tile_params['ingest_job']['resolution']
     
     # loading all the parameters for image-sizes, tile-sizes, and iteration limits
@@ -217,7 +216,7 @@ class AwsInterface:
         for y in range(y_start, y_limit, 1):
           for x in range(x_start, x_limit, 1):
             
-            data = np.zeros([zsupercubedim, y_tilesz, x_tilesz], dtype=ND_dtypetonp[ch.channel_datatype])
+            data = np.zeros([zsupercubedim, y_tilesz, x_tilesz], dtype=ND_dtypetonp[channel_datatype])
             for b in range(0, zsupercubedim, 1):
               if z + b > z_end - 1:
                 break
@@ -241,8 +240,8 @@ class AwsInterface:
                   [s3_x, s3_y, s3_z] = MortonXYZ(morton_index)
                   print "Morton Index {}".format(morton_index)
                   self.logger.info("[{},{},{}]".format((x_index+x)*x_tilesz, (y_index+y)*y_tilesz, z))
-                  self.cuboidindex_db.putItem(ch.channel_name, cur_res, s3_x, s3_y, s3_z, t, neariso=neariso)
-                  self.cuboid_bucket.putObject(ch.channel_name, cur_res, morton_index, t, blosc.pack_array(insert_data), neariso=neariso)
+                  self.cuboidindex_db.putItem(channel_name, cur_res, s3_x, s3_y, s3_z, t, neariso=neariso)
+                  self.cuboid_bucket.putObject(channel_name, cur_res, morton_index, t, blosc.pack_array(insert_data), neariso=neariso)
                   # self.s3_io.putCube(ch, t, morton_index, cur_res, blosc.pack_array(insert_data), update=False, neariso=False)
 
 
