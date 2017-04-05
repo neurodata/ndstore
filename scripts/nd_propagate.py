@@ -48,8 +48,8 @@ def main():
     buildImageStack(proj, ch, neariso=result.neariso, direct=False)
   else:
     # build stack twice, once for zslice and once for neariso
-    buildImageStack(proj, ch, neariso=False, direct=True)
-    buildImageStack(proj, ch, neariso=True, direct=True)
+    buildImageStack(proj, ch, neariso=False, direct=False)
+    buildImageStack(proj, ch, neariso=True, direct=False)
 
 
 if __name__ == '__main__':
