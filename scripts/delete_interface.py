@@ -51,7 +51,7 @@ class Interface(object):
     """Delete the channel"""
     
     try:
-      for item in self.cuboidindex_db.queryChannelItems():
+      for item in self.cuboidindex_db.queryChannelItems(channel_name):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key]'])
     except Exception as e:
@@ -68,7 +68,7 @@ class Interface(object):
     """Delete an existing resolution"""
     
     try:
-      for item in self.cuboidindex_db.queryResolutionItems():
+      for item in self.cuboidindex_db.queryResolutionItems(channel_name, resolution):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key]'])
     except Exception as e:
@@ -80,9 +80,9 @@ class Interface(object):
 
 def main():
 
-  dataset_name = ''
-  project_name = ''
-  channel_name = ''
+  dataset_name = 'synaptomesberlin'
+  project_name = 'bigalign2'
+  channel_name = 'MBP'
   resolution = 6
   import pdb; pdb.set_trace()
   interface = Interface(dataset_name, project_name)
