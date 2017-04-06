@@ -21,7 +21,7 @@ import MySQLdb
 from PIL import Image
 from spdb.ndcube.cube import Cube
 from spdb import spatialdb
-from spdb.s3io import S3IO
+from spdb.ndkvio.s3io import S3IO
 from ndproj.ndproject import NDProject
 from ndctypelib import *
 from ndlib.ndtype import *
