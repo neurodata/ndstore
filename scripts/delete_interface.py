@@ -53,7 +53,7 @@ class Interface(object):
     try:
       for item in self.cuboidindex_db.queryChannelItems(channel_name):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
-        self.cuboidindex_db.deleteItem(item['supercuboid_key]'])
+        self.cuboidindex_db.deleteItem(item['supercuboid_key'])
     except Exception as e:
       print (e)
       
@@ -70,7 +70,7 @@ class Interface(object):
     try:
       for item in self.cuboidindex_db.queryResolutionItems(channel_name, resolution):
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
-        self.cuboidindex_db.deleteItem(item['supercuboid_key]'])
+        self.cuboidindex_db.deleteItem(item['supercuboid_key'])
     except Exception as e:
       print (e)
 
