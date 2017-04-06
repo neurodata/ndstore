@@ -70,39 +70,6 @@ class AwsInterface:
     self.cuboidindex_db = CuboidIndexDB(self.info_interface.project_name)
     self.cuboid_bucket = CuboidBucket(self.info_interface.project_name)
   
-  # def deleteToken(self):
-    # """Delete the Token"""
-    
-    # self.resource_interface.deleteToken()
-    # print 'Delete successful for token {}'.format(self.token)
-
-  # def deleteProject(self):
-    # """Delete the project"""
-    
-    # # delete the project from s3 and dynamo
-    # self.s3_projdb.deleteNDProject()
-    # # deleting the meta-data via resource interface
-    # self.resource_interface.deleteToken()
-    # self.resource_interface.deleteProject()
-    # print 'Delete successful for project {}'.format(self.proj.project_name)
-  
-  
-  # def deleteChannel(self, channel_name):
-    # """Delete the channel"""
-
-    # # delete the channel from s3 and dynamo
-    # self.s3_projdb.deleteNDChannel(channel_name)
-    # # deleting the meta-data via resource interface
-    # self.resource_interface.deleteChannel(channel_name)
-    # print 'Delete successful for channel {}'.format(channel_name)
-
-
-  # def deleteResolution(self, channel_name, resolution):
-    # """Delete an existing resolution"""
-    
-    # # delete the project from s3 and dynamo
-    # self.s3_projdb.deleteNDResolution(channel_name, resolution)
-    # print 'Delete successful for resolution {} for channel {}'.format(resolution, channel_name)
 
   
   # def setupNewProject(self):

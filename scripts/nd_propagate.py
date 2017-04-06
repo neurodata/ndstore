@@ -42,8 +42,9 @@ def main():
   resource_interface = ResourceInterface(info_interface.dataset_name, info_interface.project_name, result.host_name)
 
   proj = resource_interface.getProject()
-  ch = resource_interface.getChannel(result.channel_name)
-  ch.propagate(UNDER_PROPAGATION)
+  # ch = resource_interface.getChannel(result.channel_name)
+  ch.fromName(proj, result.channel_name)
+  ch.propagate = UNDER_PROPAGATION
 
   try:
     if result.neariso:
@@ -54,9 +55,9 @@ def main():
       buildImageStack(proj, ch, neariso=False, direct=True)
       buildImageStack(proj, ch, neariso=True, direct=True)
     # set to propagate when done
-    ch.propagate(PROPAGATED)
+    ch.propagate = PROPAGATED
   except Exception as e:
-    ch.propagate(NOT_PROPAGATED)
+    ch.propagate = NOT_PROPAGATED
     raise e
 
 if __name__ == '__main__':
