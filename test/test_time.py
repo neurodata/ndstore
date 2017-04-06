@@ -135,7 +135,7 @@ class Test_Time_Slice:
     """Test the xy slice cutout"""
     
     p.resolution = 3
-    p.args = (1000,1100,500,600,200,201,10,12)
+    p.args = (1000,1100,500,600,70,71,10,12)
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, time_data, time=True, neariso=True)
     assert(response.status_code == 200)
@@ -152,7 +152,7 @@ class Test_Time_Slice:
     """Test the xy slice cutout"""
     
     p.resolution = 3
-    p.args = (1000,1100,500,600,200,201,10,12)
+    p.args = (1000,1100,500,600,20,21,10,12)
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, time_data, time=True, neariso=True, direct=True)
     assert(response.status_code == 200)
@@ -267,10 +267,10 @@ class Test_Time_Post:
     assert ( np.array_equal(voxarray,image_data) )
   
   @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
-  def test_direct_npz (self):
+  def test_direct_write_npz (self):
     """Post npz data to correct region with correct datatype"""
-
-    p.args = (3000,3100,4000,4100,500,510,30,34)
+    
+    p.args = (6000,6100,5000,5100,700,710,30,34)
     # upload some image data
     image_data = np.ones ( [2,4,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
 
@@ -280,7 +280,22 @@ class Test_Time_Post:
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
-  
+ 
+  @pytest.mark.skipif(KV_ENGINE == MYSQL, reason='Direct writes not supported in MySQL')
+  def test_direct_read_npz (self):
+    """Post npz data to correct region with correct datatype"""
+
+    p.args = (1000,1100,7000,7100,300,310,56,60)
+    # upload some image data
+    image_data = np.ones ( [2,4,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+
+    response = postNPZ(p, image_data, time=True, direct=True)
+    # Checking for successful post
+    assert( response.status_code == 200 )
+    voxarray = getNPZ(p, time=True, direct=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+
   def test_npz_incorrect_region (self):
     """Post npz to incorrect region"""
 

@@ -30,7 +30,7 @@ import webservices.ndwsrest as ndwsrest
 from spdb.spatialdb import SpatialDB
 from ndproj.ndprojdb import NDProjectsDB
 from ndlib.ndctypelib import XYZMorton
-from spdb.s3io import S3IO
+from spdb.ndkvio.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from webservices.ndwserror import NDWSError
 from ndingest.settings.settings import Settings

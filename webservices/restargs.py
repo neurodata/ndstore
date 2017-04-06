@@ -59,6 +59,9 @@ class BrainRestArgs:
   def getDirect(self):
     return self.direct
 
+  def getAligned(self):
+    return self.aligned
+
   def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
 
@@ -122,11 +125,15 @@ class BrainRestArgs:
     else:
       self.filterlist = None
 
-    result = re.search('/direct/', rest)
-    if result is not None:
-      self.direct = True
-    else:
-      self.direct = False
+    self.direct = search_term('/direct/', rest)
+    self.aligned = search_term('/aligned/', rest)
+
+def search_term(search_string, rest_arg):
+  """Search string and check"""
+  if re.search(search_string, rest_arg) is None:
+    return False
+  else:
+    return True
 
 
 def voxel ( imageargs, datasetcfg ):
