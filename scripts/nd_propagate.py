@@ -23,6 +23,7 @@ from django.conf import settings
 import django
 django.setup()
 from webservices.ndstack import *
+from ndlib.ndtype import *
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from scripts_helper import *
@@ -42,15 +43,21 @@ def main():
 
   proj = resource_interface.getProject()
   ch = resource_interface.getChannel(result.channel_name)
+  ch.propagate(UNDER_PROPAGATION)
 
-  if result.neariso:
-    # buiild 
-    buildImageStack(proj, ch, neariso=result.neariso, direct=False)
-  else:
-    # build stack twice, once for zslice and once for neariso
-    buildImageStack(proj, ch, neariso=False, direct=False)
-    buildImageStack(proj, ch, neariso=True, direct=False)
-
+  try:
+    if result.neariso:
+      # build only neariso
+      buildImageStack(proj, ch, neariso=result.neariso, direct=False)
+    else:
+      # build stack twice, once for zslice and once for neariso
+      buildImageStack(proj, ch, neariso=False, direct=True)
+      buildImageStack(proj, ch, neariso=True, direct=True)
+    # set to propagate when done
+    ch.propagate(PROPAGATED)
+  except Exception as e:
+    ch.propagate(NOT_PROPAGATED)
+    raise e
 
 if __name__ == '__main__':
   main()
