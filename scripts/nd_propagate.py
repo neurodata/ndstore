@@ -43,7 +43,7 @@ def main():
 
   proj = resource_interface.getProject()
   # ch = resource_interface.getChannel(result.channel_name)
-  ch.fromName(proj, result.channel_name)
+  ch = NDChannel.fromName(proj, result.channel_name)
   ch.propagate = UNDER_PROPAGATION
 
   try:
