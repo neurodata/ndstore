@@ -228,13 +228,13 @@ class Test_Time_Base_Resolution:
     """Test the xy slice cutout"""
     
     p.resolution = 3
-    p.args = (1000,1100,500,600,200,201,10,12)
+    p.args = (1000,1100,500,600,10,11,10,12)
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, time_data, time=True, neariso=True, direct=False)
     assert(response.status_code == 200)
     
     p.resolution = 0
-    p.args = (8000,8800,4000,4800,200,201,10,12)
+    p.args = (8000,8800,4000,4800,30,31,10,12)
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     response = getURL(url)
 
