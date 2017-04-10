@@ -52,6 +52,15 @@ class InfoInterface(object):
   def supercuboid_dimension(self, resolution):
     return self._info['dataset']['supercube_dimension'][str(resolution)]
 
+  def cuboid_dimension(self, resolution):
+    return self._info['dataset']['cube_dimension'][str(resolution)]
+  
+  def image_size(self, resolution):
+    return self._info['dataset']['imagesize'][str(resolution)]
+  
+  def offset(self, resolution):
+    return self._info['dataset']['offset'][str(resolution)]
+  
   def get_channel(self, channel_name):
     return self._info['channels'][channel_name]
   
