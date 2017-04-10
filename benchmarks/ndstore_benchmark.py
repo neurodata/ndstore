@@ -187,7 +187,7 @@ def main():
       elif bt.datatype == np.uint32:
         actual_size = [math.pow(2,data_size-1)]
       
-      # csv_writer.writerow(actual_size+time_values)
+      csv_writer.writerow([actual_size]+time_values)
 
 
 if __name__ == '__main__':
