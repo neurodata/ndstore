@@ -60,6 +60,15 @@ class Test_Raw:
     # requested_data.shape = (2,64,512,512)
     assert ( np.array_equal(image_data, requested_data) )
   
+class Test_Raw_Neariso:
+
+  def setup_class(self):
+
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, base_resolution=3)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+  
   def test_get_neariso_raw(self):
     """Test the xyz cube neariso cutout for raw data"""
     

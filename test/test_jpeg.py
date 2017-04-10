@@ -56,11 +56,21 @@ class Test_Jpeg:
     image_data = image_data[0,:,:,:].reshape(1000,100)
     assert ( np.array_equal(image_data, posted_data) )
 
+
+class Test_Jpeg_Neariso:
+
+  def setup_class(self):
+
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, base_resolution=4)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+  
   def test_get_neariso_jpeg(self):
     """Test the jpeg volume cutout for neariso"""
 
     p.resolution = 4
-    p.args = (375,400,500,575,50,55)
+    p.args = (375,400,500,575,2,7)
     image_data = np.ones( [2,5,75,25], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, neariso=True)
 
