@@ -6,7 +6,7 @@ Auto-Ingest API
 autoIngest
 ----------
 
-.. http:post:: (string:server_name)/nd/ca/autoIngest/
+.. http:post:: (string:server_name)/nd/sd/autoIngest/
 
    :synopsis: Create a dataset, project and channels with a JSON file.
 
