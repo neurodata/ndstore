@@ -43,6 +43,8 @@ class BenchmarkTest:
     self.fetch_list = []
     self.data_list = []
     self.write_tests = result.write_tests
+    self.direct = result.direct
+    self.scale = result.scale
     self.info_interface = InfoInterface(self.host_name, self.token_name)
     self.datatype = ND_dtypetonp[self.info_interface.get_channel_datatype(result.channel_name)]
 
@@ -61,9 +63,9 @@ class BenchmarkTest:
         if self.write_tests:
           data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
           self.data_list.append(data)
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args))
+          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         else:
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args))
+          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         # min_values = max_values
         # max_values = map(add, map(sub, min_values, temp_values), min_values)
         min_values[2] = max_values[2]
@@ -77,7 +79,8 @@ class BenchmarkTest:
     
     # min_values = [xmin,ymin,zmin] = map(add, self.info_interface.offset(self.resolution), start_value)
     min_values = [xmin, ymin, zmin] = self.info_interface.offset(self.resolution)
-    max_values = map(add, min_values, self.info_interface.cuboid_dimension(self.resolution))
+    # max_values = map(add, min_values, self.info_interface.cuboid_dimension(self.resolution))
+    max_values = map(add, min_values, map(lambda x: x*self.scale, self.info_interface.supercuboid_dimension(self.resolution)))
     range_args = [None]*(len(min_values)+len(max_values))
     size_args = [None]*(len(min_values)+len(max_values))
     
@@ -103,9 +106,9 @@ class BenchmarkTest:
         if self.write_tests:
           data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
           self.data_list.append(data)
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args))
+          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         else:
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args))
+          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         # checking if this exceeds the x,y image size
         if all([a<b for a,b in zip(map(add, range_args[1:-1:2], size_args[1:-1:2]), self.info_interface.image_size(self.resolution))]): 
           range_args[0:-2:2] = range_args[1:-1:2]
@@ -122,7 +125,8 @@ class BenchmarkTest:
 
 def dropCache():
   """Drop the system cache"""
-  os.system('sudo bash -c "echo 3 > /proc/sys/vm/drop_caches"')
+  pass
+  # os.system('sudo bash -c "echo 3 > /proc/sys/vm/drop_caches"')
   # subprocess.call(['sudo', 'echo 3','>','/proc/sys/vm/drop_caches'])
 
 
@@ -134,9 +138,11 @@ def main():
   parser.add_argument("channel_name", action="store", type=str, help="Channel Name")
   parser.add_argument("res_value", action="store", type=int, help="Resolution")
   parser.add_argument("--host", dest="host_name", action="store", type=str, default="localhost/nd", help="Host Name")
+  parser.add_argument("--direct", dest="direct", action="store", type=bool, default=False, help="Direct to S3")
   parser.add_argument('--offset', dest="offset_value", nargs=3, action="store", type=int, metavar=('X','Y','Z'), default=[0,0,0], help='Start Offset')
   parser.add_argument("--num", dest="number_of_processes", action="store", type=int, default=1, help="Number of Processes")
   parser.add_argument("--size", dest="data_size", action="store", type=int, default=1, help="Size of Data")
+  parser.add_argument("--scale", dest="scale", action="store", type=int, default=1, help="Scale of Data")
   parser.add_argument("--iter", dest="number_of_iterations", action="store", type=int, default=1, help="Number of Iterations")
   parser.add_argument("--write", dest="write_tests", action="store", type=bool, default=False, help="Do write tests")
   
