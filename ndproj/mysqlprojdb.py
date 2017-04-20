@@ -69,11 +69,13 @@ class MySQLProjectDB:
           # tables specific to all other non time data
           for res in self.pr.datasetcfg.resolutions:
             cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getNearIsoTable(res)))
+            cursor.execute("ALTER TABLE {} ADD timestamp INT AFTER zindex".format(ch.getTable(res)))
+            cursor.execute("UPDATE {} set timestamp={}".format(ch.getTable(res), 0))
+            cursor.execute("ALTER TABLE {} DROP PRIMARY KEY, ADD PRIMARY KEY(zindex, timestamp)".format(ch.getTable(res)))
         
           # Commiting at the end
           conn.commit()
         except MySQLdb.Error, e:
-          ch.deleteChannel()
           logging.error ("Failed to create neariso tables for existing project {}: {}.".format(e.args[0], e.args[1]))
           raise NDWSError ("Failed to create neariso tables for existing project {}: {}.".format(e.args[0], e.args[1]))
 

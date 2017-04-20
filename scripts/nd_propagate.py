@@ -44,7 +44,6 @@ def main():
 
   proj = resource_interface.getProject()
   
-
   # if single channel passed then only propagate that channel
   if result.channel_name:
     channel_list = [result.channel_name]
@@ -54,7 +53,10 @@ def main():
     
     # create neariso tables for old annotation projects
     if result.old:
-      ch.db.updateNDChannel(ch.channel_name)
+      try:
+        ch.db.updateNDChannel(ch.channel_name)
+      except:
+        pass
 
     print ("Propagating channel {}".format(ch.channel_name))
     ch.propagate = UNDER_PROPAGATION
