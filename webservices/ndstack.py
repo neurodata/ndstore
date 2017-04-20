@@ -223,7 +223,8 @@ def buildImageStack(proj, ch, res=None, neariso=False, direct=False):
 
                   corner = [x*xsupercubedim, y*ysupercubedim, z*zsupercubedim] 
                   # add resized data to cube
-                  db.annotateDense(ch, ts, corner, cur_res, newdata, 'O', neariso=neariso)
+                  if np.any(newdata):
+                    db.annotateDense(ch, ts, corner, cur_res, newdata, 'O', neariso=neariso)
 
                 except Exception as e:
                   print("Exception {}".format(e))
