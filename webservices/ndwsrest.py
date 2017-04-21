@@ -74,18 +74,14 @@ def cutout (imageargs, ch, proj, db):
   filterlist = args.getFilter()
   zscaling = args.getZScaling()
   timerange = args.getTimeRange()
+  windowrange = args.getWindowRange()
 
   # Perform the cutout
-#  if ch.channel_type in TIMESERIES_CHANNELS:
   # support for 3-d cutouts
   if timerange == None:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1])
+    cube = db.cutout(ch, corner, dim, resolution, timerange=ch.default_time_range, zscaling=zscaling)
   else:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
-
-# RB defunct code path
-#  else:
-#    cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
 
@@ -93,7 +89,17 @@ def cutout (imageargs, ch, proj, db):
     # convert 4-d to 3-d here for now
     cube.data = cube.data.reshape(cube.data.shape[1:])
   
-  return cube
+  # window range on cutout only when specified by argument -- no defaults for now
+  if windowrange!= None:
+    if ch.channel_datatype == 'float32':
+      windowrange = [float(x) for x in windowrange]
+    else:
+      windowrange = [int(x) for x in windowrange]
+    cbnew = TimeCube8 ( )
+    cbnew.data = window(cube.data, ch, window_range=windowrange)
+    return cbnew
+  else:
+    return cube
 
 
 def filterCube(ch, cube, filterlist=None):
@@ -144,7 +150,7 @@ def numpyZip ( chanargs, proj, db ):
 
   try:
     # argument of format channel/service/imageargs
-    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    m = re.match("([\w+,]+)/(\w+)/([\w\.,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
@@ -497,19 +503,10 @@ def imgSlice(webargs, proj, db):
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(.*)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
     imageargs = resolution + '/' + imageargs
     extra_args = m.groups()[-1]
-    filter_args = None
-    window_args = None
-    if extra_args is not None:
-      if re.match("window/\d+,\d+/$", extra_args):
-        window_args = extra_args
-      elif re.match("filter/[\d+,]+/$", extra_args):
-        filter_args = extra_args
-      else:
-        raise
   except Exception as e:
     logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -542,26 +539,17 @@ def imgSlice(webargs, proj, db):
     logger.error ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
+  cutoutargs = cutoutargs + extra_args
   # Perform the cutout
   ch = proj.getChannelObj(channel)
-  cb = cutout(cutoutargs + (filter_args if filter_args else ""), ch, proj, db)
-
-  if window_args is not None:
-    try:
-      window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
-    except Exception as e:
-      logger.error ("Illegal window arguments={}. Error={}".format(imageargs,e))
-      raise NDWSError ("Illegal window arguments={}. Error={}".format(imageargs,e))
-  else:
-    window_range = None
-  
-  if cb.data.dtype == np.uint16 or cb.data.dtype == np.int16:
+  cb = cutout(cutoutargs, ch, proj, db)
+ 
+  # perform default window if not specified
+  if not re.search("window", extra_args) and (cb.data.dtype == np.uint16 or cb.data.dtype == np.float32):
     cbnew = TimeCube8 ( )
-    cbnew.data = window(cb.data, ch, window_range=window_range)
+    cbnew.data = window ( cb.data, ch )
     return cbnew
   elif cb.data.dtype == np.uint8:
-# KLTODO  do we window 8 bit data.This causes test to fila
-#    cb.data = window(cb.data, ch, window_range=window_range)
     return cb
   else:
     return cb
@@ -569,18 +557,25 @@ def imgSlice(webargs, proj, db):
 
 def imgPNG (proj, webargs, cb):
   """Return a png object for any plane"""
-  
+
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(.*)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception as e:
     logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
+  # window argument
+  result = re.search (r"/window/([\d\.]+),([\d\.]+)/", webargs)
+  if result != None:
+    window = [str(i) for i in result.groups()]
+  else:
+    window = None
+
   if service == 'xy':
-    img = cb.xyImage()
+    img = cb.xyImage(window=window)
   elif service == 'yz':
     img = cb.yzImage(proj.datasetcfg.scale[int(resolution)][service])
   elif service == 'xz':
@@ -672,13 +667,15 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
 def annId ( chanargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
+  # RBTODO timestamp should be in args 0 for now.
+  timestamp = 0
+
   [channel, service, imageargs] = chanargs.split('/',2)
   ch = NDChannel.fromName(proj, channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
   # Get the identifier
-  # RB timestamp = 0 for now.
-  return db.getVoxel(ch, 0, resolution, voxel)
+  return db.getVoxel(ch, timestamp, resolution, voxel)
 
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
@@ -806,9 +803,9 @@ def selectPost ( webargs, proj, db, postdata ):
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.channel_name, proj.project_name, webargs))
            
             # reshape the data to 4d if no timerange
-            if timerange==None:
+            if timerange == None:
               voxarray = voxarray.reshape((1,voxarray.shape[0],voxarray.shape[1],voxarray.shape[2]))
-              efftimerange=[0,1]
+              efftimerange = ch.default_time_range
             else:
               efftimerange = timerange
 
@@ -818,11 +815,10 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
               raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
             
-            if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
-              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
-            
-            elif ch.channel_type in ANNOTATION_CHANNELS:
+            if ch.channel_type in ANNOTATION_CHANNELS: 
               db.annotateDense ( ch, efftimerange[0], corner, resolution, voxarray, conflictopt)
+            else:
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
 
           h5f.flush()
           h5f.close()
@@ -867,11 +863,10 @@ def selectPost ( webargs, proj, db, postdata ):
             logger.error("Wrong datatype in POST")
             raise NDWSError("Wrong datatype in POST")
             
-          if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
-            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
-
-          elif ch.channel_type in ANNOTATION_CHANNELS:
+          if ch.channel_type in ANNOTATION_CHANNELS:
             db.annotateDense(ch, efftimerange[0], corner, resolution, voxarray[idx,:], conflictopt )
+          else:
+            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
       
       else:
         logger.error("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
@@ -1003,7 +998,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, timestamp, resolut
     h5anno.addCutout ( resolution, retcorner, cb.data.reshape(cb.data.shape[1:]))
 
   elif dataoption == AR_TIGHTCUTOUT:
- 
+
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
       dataids = rdb.getSegments(ch, annoid) 
@@ -1618,7 +1613,7 @@ def getNIFTI ( webargs ):
     ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the nii file
-    with closing(tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+    with closing(tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:
       queryNIFTI ( tmpfile, ch, db, proj )
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1638,12 +1633,18 @@ def putNIFTI ( webargs, postdata ):
     else:
       createflag = False
       ch = NDChannel.fromName(proj, channel)
-    
+
       # Don't write to readonly channels
       if ch.readonly == READONLY_TRUE:
         logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
         raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
+
+    if "annotations" in optionsargs:
+      annotationsflag=True
+    else:
+      annotationsflag=False
+    
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
 
@@ -1652,7 +1653,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
     
     else:
 
@@ -1661,7 +1662,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""
@@ -2003,8 +2004,8 @@ def setPropagate(webargs):
         ch.propagate = UNDER_PROPAGATION
         from sd.tasks import propagate
         # then call propagate
-        # propagate(token, channel_name)
-        propagate.delay(token, channel_name)
+        propagate(token, channel_name)
+        #propagate.delay(token, channel_name)
       else:
         logger.error("Cannot Propagate this project. It is set to Read Only.")
         raise NDWSError("Cannot Propagate this project. It is set to Read Only.")

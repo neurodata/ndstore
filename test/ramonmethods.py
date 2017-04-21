@@ -18,13 +18,11 @@ import h5py
 import random
 import csv
 import numpy as np
+import requests
 from params import Params
 from ndlib.restutil import *
 from postmethods import putAnnotation, getAnnotation
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
-import requests
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'

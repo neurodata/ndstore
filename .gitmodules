@@ -2,10 +2,6 @@
 	path = ndlib
   url = https://github.com/neurodata/ndlib.git
   branch = master
-[submodule "ndinstall"]
-  path = setup/ndinstall
-  url = https://github.com/neurodata/ndinstall.git
-  branch = master
 [submodule "spdb"]
 	path = spdb
   url = https://github.com/neurodata/spdb.git
@@ -18,3 +14,6 @@
 	path = ingest-client
 	url = https://github.com/neurodata/ingest-client.git
   branch = master
+[submodule "setup/statuspage_config/statuspage-py"]
+	path = setup/statuspage_config/statuspage-py
+	url = https://github.com/kunallillaney/statuspage-py.git

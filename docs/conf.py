@@ -24,7 +24,6 @@ sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
-import spatialdb
 
 # -- General configuration ------------------------------------------------
 
@@ -41,7 +40,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.pngmath',
+    'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
     'sphinxcontrib.httpdomain',
     'sphinxcontrib.gist',

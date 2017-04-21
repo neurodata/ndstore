@@ -17,22 +17,12 @@ import makeunitdb
 from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getRAW
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test_RAW
 # 1 - test_get_raw
 
 p = Params()
-p.token = 'unittest'
-p.resolution = 0
-p.channels = ['IMAGE1', 'IMAGE2']
-p.window = [0,500]
-p.channel_type = TIMESERIES
-p.datatype = UINT8
-p.voxel = [4.0,4.0,3.0]
-
 
 class Test_Raw:
 

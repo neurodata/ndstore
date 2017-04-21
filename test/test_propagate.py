@@ -21,6 +21,7 @@ import os
 import random
 import csv
 import time
+import pytest
 import numpy as np
 from PIL import Image
 from io import BytesIO
@@ -29,12 +30,10 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 from postmethods import getURL, postNPZ, getNPZ
-from ndlib.ndtype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
+from ndlib.ndtype import *
 from params import Params
-import site_to_test
 import makeunitdb
-
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 # Test_Propagate
 #
@@ -42,11 +41,11 @@ SITE_HOST = site_to_test.site
 
 p = Params()
 p.token = 'unittest'
-p.resolution = 0
 p.channels = ['chan1']
-p.channel_type = "image"
+#p.channel_type = "image"
 p.datatype = "uint8"
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Zslice_Propagate:
   """Test image propagation"""
 
@@ -96,6 +95,7 @@ class Test_Image_Zslice_Propagate:
     slice_data = np.asarray ( Image.open(BytesIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:2,:2]) )
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Readonly_Propagate:
   """Test image propagation"""
 
@@ -127,6 +127,7 @@ class Test_Image_Readonly_Propagate:
     # check that it cannot mark a channel as propagated
     assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), PROPAGATED)).status_code == 404 )
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Propagated_Propagate:
   """Test image propagation"""
 
@@ -159,6 +160,7 @@ class Test_Image_Propagated_Propagate:
     value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Image_Isotropic_Propagate:
   """Test image propagation"""
 
@@ -220,6 +222,7 @@ class Test_Image_Isotropic_Propagate:
     # voxarray = getNPZ(p)
     # assert ( np.array_equal(voxarray[0][0], image_data[0][0][:6,:6]) )
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Anno_Zslice_Propagate():
   """Test annotation propagation"""
 
@@ -273,7 +276,7 @@ class Test_Anno_Zslice_Propagate():
     voxarray = getNPZ(p)
     assert ( np.array_equal(voxarray[0][0], image_data[0][0][:2,:2]) )
 
-
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Anno_Isotropic_Propagate():
   """Test annotation propagation"""
 

@@ -16,11 +16,16 @@ import json
 from django.views.generic import View
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from ndauth.authentication import PublicAuthentication
 from ndproj.nddataset import NDDataset
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from ndproj.ndtoken import NDToken
 
+#@api_view(['GET'])
 class DatasetPublicView(View):
 
   def get(self, request):
@@ -29,6 +34,7 @@ class DatasetPublicView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
+#@api_view(['GET'])
 class ProjectPublicView(View):
 
   def get(self, request):
@@ -37,6 +43,7 @@ class ProjectPublicView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
+#@api_view(['GET'])
 class TokenPublicView(View):
 
   def get(self, request):

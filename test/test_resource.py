@@ -17,30 +17,28 @@ import sys
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from ndlib.ndtype import IMAGE, UINT8, MYSQL
+from ndlib.ndtype import TIMESERIES, UINT8, MYSQL
+import pytest
 from params import Params
 from ndlib.restutil import getJson, postJson, deleteJson
-# from postmethods import getJson, postJson, deleteJson
-import makeunitdb
-import site_to_test
-
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'
 p.project = 'unittest'
 p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
-p.channel_type = IMAGE
+p.channel_type = TIMESERIES
 p.datatype = UINT8
 p.dataset = 'unittest'
 
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_Resource():
 
   def setup_class(self):
     """Setup Parameters"""
-    # makeunitdb.createTestDB(p.project, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0, token_name=p.token)
+#    makeunitdb.createTestDB(p.project, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0, token_name=p.token)
     pass
   
   def teardown_class(self):

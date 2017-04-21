@@ -15,11 +15,18 @@
 from django.views.generic import View
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from ndauth.authentication import PublicAuthentication
 from ndproj.ndproject import NDProject
 from nduser.models import Token
 from ndproj.ndtoken import NDToken
 
-class TokenView(View):
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
+class TokenView(generics.GenericAPIView):
 
   def get(self, request, dataset_name, project_name, token_name):
 

@@ -76,7 +76,7 @@ class RedisProjectDB:
     
     # KL TODO Maybe do this as a transaction?
     # channel pattern to fetch all the keys with project_name_channel_name
-    channel_pattern = "{}_{}_*".format(self.pr.project_name, channel_name)
+    channel_pattern = "{}&{}&*".format(self.pr.project_name, channel_name)
     try:
       channel_keys = self.client.keys(channel_pattern)
       # delete all the keys with the pattern

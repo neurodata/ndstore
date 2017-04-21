@@ -25,12 +25,15 @@ def main():
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
   parser.add_argument('--create', action="store_true")
+  parser.add_argument('--annotations', action="store_true")
   result = parser.parse_args()
 
+  url = 'https://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+
   if result.create:
-    url = 'https://{}/sd/{}/{}/nii/create/'.format(result.baseurl, result.token, result.channel)
-  else:
-    url = 'https://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+    url = '{}create/'.format(url)
+  if result.annotations:
+    url = '{}annotations/'.format(url)
 
   print url
 
@@ -38,11 +41,15 @@ def main():
 
     requests.packages.urllib3.disable_warnings()
     response = requests.post(url, open(result.filename).read(), verify=False)
+    if response.status_code == 200:
+      print "Success for url {}".format(url)
+    else:
+      print "Error for url {}. Status {}. Message {}".format(url,response.status_code,response.text)
+      response.raise_for_status()
 
-  except requests.HTTPError as e:
+  except Exception, e:
 
-    print "Failed {}. Exception {}".format(url, response._content)
-    return e
+    raise
 
 if __name__ == "__main__":
   main()

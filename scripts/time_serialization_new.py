@@ -33,7 +33,7 @@ sys.path += [os.path.abspath('../django/')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
-from restutil import getURL, generateURLBlosc
+from ndlib.restutil import getURL, generateURLBlosc
 
 ITERATIONS = 6
 HOST = 'openconnecto.me/ocp'
