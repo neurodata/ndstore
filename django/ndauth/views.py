@@ -15,6 +15,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import Group
 
 import django.http
 from django.views.decorators.cache import cache_control
@@ -22,12 +23,13 @@ import MySQLdb
 import cStringIO
 import re
 import json
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, TokenAuthentication
 
 from django.conf import settings
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import authenticate
 from jsonspec.validators import load
+from guardian.shortcuts import assign_perm
 
 import logging
 logger=logging.getLogger("neurodata")
@@ -81,3 +83,25 @@ def validate(request, webargs):
     return HttpResponse(token)
   else:
     return HttpResponseForbidden()
+
+# Creating Groups of Users
+@api_view(['POST'])
+@authentication_classes((TokenAuthentication,))
+@permission_classes
+def createGroup(request, webargs):
+  """Restful to Programaticly create groups/add users"""
+  user = request.user
+  #Get the args, grp_name, project/channel/dataset
+
+  if Group.objects.filter(name=grp_name):
+    #Group name already exists
+  else:
+    new_grp = Group.objects.create(name=grp_name)
+  
+  assign_perm('django.contrib.auth.add_Group', user, new_grp)
+  assign_perm('django.contrib.auth.change_Group', user, new_grp)
+  assign_perm('django.contrib.auth.delete_Group', user, new_grp)
+
+  #Based on Listed 
+  
+
