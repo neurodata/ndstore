@@ -57,7 +57,7 @@ logger = logging.getLogger("neurodata")
 
 #RBTODO check all the zoom in zoom out and write unittests.
 
-def cutout (image_args, ch, proj, db):
+def cutout (image_args, ch, proj, db, aligned=False):
   """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output. """
   
   # Perform argument processing
@@ -85,7 +85,10 @@ def cutout (image_args, ch, proj, db):
   else:
     # 4-d cutouts
     cube = db.cutout(ch, corner, dim, resolution, timerange=timerange, neariso=neariso, direct=direct)
-
+  
+  if aligned:
+    return cube
+  
   filterCube(ch, cube, filterlist)
 
   if timerange==None:
@@ -115,7 +118,7 @@ def filterCube(ch, cube, filterlist=None):
     raise NDWSError("Filter only possible for Annotation Channels")
 
 
-def channelIterCutout(channels, imageargs, proj, db):
+def channelIterCutout(channels, imageargs, proj, db, aligned=False):
   """Create a numpy datacube array using data from the given channels."""
   
   try:
@@ -124,7 +127,9 @@ def channelIterCutout(channels, imageargs, proj, db):
     ch = proj.getChannelObj(channel_list[0])
     
     # call cutout for first channel
-    channel_data = cutout( imageargs, ch, proj, db ).data
+    channel_data = cutout( imageargs, ch, proj, db, aligned=aligned ).data
+    if aligned:
+      return channel_data
 
     cubedata = np.zeros ( (len(channel_list),)+channel_data.shape[:], dtype=channel_data.dtype )
     cubedata[0,:] = cutout(imageargs, ch, proj, db).data
@@ -236,7 +241,7 @@ def JPEG ( chanargs, proj, db ):
     raise NDWSError("{}".format(e))
 
 
-def BLOSC ( chanargs, proj, db ):
+def BLOSC ( chanargs, proj, db, aligned=True):
   """Return a web readable blosc file"""
   
   try:
@@ -248,8 +253,10 @@ def BLOSC ( chanargs, proj, db ):
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try:
-    cubedata = channelIterCutout(channels, imageargs, proj, db)
+    cubedata = channelIterCutout(channels, imageargs, proj, db, aligned=aligned)
     # Create the compressed cube
+    if aligned:
+      return cubedata
     return blosc.pack_array(cubedata)
   except Exception as e:
     logger.error("{}".format(e))
