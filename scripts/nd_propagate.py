@@ -34,31 +34,46 @@ def main():
   
   parser = argparse.ArgumentParser(description="Run the propagate script for neurodata")
   parser.add_argument('token_name', action='store', type=str, help="Token Name")
-  parser.add_argument('channel_name', action='store', type=str, help="Channel Name")
+  parser.add_argument('--channel', dest='channel_name', action='store', default=None, type=str, help="Channel Name")
   parser.add_argument('--host', dest='host_name', action='store', default=HOST_NAME, type=str, help="Host Name")
   parser.add_argument('--neariso', dest='neariso', action='store_true', default=False, help="Only propagate neariso")
+  parser.add_argument('--old', dest='old', action='store_true', default=False, help="For old annotation projects. Creates neariso tables.")
   result = parser.parse_args()
   info_interface = InfoInterface(result.host_name, result.token_name)
   resource_interface = ResourceInterface(info_interface.dataset_name, info_interface.project_name, result.host_name)
 
   proj = resource_interface.getProject()
-  # ch = resource_interface.getChannel(result.channel_name)
-  ch = NDChannel.fromName(proj, result.channel_name)
-  ch.propagate = UNDER_PROPAGATION
+  
+  # if single channel passed then only propagate that channel
+  if result.channel_name:
+    channel_list = [result.channel_name]
+  else:
+    channel_list = None
+  for ch in proj.projectChannels(channel_list=channel_list):
+    
+    # create neariso tables for old annotation projects
+    if result.old:
+      try:
+        ch.db.updateNDChannel(ch.channel_name)
+      except:
+        pass
 
-  try:
-    if result.neariso:
-      # build only neariso
-      buildImageStack(proj, ch, neariso=result.neariso, direct=False)
-    else:
-      # build stack twice, once for zslice and once for neariso
-      buildImageStack(proj, ch, neariso=False, direct=True)
-      buildImageStack(proj, ch, neariso=True, direct=True)
-    # set to propagate when done
-    ch.propagate = PROPAGATED
-  except Exception as e:
-    ch.propagate = NOT_PROPAGATED
-    raise e
+    print ("Propagating channel {}".format(ch.channel_name))
+    ch.propagate = UNDER_PROPAGATION
+
+    try:
+      if result.neariso:
+        # build only neariso
+        buildImageStack(proj, ch, neariso=result.neariso, direct=False)
+      else:
+        # build stack twice, once for zslice and once for neariso
+        buildImageStack(proj, ch, neariso=False, direct=True)
+        buildImageStack(proj, ch, neariso=True, direct=True)
+      # set to propagate when done
+      ch.propagate = PROPAGATED
+    except Exception as e:
+      ch.propagate = NOT_PROPAGATED
+      raise e
 
 if __name__ == '__main__':
   main()
