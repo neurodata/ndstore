@@ -37,9 +37,9 @@ GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
 POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
-@api_view(['GET','POST'])
-@authentication_classes((SessionAuthentication, AnonAllowedAuthentication))
-@permission_classes((PublicAuthentication,))
+#@api_view(['GET','POST'])
+#@authentication_classes((SessionAuthentication, AnonAllowedAuthentication))
+#@permission_classes((PublicAuthentication,))
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
   

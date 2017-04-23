@@ -88,13 +88,13 @@ class NDDataset(NDObject):
       # choose the cubedim as a function of the zscale
       if self._ds.scalingoption == ZSLICES:
         if float(self._ds.zvoxelres/self._ds.xvoxelres)/(2**i) >  0.5:
-          self._cubedim[i] = [128, 128, 16]
+          self._cubedim[i] = [512, 512, 64]
         else: 
           self._cubedim[i] = [64, 64, 64]
 
         # Make an exception for bock11 data -- just an inconsistency in original ingest
         if self._ds.ximagesize == 135424 and i == 5:
-          self._cubedim[i] = [128, 128, 16]
+          self._cubedim[i] = [512, 512, 64]
       else:
         self._cubedim[i] = [64, 64, 64]
       

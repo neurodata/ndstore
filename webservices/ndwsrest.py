@@ -89,11 +89,11 @@ def cutout (image_args, ch, proj, db, aligned=False):
   if aligned:
     return cube
   
-  filterCube(ch, cube, filterlist)
+  #filterCube(ch, cube, filterlist)
 
-  if timerange==None:
+  #if timerange==None:
     # convert 4-d to 3-d here for now
-    cube.data = cube.data.reshape(cube.data.shape[1:])
+    #cube.data = cube.data.reshape(cube.data.shape[1:])
   
   # window range on cutout only when specified by argument -- no defaults for now
   if windowrange!= None:
@@ -241,7 +241,7 @@ def JPEG ( chanargs, proj, db ):
     raise NDWSError("{}".format(e))
 
 
-def BLOSC ( chanargs, proj, db, aligned=True):
+def BLOSC ( chanargs, proj, db, aligned=False):
   """Return a web readable blosc file"""
   
   try:
