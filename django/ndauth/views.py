@@ -84,7 +84,9 @@ def validate(request, webargs):
   else:
     return HttpResponseForbidden()
 
-# Creating Groups of Users
+# Create a Group with the certain permissions for each project. Format is 
+# GroupName : <String>
+# Projects : [(<String ProjName>, <String Permission>), ...]
 @api_view(['POST'])
 @authentication_classes((TokenAuthentication,))
 @permission_classes
@@ -92,9 +94,17 @@ def createGroup(request, webargs):
   """Restful to Programaticly create groups/add users"""
   user = request.user
   #Get the args, grp_name, project/channel/dataset
+  jsondata = json.loads(requests.body)
+  projects = jsondata["Projects"]
+  grp_name = jsondata["GroupName"]
+  #Confirm this user owns all these projects
+  for (proj, _) in projects:
+    if not user.has_perm('d_project', Project.objects.filter(project_name=proj))
+      return HttpResponseForbidden("You do not own one or more projects you are trying to a create a group for")
 
   if Group.objects.filter(name=grp_name):
     #Group name already exists
+    return HttpResponse("Group name is already taken, please choose another")
   else:
     new_grp = Group.objects.create(name=grp_name)
   
@@ -102,6 +112,78 @@ def createGroup(request, webargs):
   assign_perm('django.contrib.auth.change_Group', user, new_grp)
   assign_perm('django.contrib.auth.delete_Group', user, new_grp)
 
-  #Based on Listed 
-  
+  for (proj, perm) in projects:
+    assign_perm(perm, new_grp, Project.objects.filter(project_name=proj))
+
+  return HttpResponse("Group created successfully")
+
+
+# Update the parameters of a group by overwriting all the current settings
+# GroupName : <String>
+# Projects : [(<String ProjName>, <String Permission>), ...]
+# Users : [<String>, <String>,...]
+def updateGroup(request, webargs):
+  """Programtically update groups, send new list and overwrite all previoous perms"""
+  user = request.user
+
+  #Get the args, grp_name, project/channel/dataset
+  jsondata = json.loads(requests.body)
+  projects = jsondata["Projects"]
+  grp_name = jsondata["GroupName"]
+  users = jsondata["Users"]
+
+  grp_to_remove = Group.objects.filter(name=grp_name)
+  #Check if own the group
+  if not user.has_perm('django.contrib.auth.change_Group', grp_to_remove):
+    return HttpResponseForbidden("You do not own one or more projects you are trying to a create a group for")
+
+  grp_to_remove.delete()
+
+  #Confirm this user owns all these projects
+  for (proj, _) in projects:
+    if not user.has_perm('d_project', Project.objects.filter(project_name=proj))
+      return HttpResponseForbidden("You do not own one or more projects you are trying to a create a group for")
+
+  if Group.objects.filter(name=grp_name):
+    #Group name already exists
+    return HttpResponse("Group name is already taken, please choose another")
+  else:
+    new_grp = Group.objects.create(name=grp_name)
+
+  assign_perm('django.contrib.auth.add_Group', user, new_grp)
+  assign_perm('django.contrib.auth.change_Group', user, new_grp)
+  assign_perm('django.contrib.auth.delete_Group', user, new_grp)
+
+  for (proj, perm) in projects:
+    assign_perm(perm, new_grp, Project.objects.filter(project_name=proj))
+
+  for us in users:
+    us_obj = User.objects.filter(user_name=us)
+    new_grp.user_set.add(us_obj)
+
+  return HttpResponse("Group created successfully")
+
+
+# Delete a group, users lose permissions. format as follows:
+# GroupName : <String>
+def deleteGroup(request, webargs):
+TODO
+
+# Get the groups that the user is a part of
+def getGroups(request, webargs):
+TODO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

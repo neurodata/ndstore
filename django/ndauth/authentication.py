@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token as AuthToken
 from django.http import HttpResponseForbidden
+from guardian.shortcuts import assign_perm
 
 from webservices.ndwserror import NDWSError
 import logging
@@ -56,7 +57,6 @@ class AnonAllowedAuthentication(authentication.TokenAuthentication):
         return (token.user, token)
 
 
-
 class PublicAuthentication(authentication.BaseAuthentication):
   
   def has_permission(self, request, view):
@@ -90,12 +90,12 @@ class PublicAuthentication(authentication.BaseAuthentication):
 
       try:
         if not request.user.is_superuser:
-          m_tokens = Token.objects.filter(user=request.user.id)
-          tokens = []
-          for v in m_tokens.values():
-            tokens.append(v['token_name'])
-          if not exp_token in tokens:
-            raise NDWSError ("Token {} does not exist or you do not have sufficient permissions to access it. {}".format(exp_token, pub_tokens))
+
+          #Need to check if they have at least r_project permissions
+          eval_proj = Token.objects.filter(token_name=exp_token).project
+          if request.user.has_perm('r_project', eval_proj) or request.user.has_perm('w_project', eval_proj) or request.user.has_perm('u_project', eval_proj) or request.user.has_perm('d_project', eval_proj):
+            raise NDWSError ("Project {} was not owned by the user {} who attempted to access it with Token {}".format(eval_proj, request.user, exp_token))
+
           else:
             return True
         else:
@@ -106,3 +106,6 @@ class PublicAuthentication(authentication.BaseAuthentication):
 
     except Exception as e:
       raise e
+
+
+
