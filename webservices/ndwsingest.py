@@ -84,21 +84,11 @@ class IngestData:
         else:
           key = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
       # making the request
-      # try:
-        # self.client.download_file(Bucket='neurodata-public', Key=key, Filename=self.path+self.generateFileName(slice_number))
-      # except botocore.exceptions.ClientError as e:
-        # continue
       try:
         s3 = boto3.resource('s3', aws_access_key_id=ndsettings.AWS_ACCESS_KEY_ID, aws_secret_access_key=ndsettings.AWS_SECRET_ACCESS_KEY)
         s3.Object('neurodata-public', key).download_file(self.path+self.generateFileName(slice_number))
       except Exception as e:
         logger.warning("Image file not found {}. {}".format(self.generateFileName(slice_number) , e))
-
-        # req = urllib2.Request(url)
-        # resp = urllib2.urlopen(req, timeout=15)
-      # except urllib2.URLError as e:
-        # logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
-        # continue
       
       # writing the file to scratch
       # try:
@@ -152,14 +142,6 @@ class IngestData:
         os.remove('{}{}'.format(self.path, self.generateFileName(slice_number)))
       except OSError as e:
         logger.warning("File {} not found. {}".format(self.generateFileName(slice_number), e))
-
-  # def generateCatmaidFileName(self, slice_number, xtile, ytile, ondisk=True):
-    # """Generate a file name given the slice_number"""
-    
-    # if ondisk:
-      # return '{}_{}_{}.{}'.format(slice_number, ytile, xtile, self.file_type)
-    # else:
-      # return '{}_{}.{}'.format(ytile, xtile, self.file_type)
 
   def generateFileName(self, slice_number, ondisk=True):
     """Generate a file name given the slice_number"""
@@ -290,7 +272,8 @@ class IngestData:
             time_value = timestamp
           else:
             time_value = None
-          self.fetchData(range(slice_number, slice_number+zsupercubedim) if slice_number+zsupercubedim<=zimagesz else range(slice_number, zimagesz), time_value=time_value)
+          
+          self.fetchData(list(range(slice_number, slice_number+zsupercubedim)) if slice_number+zsupercubedim<=zimagesz else list(range(slice_number, zimagesz), time_value=time_value))
           for b in range(zsupercubedim):
             if (slice_number + b < zimagesz):
               try:
@@ -338,16 +321,5 @@ class IngestData:
                 cuboidindex_db.putItem(ch.channel_name, self.resolution, x, y, slice_number)
                 s3_io.putCube(ch, self.resolution, zidx, blosc.pack_array(cube.data))
                 
-                # if ch.channel_type in IMAGE_CHANNELS:
-                  # db.putCube(ch, zidx, self.resolution, cube, update=True)
-                # elif ch.channel_type in TIMESERIES_CHANNELS:
-                  # db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=False)
-                # elif ch.channel_type in ANNOTATION_CHANNELS:
-                  # corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
-                  # db.annotateDense(ch, corner, self.resolution, cube.data, 'O')
-                # else:
-                  # logger.error("Channel type {} not supported".format(ch.channel_type))
-                  # raise NDWSError("Channel type {} not supported".format(ch.channel_type))
-          
           # clean up the slices fetched
-          self.cleanData(range(slice_number, slice_number+zsupercubedim) if slice_number + zsupercubedim<=zimagesz else range(slice_number, zimagesz))
+          self.cleanData(list(range(slice_number, slice_number+zsupercubedim)) if slice_number + zsupercubedim<=zimagesz else list(range(slice_number, zimagesz)))

@@ -334,7 +334,6 @@ def extractDatasetDict(ds_dict):
   """Generate a dataset object from the JSON flle"""
   
   ds = {}
-
   try:
     ds['dataset_name'] = ds_dict['dataset_name']
     ds['ximagesize'] = ds_dict['imagesize'][0]
@@ -483,6 +482,7 @@ def postMetadataDict(metadata_dict, project_name):
 
   # return ds
   
+
 def computeScalingLevels(imagesize):
   """Dynamically decide the scaling levels"""
 

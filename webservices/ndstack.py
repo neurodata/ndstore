@@ -267,6 +267,7 @@ def buildImageStack(proj, ch, res=None, neariso=False):
 #              print("Reading data from corner, res", str([x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ]), cur_res-1, biggercubedim)
 
               #olddata target array for the new data (z,y,x) order
+<<<<<<< HEAD
 #              newdata = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
               newdata = np.zeros([zcubedim, ycubedim, xcubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
 #              for sl in range(zsupercubedim):
@@ -391,4 +392,3 @@ def buildImageStack(proj, ch, res=None, neariso=False):
 #                cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
 #              else:
 #                db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
-#>>>>>>> 2391139b056444f756677168f78e05294a0921ef
