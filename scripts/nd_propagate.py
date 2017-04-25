@@ -51,6 +51,7 @@ def main():
     channel_list = None
   for ch in proj.projectChannels(channel_list=channel_list):
     
+    import pdb; pdb.set_trace()
     # create neariso tables for old annotation projects
     if result.old:
       try:
@@ -70,8 +71,12 @@ def main():
         buildImageStack(proj, ch, neariso=False, direct=True)
         buildImageStack(proj, ch, neariso=True, direct=True)
       # set to propagate when done
+      # have to create ch object again since long running job leads to killing mysql connections
+      ch = NDChannel.fromName(proj, ch.channel_name)
       ch.propagate = PROPAGATED
     except Exception as e:
+      # have to create ch object again since long running job leads to killing mysql connections
+      ch = NDChannel.fromName(proj, ch.channel_name)
       ch.propagate = NOT_PROPAGATED
       raise e
 
