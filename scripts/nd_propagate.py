@@ -37,6 +37,7 @@ def main():
   parser.add_argument('--channel', dest='channel_name', action='store', default=None, type=str, help="Channel Name")
   parser.add_argument('--host', dest='host_name', action='store', default=HOST_NAME, type=str, help="Host Name")
   parser.add_argument('--neariso', dest='neariso', action='store_true', default=False, help="Only propagate neariso")
+  parser.add_argument('--start', dest='start_values', action='store', type=int, nargs=3, metavar=('X','Y','Z'), default=[0,0,0] , help="Resume data from this point")
   parser.add_argument('--old', dest='old', action='store_true', default=False, help="For old annotation projects. Creates neariso tables.")
   result = parser.parse_args()
   info_interface = InfoInterface(result.host_name, result.token_name)
@@ -67,7 +68,7 @@ def main():
         buildImageStack(proj, ch, neariso=result.neariso, direct=False)
       else:
         # build stack twice, once for zslice and once for neariso
-        buildImageStack(proj, ch, neariso=False, direct=True)
+        buildImageStack(proj, ch, neariso=False, direct=True, start_values=result.start_values)
         buildImageStack(proj, ch, neariso=True, direct=True)
       # set to propagate when done
       ch.propagate = PROPAGATED

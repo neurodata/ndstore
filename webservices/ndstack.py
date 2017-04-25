@@ -105,7 +105,7 @@ def clearStack (proj, ch, res=None):
       db.kvio.conn.cursor().close()
 
 
-def buildImageStack(proj, ch, res=None, neariso=False, direct=False):
+def buildImageStack(proj, ch, res=None, neariso=False, direct=False, start_values=None):
   """Build the hierarchy of images"""
 
   with closing(spatialdb.SpatialDB(proj)) as db:
@@ -150,15 +150,20 @@ def buildImageStack(proj, ch, res=None, neariso=False, direct=False):
         zlimit = (zimagesz-1) / zsupercubedim + 1
       else:
         zlimit = (zimagesz/(2**(cur_res))-1) / zsupercubedim + 1
+      
+      if start_values:
+        [xstart, ystart, zstart] = start_values
+      else:
+        [xstart, ystart, zstart] = [0, 0, 0]
 
       # Iterating over time
       for ts in range(timerange[0], timerange[1], 1):
         # Iterating over zslice
-        for z in range(zlimit):
+        for z in range(zstart, zlimit):
           # Iterating over y
-          for y in range(ylimit):
+          for y in range(ystart, ylimit):
             # Iterating over x
-            for x in range(xlimit):
+            for x in range(xstart, xlimit):
 
               # olddata target array for the new data (z,y,x) order
               olddata = db.cutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1], direct=direct).data
@@ -208,6 +213,7 @@ def buildImageStack(proj, ch, res=None, neariso=False, direct=False):
                 # checking if the cube is empty or not
                 if cube.isNotZeros():
                   if proj.s3backend == S3_TRUE:
+                    print("RES:{}:X,Y,Z,T:{},{},{},{}".format(cur_res, x, y, z, ts))
                     s3_io.putCube(ch, ts, zidx, cur_res, blosc.pack_array(cube.data), neariso=neariso)
                   else:
                     db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
