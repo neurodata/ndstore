@@ -166,6 +166,14 @@ echo "from rest_framework.authtoken.models import Token; from django.contrib.aut
 cd /home/neurodata/ndstore/django/
 echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='test'); token = Token.objects.create(user=u); f = open('/tmp/token_user','wb'); f.write(token.key); f.close()" | python manage.py shell
 
+if [ -z "$2" ]; then
+  sudo mkdir /data/
+  sudo mkdir /data/scratch/
+  cd /home/neurodata/ndstore/ndingest
+  sudo setup/ndingest_install.sh
+  sudo setup/ndingest_run.sh
+fi
+
 # running tests
 cd /home/neurodata/ndstore/test/
 if [ ![ -z "$TRAVIS_BRANCH" ] ]; then
