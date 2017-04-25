@@ -99,7 +99,7 @@ def createGroup(request, webargs):
   grp_name = jsondata["GroupName"]
   #Confirm this user owns all these projects
   for (proj, _) in projects:
-    if not user.has_perm('d_project', Project.objects.filter(project_name=proj))
+    if not user.has_perm('d_project', Project.objects.filter(project_name=proj)):
       return HttpResponseForbidden("You do not own one or more projects you are trying to a create a group for")
 
   if Group.objects.filter(name=grp_name):
@@ -142,7 +142,7 @@ def updateGroup(request, webargs):
 
   #Confirm this user owns all these projects
   for (proj, _) in projects:
-    if not user.has_perm('d_project', Project.objects.filter(project_name=proj))
+    if not user.has_perm('d_project', Project.objects.filter(project_name=proj)):
       return HttpResponseForbidden("You do not own one or more projects you are trying to a create a group for")
 
   if Group.objects.filter(name=grp_name):
@@ -184,21 +184,5 @@ def deleteGroup(request, webargs):
 # Get the groups that the user is a part of
 def getGroups(request, webargs):
   user = request.user
-  return HttpResponse("Incomplete"
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  return HttpResponse("Incomplete")
 
