@@ -133,9 +133,10 @@ def updateGroup(request, webargs):
   users = jsondata["Users"]
 
   grp_to_remove = Group.objects.filter(name=grp_name)
-  #Check if own the group
-  if not user.has_perm('django.contrib.auth.change_Group', grp_to_remove):
-    return HttpResponseForbidden("You do not own one or more projects you are trying to a create a group for")
+  #Check if own the group - This is ownership for now until I refactor for admins
+  #Within a group. This should be addressed when working version is achieved.
+  if not user.has_perm('django.contrib.auth.delete_Group', grp_to_remove):
+    return HttpResponseForbidden("You do not own the group")
 
   grp_to_remove.delete()
 
@@ -146,7 +147,7 @@ def updateGroup(request, webargs):
 
   if Group.objects.filter(name=grp_name):
     #Group name already exists
-    return HttpResponse("Group name is already taken, please choose another")
+    return HttpResponseForbidden("Group name is already taken, please choose another")
   else:
     new_grp = Group.objects.create(name=grp_name)
 
@@ -161,17 +162,31 @@ def updateGroup(request, webargs):
     us_obj = User.objects.filter(user_name=us)
     new_grp.user_set.add(us_obj)
 
-  return HttpResponse("Group created successfully")
+  return HttpResponse("Group updated successfully")
 
 
 # Delete a group, users lose permissions. format as follows:
 # GroupName : <String>
 def deleteGroup(request, webargs):
-TODO
+  """Delete a group if the user has appropriate permissions"""
+  user = request.user
+  jsondata = json.loads(requests.body)
+  grp_name = jsondata["GroupName"]
+
+  if not user.has_perm('django.contrib.auth.delete_Group', grp_to_remove):
+    return HttpResponseForbidden("You do not own the group you are trying to delete")
+
+  grp_to_remove = Group.objects.filter(name=grp_name)
+  grp_to_remove.delete()
+
+  return HttpResponse("Group deleted successfully")
 
 # Get the groups that the user is a part of
 def getGroups(request, webargs):
-TODO
+  user = request.user
+  return HttpResponse("Incomplete"
+  
+  
 
 
 
