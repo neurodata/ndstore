@@ -35,7 +35,6 @@ class NDDataset(NDObject):
 
     self._resolutions = []
     self._cubedim = {}
-    self._supercubedim = {}
     self._image_size = {}
     self._offset = {}
     self._voxelres = {}
@@ -98,8 +97,6 @@ class NDDataset(NDObject):
       else:
         self._cubedim[i] = [64, 64, 64]
       
-      self._supercubedim[i] = map(mul, self._cubedim[i], SUPERCUBESIZE)
-
       if self._scale[i]['xz'] < 1.0:
         scalepixels = 1/self._scale[i]['xz']
         if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
@@ -219,17 +216,9 @@ class NDDataset(NDObject):
     # return Vector3D(self._cubedim[res])
     return self._cubedim[res]
   
-  def get_supercubedim(self, res):
-    # return Vector3D(self._supercubedim[res])
-    return self._supercubedim[res]
-  
   def cube_limit(self, res):
     return None
 
-  def get_supercube_limit(self, res):
-    # return Vector3D(map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3))
-    return map(add, map(floordiv, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3)
-  
   @property
   def scalingoption(self):
     return self._ds.scalingoption
@@ -241,10 +230,6 @@ class NDDataset(NDObject):
   @property
   def scale(self):
     return self._scale
-  
-  @property
-  def supercube_size(self):
-    return SUPERCUBESIZE
   
   def checkCube (self, resolution, corner, dim):
     """Return true if the specified range of values is inside the cube"""

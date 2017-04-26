@@ -191,11 +191,6 @@ class NDChannel(NDObject):
   def isDefault (self):
     return self.ch.default
 
-  def getS3IndexTable (self, resolution):
-    """Return the S3 index table"""
-    if self.pr.kvengine == MYSQL:
-      return '{}_res{}_s3index'.format(self.ch.channel_name, resolution)
-
   def getIdsTable (self):
     if self.pr.nd_version == '0.0':
       return "ids"

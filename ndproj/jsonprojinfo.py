@@ -30,7 +30,6 @@ def projdict ( proj ):
   projdict['description'] = proj.project_description
   projdict['schema_version'] = proj.schema_version
   projdict['ndstore_version'] = proj.nd_version
-  projdict['s3backend'] = proj.s3backend
 
   # These fields are internal
   #projdict['dbname'] = proj._dbname

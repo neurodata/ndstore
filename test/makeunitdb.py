@@ -28,7 +28,7 @@ from ndproj.nddataset import NDDataset
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from ndproj.ndtoken import NDToken
-from ndlib.ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
+from ndlib.ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, PUBLIC_TRUE
 from test_settings import *
 
 def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=PUBLIC_TRUE, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,15], default=False, nd_version=ND_VERSION, token_name='unittest', user='neurodata', dataset_name="unittest", s3backend=0 ):

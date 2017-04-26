@@ -18,7 +18,6 @@ import django.http
 from django.shortcuts import render
 from django.views.decorators.cache import cache_control
 import webservices.ndwsjson
-import webservices.ndwsprojingest
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")

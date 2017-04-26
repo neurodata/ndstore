@@ -132,7 +132,6 @@ class MySQLProjectDB:
       if self.pr.datasetcfg.scalingoption == ZSLICES:
         table_list.append(ch.getNearIsoTable(res))
       # delete the index tables
-      table_list.append(ch.getS3IndexTable(res))
       if ch.channel_type in ANNOTATION_CHANNELS:
         # delete the exceptions tables
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]

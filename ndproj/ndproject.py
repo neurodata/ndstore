@@ -176,14 +176,6 @@ class NDProject(NDObject):
     self.pr.mdengine = value
   
   @property
-  def s3backend(self):
-    return True if self.pr.s3backend is S3_TRUE else False 
-  
-  @s3backend.setter
-  def s3backend(self, value):
-    self.pr.s3backend = S3_TRUE if value == S3_TRUE else False
-  
-  @property
   def project_description(self):
     return self.pr.project_description
 
@@ -226,10 +218,6 @@ class NDProject(NDObject):
   @property
   def dbname(self):
     return self.pr.project_name
-  
-  @property
-  def s3backend(self):
-    return self.pr.s3backend
 
   # Accessors
   def getToken ( self ):
