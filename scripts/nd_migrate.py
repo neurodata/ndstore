@@ -36,9 +36,6 @@ def main():
   parser.add_argument('token_name', action='store', type=str, help="Token Name")
   parser.add_argument('--channel', dest='channel_name', action='store', default=None, type=str, help="Channel Name")
   parser.add_argument('--host', dest='host_name', action='store', default=HOST_NAME, type=str, help="Host Name")
-  parser.add_argument('--res', dest='resolution', action='store', default=None, type=int, help="Resolution")
-  parser.add_argument('--neariso', dest='neariso', action='store_true', default=False, help="Only propagate neariso")
-  parser.add_argument('--start', dest='start_values', action='store', type=int, nargs=3, metavar=('X','Y','Z'), default=[0,0,0] , help="Resume data from this point")
   parser.add_argument('--old', dest='old', action='store_true', default=False, help="For old annotation projects. Creates neariso tables.")
   result = parser.parse_args()
   info_interface = InfoInterface(result.host_name, result.token_name)
@@ -53,33 +50,14 @@ def main():
     channel_list = None
   for ch in proj.projectChannels(channel_list=channel_list):
     
-    import pdb; pdb.set_trace()
     # create neariso tables for old annotation projects
-    if result.old:
-      try:
-        ch.db.updateNDChannel(ch.channel_name)
-      except:
-        pass
-
-    print ("Propagating channel {}".format(ch.channel_name))
-    ch.propagate = UNDER_PROPAGATION
-
     try:
-      if result.neariso:
-        # build only neariso
-        buildImageStack(proj, ch, neariso=result.neariso, direct=False)
+      if result.old:
+        ch.db.updateNDChannel(ch.channel_name)
       else:
-        # build stack twice, once for zslice and once for neariso
-        buildImageStack(proj, ch, res=result.resolution, neariso=False, direct=True, start_values=result.start_values)
-        buildImageStack(proj, ch, neariso=True, direct=True)
-      # set to propagate when done
-      # have to create ch object again since long running job leads to killing mysql connections
-      ch = NDChannel.fromName(proj, ch.channel_name)
-      ch.propagate = PROPAGATED
+        ch.db.updateNDChannelNew(ch.channel_name)
     except Exception as e:
-      # have to create ch object again since long running job leads to killing mysql connections
-      ch = NDChannel.fromName(proj, ch.channel_name)
-      ch.propagate = NOT_PROPAGATED
+      print(e)
       raise e
 
 if __name__ == '__main__':
