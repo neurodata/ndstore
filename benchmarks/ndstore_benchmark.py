@@ -30,6 +30,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from ndlib.ndtype import *
 from ndlib.restutil import *
 from scripts.scripts_helper import *
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 class BenchmarkTest:
 
@@ -45,7 +47,7 @@ class BenchmarkTest:
     self.write_tests = result.write_tests
     self.direct = result.direct
     self.scale = result.scale
-    self.info_interface = InfoInterface(self.host_name, self.token_name)
+    self.info_interface = InfoInterface(self.host_name[0], self.token_name)
     self.datatype = ND_dtypetonp[self.info_interface.get_channel_datatype(result.channel_name)]
 
   def singleThreadTest(self, start_value, size_iterations):
@@ -61,11 +63,12 @@ class BenchmarkTest:
         range_args[1::2] = max_values
         # print "Size", reduce(mul, map(sub, max_values, min_values), 1)*2.0/(1024*1024)
         if self.write_tests:
-          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
+          #data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
+          data = blosc.pack_array(np.random.randint(256, size=[len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype))
           self.data_list.append(data)
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
+          self.fetch_list.append(generateURLBlosc(self.host_name[0], self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         else:
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
+          self.fetch_list.append(generateURLBlosc(self.host_name[0], self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         # min_values = max_values
         # max_values = map(add, map(sub, min_values, temp_values), min_values)
         min_values[2] = max_values[2]
@@ -104,11 +107,12 @@ class BenchmarkTest:
       # checking if the x,y,z dimensions are exceeded
       if all([a<b for a,b in zip(range_args[1::2], self.info_interface.image_size(self.resolution))]):
         if self.write_tests:
-          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
+          #data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
+          data = blosc.pack_array(np.random.randint(256, size=[len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype))
           self.data_list.append(data)
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
+          self.fetch_list.append(generateURLBlosc(self.host_name[i%len(self.host_name)], self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         else:
-          self.fetch_list.append(generateURLBlosc(self.host_name, self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
+          self.fetch_list.append(generateURLBlosc(self.host_name[i%len(self.host_name)], self.token_name, self.channels, self.resolution, range_args, direct=self.direct))
         # checking if this exceeds the x,y image size
         if all([a<b for a,b in zip(map(add, range_args[1:-1:2], size_args[1:-1:2]), self.info_interface.image_size(self.resolution))]): 
           range_args[0:-2:2] = range_args[1:-1:2]
@@ -116,7 +120,10 @@ class BenchmarkTest:
         # if you cannot expand more in x,y then expand in z
         elif range_args[-1] < self.info_interface.image_size(self.resolution)[-1]:
           range_args[-2] = range_args[-1]
-          range_args[-1] = range_args[-1] + size_args[-1]
+          # range_args[-1] = range_args[-1] + size_args[-1]
+          range_args[-1] = range_args[-1] + self.info_interface.supercuboid_dimension(self.resolution)[2]*self.scale
+          range_args[:4] = map(add, start_value[:2]*2, size_args[:4])
+          print range_args
         else:
           break
       else:
@@ -137,7 +144,7 @@ def main():
   parser.add_argument("token_name", action="store", type=str, help="Token Name")
   parser.add_argument("channel_name", action="store", type=str, help="Channel Name")
   parser.add_argument("res_value", action="store", type=int, help="Resolution")
-  parser.add_argument("--host", dest="host_name", action="store", type=str, default="localhost/nd", help="Host Name")
+  parser.add_argument("--host", dest="host_name", action="store", type=str, default="localhost/nd", help="Host Name List", metavar='N', nargs='+')
   parser.add_argument("--direct", dest="direct", action="store", type=bool, default=False, help="Direct to S3")
   parser.add_argument('--offset', dest="offset_value", nargs=3, action="store", type=int, metavar=('X','Y','Z'), default=[0,0,0], help='Start Offset')
   parser.add_argument("--num", dest="number_of_processes", action="store", type=int, default=1, help="Number of Processes")
@@ -169,6 +176,7 @@ def main():
       # else:
       bt = BenchmarkTest(result)
       bt.multiThreadTest(result.offset_value, data_size, result.number_of_processes)
+      print ("NUMBER: {}".format(len(bt.fetch_list)))
     
       # from pprint import pprint
       # pprint(bt.fetch_list)
@@ -179,9 +187,9 @@ def main():
         start_time = time.time()
         
         if result.write_tests:
-          p.map(putURL, zip(bt.fetch_list,bt.data_list))
+          p.map(postSimpleURL, zip(bt.fetch_list,bt.data_list))
         else:
-          p.map(getURL, bt.fetch_list)
+          p.map(getSimpleURL, bt.fetch_list)
         
         time_values.append(time.time()-start_time)
       
@@ -193,6 +201,7 @@ def main():
       elif bt.datatype == np.uint32:
         actual_size = [math.pow(2,data_size-1)]
       
+      print "TIME {}".format(time_values) 
       csv_writer.writerow([actual_size]+time_values)
 
 
