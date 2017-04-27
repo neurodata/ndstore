@@ -17,6 +17,7 @@ import sys
 import boto3
 import boto
 import six
+import time
 import cStringIO
 import numpy as np
 import argparse
@@ -57,10 +58,12 @@ class Uploader(object):
         sys.exit(0)
       data.seek(0)
       try:
+        print("Uploading {}".format(key))
         response = self.bucket.put_object(
             Body = data.read(),
             Key = key
         )
+        input.task_done()
       except Exception as e:
         print(e)
         raise e
@@ -98,28 +101,26 @@ def main():
         data = np.random.randint(256, size=(512,512), dtype=np.uint8)
         image_data = Image.frombuffer('L', (512,512), data.flatten(), 'raw', 'L', 0, 1)
         key = '{}_{}.png'.format(j, i)
-        print("Inserting: {}".format(key))
+        # print("Inserting: {}".format(key))
         output = six.BytesIO()
         image_data.save(output, format='png'.upper())
         up.queue_task(key, output)
   else:
-    # output = six.BytesIO()
     for j in range(result.iteration):
-      # file_obj = cStringIO.StringIO()
       output = six.BytesIO()
       data = np.random.randint(256, size=(512,512), dtype=np.uint8)
       image_data = Image.frombuffer('L', (512,512), data.flatten(), 'raw', 'L', 0, 1)
       image_data.save(output, 'PNG')
       up.queue_task('{}_63.png'.format(j), output)
   
+  start_time = time.time()
   for i in range(result.num):
     mp.Process(target=up.worker, args=(up.task_queue,)).start()
 
   up.task_queue.join()
   up.task_queue.close()
 
-  print ("End")
-  sys.exit(0)
+  print ("Time {}".format(time.time()-start_time))
 
 if __name__ == '__main__':
   main()
