@@ -125,6 +125,7 @@ class Test_Resource():
     assert(response.json()['project_name'] == p.project)
     assert(response.json()['host'] == 'localhost')
     assert(response.json()['kvengine'] == MYSQL)
+    assert(response.json()['s3backend'] == S3_FALSE)
   
   def test_get_project_error(self):
     response = getJson('https://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, 'foo'))
