@@ -69,6 +69,7 @@ class Interface(object):
     
     try:
       for item in self.cuboidindex_db.queryResolutionItems(channel_name, resolution):
+        print(item['supercuboid_key'])
         self.cuboid_bucket.deleteObject(item['supercuboid_key'])
         self.cuboidindex_db.deleteItem(item['supercuboid_key'])
     except Exception as e:
@@ -80,10 +81,10 @@ class Interface(object):
 
 def main():
 
-  dataset_name = 'synaptomesberlin'
-  project_name = 'bigalign2'
-  channel_name = 'MBP'
-  resolution = 6
+  dataset_name = 's3617'
+  project_name = 's3617'
+  channel_name = 'ch1'
+  resolution = 1
   import pdb; pdb.set_trace()
   interface = Interface(dataset_name, project_name)
   interface.deleteResolution(channel_name, resolution)

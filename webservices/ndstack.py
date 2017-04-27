@@ -164,7 +164,10 @@ def buildImageStack(proj, ch, res=None, neariso=False, direct=False, start_value
           for y in range(ystart, ylimit):
             # Iterating over x
             for x in range(xstart, xlimit):
-
+	      
+              if x==13:
+                pass
+      	        #import pdb; pdb.set_trace() 
               # olddata target array for the new data (z,y,x) order
               olddata = db.cutout(ch, [x*xscale*xsupercubedim, y*yscale*ysupercubedim, z*zscale*zsupercubedim ], biggercubedim, cur_res-1, [ts,ts+1], direct=direct).data
               olddata = olddata[0,:,:,:]
@@ -213,7 +216,7 @@ def buildImageStack(proj, ch, res=None, neariso=False, direct=False, start_value
                 # checking if the cube is empty or not
                 if cube.isNotZeros():
                   if proj.s3backend == S3_TRUE:
-                    print("RES:{}:X,Y,Z,T:{},{},{},{}".format(cur_res, x, y, z, ts))
+                    print("RES:{}:X,Y,Z,T:{},{},{},{}:Shape:{}".format(cur_res, x, y, z, ts, cube.data.shape))
                     s3_io.putCube(ch, ts, zidx, cur_res, blosc.pack_array(cube.data), neariso=neariso)
                   else:
                     db.putCube(ch, ts, zidx, cur_res, cube, update=True, neariso=neariso)
