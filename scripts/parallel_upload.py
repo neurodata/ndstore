@@ -15,7 +15,6 @@
 import os
 import sys
 import boto3
-import boto
 import six
 import time
 import cStringIO
@@ -35,7 +34,7 @@ class Uploader(object):
     self.num_processes = num_processes
     self.task_queue = mp.JoinableQueue()
     # self.s3 = boto.connect_s3()
-    s3 = boto3.resource('s3', aws_access_key_id='AKIAIQ6LNQRHEYXBUSGA', aws_secret_access_key='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')
+    s3 = boto3.resource('s3', aws_access_key_id=ndingest_settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=ndingest_settings.AWS_SECRET_ACCESS_KEY)
     self.bucket = s3.Bucket('neurodata-tile-store-test')
     # self.bucket = self.s3.lookup(self.bucket_name)
     self.n_tasks = 0
@@ -46,14 +45,15 @@ class Uploader(object):
     self.n_tasks += 1
 
   def worker(self, input):
-
-    print('starting worker')
+    
+    p_name = mp.current_process().name
+    print('starting worker {}'.format(p_name))
     while 1:
       try:
         (key, data) = input.get(True, 1)
         # print '{}:{}'.format(key, data)
       except Queue.Empty:
-        print('no more tasks')
+        print('no more tasks. worker {} exiting'.format(p_name))
         break
         sys.exit(0)
       data.seek(0)
@@ -63,6 +63,8 @@ class Uploader(object):
             Body = data.read(),
             Key = key
         )
+	data = None
+	response = None
         input.task_done()
       except Exception as e:
         print(e)
@@ -85,7 +87,7 @@ class Uploader(object):
 def main():
   parser = argparse.ArgumentParser(description='Test upload')
   parser.add_argument('num', action='store', type=int, help='Number of threads')
-  parser.add_argument('--iter', dest='iteration', action='store', type=int, default=1, help='Size of data')
+  parser.add_argument('--iter', dest='iteration', action='store', nargs=2, type=int, default=[0, 1], metavar=('Start', 'End'), help='Size of data')
   parser.add_argument('--trigger', dest='trigger', action='store_true', default=False, help='Trigger')
   result = parser.parse_args()
   
@@ -93,10 +95,9 @@ def main():
   data_list = []
   
   up = Uploader(result.num)
-  import pdb; pdb.set_trace()
   
   if result.trigger is False:
-    for j in range(result.iteration):
+    for j in range(result.iteration[0], result.iteration[1]):
       for i in range(64):
         data = np.random.randint(256, size=(512,512), dtype=np.uint8)
         image_data = Image.frombuffer('L', (512,512), data.flatten(), 'raw', 'L', 0, 1)
@@ -106,7 +107,7 @@ def main():
         image_data.save(output, format='png'.upper())
         up.queue_task(key, output)
   else:
-    for j in range(result.iteration):
+    for j in range(result.iteration[0], result.iteration[1]):
       output = six.BytesIO()
       data = np.random.randint(256, size=(512,512), dtype=np.uint8)
       image_data = Image.frombuffer('L', (512,512), data.flatten(), 'raw', 'L', 0, 1)
