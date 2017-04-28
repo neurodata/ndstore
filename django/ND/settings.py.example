@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-import settings_secret
-from ndpaths import ND_DJANGO_PATH
+from . import settings_secret
+from .ndpaths import ND_DJANGO_PATH
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -66,14 +66,11 @@ INSTALLED_APPS = (
     'synaptogram',
     'catmaid',
     'registration',
-    'djcelery',
     'ndviz',
     'stats',
     'corsheaders',
     'ndgraph',
     'ramon',
-    'resource',
-    'autoingest'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -218,27 +215,6 @@ LOGGING = {
   },
 }
 
-# Cuboid settings
-SUPER_CUBOID_SIZE = [512, 512, 64]
-
-# Celery Settings
-BROKER_URL = 'amqp://guest@localhost'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT=['json', 'pickle']
-CELERYD_PREFETCH_MULTIPLIER = 1
-CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
-CELERY_IMPORTS = (
-    'sd.tasks',
-    'stats.tasks'
-)
-
-# LIMS Server Settings
-LIMS_SERVER = 'lims.neurodata.io'
-LIMS_SERVER_ENABLED = False
-
-# Automated Ingest
-TEMP_INGEST_PATH = '/data/scratch/'
 
 # registration settings
 ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; you may, of course, use a different value.
@@ -258,20 +234,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = (
   'GET'
 )
-
-# Redis Settings
-# For test purposes both the INDEX and DATA instances are the same. For deployment purposes these can be different
-REDIS_MEMORY_RATIO_UPPER_BOUND = 60
-REDIS_MEMORY_RATIO_LOWER_BOUND = 40
-REDIS_LOCK = 'redis-lock'
-REDIS_INDEX_KEY = 'cuboid-index-store'
-REDIS_INDEX_HOST = 'localhost'
-REDIS_INDEX_PORT = 6379
-REDIS_INDEX_DB = 0
-REDIS_INDEX_MAX_CONNECTIONS = 10 # maximum client connections for the back-end
-REDIS_DATA_HOST = 'localhost'
-REDIS_DATA_PORT = 6379
-REDIS_DATA_DB = 0
 
 # Amazon Settings
 AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
