@@ -40,7 +40,7 @@ from contextlib import closing
 from webservices import ndwsrest
 from webservices import ndwsjson
 from ndproj.ndprojdb import NDProjectsDB
-from ndlib.ndtype import *
+from ndlib.ndtype import ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE
 from .models import Project
 from .models import Dataset
 from .models import Token
@@ -293,9 +293,10 @@ def getDatasets(request):
 
                     # refresh to remove deleted
                     if request.user.is_superuser:
-                        visible_datasets=Dataset.objects.all()
+                        visible_datasets = Dataset.objects.all()
                     else:
-                        visible_datasets=Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
+                        # KL TODO Fix queryset bug
+                        visible_datasets = Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
                 context = {
                     'dts': visible_datasets
                 }
@@ -513,8 +514,8 @@ def createProject(request):
                         new_project.nd_version = ND_VERSION
                     new_project.schema_version = SCHEMA_VERSION
                     # TODO input from form
-                    new_project.mdengine = REDIS
-                    new_project.s3backend = S3_TRUE
+                    new_project.mdengine = MYSQL
+                    new_project.s3backend = S3_FALSE
                     pr = NDProject(new_project)
                     try:
                         # create a database when not linking to an existing databases

@@ -47,7 +47,7 @@ class BrainRestArgs:
   def getFilter ( self ):
     return self.filterlist
 
-  def getWindow ( self ):
+  def getWindowRange ( self ):
     return self.window
   
   def getTimeRange ( self ):
@@ -56,14 +56,13 @@ class BrainRestArgs:
   def getZScaling ( self ):
     return self.zscaling
 
-
   def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
 
     try:
       # argument of format /resolution/x1,x2/y1,y2/z1,z2/rest(can include t1,t2)/
       #m = re.match("([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)([/]*[\w+]*[/]*[\d,+]*[/]*)$", imageargs)
-      m = re.match("([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)([/]*[\d+,]*[\w+]*[/]*[\d,+]*[/]*)?$", imageargs)
+      m = re.match("([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)(.*)?$", imageargs)
       [self.resolution, x1, x2, y1, y2, z1, z2] = [int(i) for i in m.groups()[:-1]]
       rest = m.groups()[-1]
 
@@ -95,24 +94,27 @@ class BrainRestArgs:
     except Exception as e:
       raise RESTArgsError ( "Illegal arguments to cutout. Check cube failed {}".format(str(e)))
 
+    # window argument
+    result = re.search ("/window/([\d\.]+),([\d\.]+)/", rest)
+    if result != None:
+      self.window = [str(i) for i in result.groups()]
+    else:
+      self.window = None
+    
     # list of identifiers to keep
-    result = re.match ("/filter/([\d/,]+)/", rest)
+    result = re.search ("/filter/([\d/,]+)/", rest)
     if result != None:
       self.filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
     else:
       self.filterlist = None
-    
-    
-    # See if it is an isotropic cutout request
-    self.zscaling = None
-    result = re.match ("/iso/",rest)
-    if result is not None:
-      self.zscaling = 'isotropic'
      
     # See if it is an integral cutout request
-    result = re.match ("/neariso/",rest)
+    result = re.search ("/neariso/",rest)
     if result is not None:
       self.zscaling = 'nearisotropic'
+    else:
+      self.zscaling = datasetcfg.scalingoption
+      print(self.zscaling)
 
 
 def voxel ( imageargs, datasetcfg ):

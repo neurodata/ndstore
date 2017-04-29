@@ -30,7 +30,6 @@ def projdict ( proj ):
   projdict['description'] = proj.project_description
   projdict['schema_version'] = proj.schema_version
   projdict['ndstore_version'] = proj.nd_version
-  projdict['s3backend'] = proj.s3backend
 
   # These fields are internal
   #projdict['dbname'] = proj._dbname
@@ -56,10 +55,11 @@ def datasetdict ( dataset ):
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
   # Stephan projinfo
-  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
-  dsdict['neariso_offset'] = dataset.neariso_offset
-  dsdict['neariso_voxelres'] = dataset.neariso_voxelres
-  dsdict['neariso_imagesize'] = dataset.neariso_imagesz
+  if dataset.scalingoption == ZSLICES:
+    dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+    dsdict['neariso_offset'] = dataset.neariso_offset
+    dsdict['neariso_voxelres'] = dataset.neariso_voxelres
+    dsdict['neariso_imagesize'] = dataset.neariso_imagesz
   # Figure out neariso in new design
   dsdict['description'] = dataset.dataset_description
 
@@ -116,17 +116,17 @@ def xmlInfo (token, proj):
 
 def metadatadict( proj ):
   """Metadata Info"""
-  if settings.LIMS_SERVER_ENABLED:
-    try:
-      url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.project_name)
-      req = urllib.request.Request(url)
-      response = urllib.request.urlopen(req, timeout=0.5)
-      return json.loads(response.read())
-    except urllib.error.URLError as e:
-      logger.error("Failed URL {}".format(url))
-      return {}
-  else:
-    return {}
+#  if settings.LIMS_SERVER_ENABLED:
+#    try:
+#      url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.project_name)
+#      req = urllib.request.Request(url)
+#      response = urllib.request.urlopen(req, timeout=0.5)
+#      return json.loads(response.read())
+#    except urllib.error.URLError as e:
+#      logger.error("Failed URL {}".format(url))
+#      return {}
+#  else:
+  return {}
 
 
 def publicTokens ( projdb ):

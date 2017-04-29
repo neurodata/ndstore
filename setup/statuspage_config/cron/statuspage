@@ -1,0 +1,1 @@
+0,30 * * * * root cd /home/neurodata/ndstore/setup/statuspage_config && /usr/bin/python /home/neurodata/ndstore/setup/statuspage_config/refresh.py

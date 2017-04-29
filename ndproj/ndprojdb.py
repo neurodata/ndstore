@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import abstractmethod
-from ndlib.ndtype import MYSQL, CASSANDRA, RIAK, REDIS, DYNAMODB, PUBLIC_TRUE
+from ndlib.ndtype import MYSQL, PUBLIC_TRUE
 from nduser.models import Token
 from webservices.ndwserror import NDWSError
 import logging
@@ -91,23 +91,9 @@ class NDProjectsDB(object):
   def getProjDB(pr):
     """Return a the kvengine object"""
     
-    # from .ndproject import NDProject
-    # pr = NDProject.fromName(project_name)
     if pr.kvengine == MYSQL:
       from .mysqlprojdb import MySQLProjectDB
       return MySQLProjectDB(pr)
-    # elif pr.kvengine == CASSANDRA:
-      # from cassprojdb import CassProjectDB
-      # return CassProjectDB(project_name)
-    # elif pr.kvengine == RIAK:
-      # from riakprojdb import RiakProjectDB
-      # return RiakProjectDB(project_name)
-    # elif pr.kvengine == DYNAMODB:
-      # from dynamoprojdb import DynamoProjectDB
-      # return DynamoProjectDB(project_name)
-    elif pr.kvengine == REDIS:
-      from .redisprojdb import RedisProjectDB
-      return RedisProjectDB(pr)
     else:
       logging.error ("Unknown KV Engine requested: {}".format(pr.kvengine))
       raise NDWSError ("Unknown KV Engine requested: {}".format(pr.kvengine))

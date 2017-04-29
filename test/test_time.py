@@ -43,21 +43,10 @@ from test_settings import *
 
 
 p = Params()
-p.token = 'unittest'
-p.resolution = 0
-p.channels = ['TIME1', 'TIME2']
-p.time = [0,100]
-p.channel_type = TIMESERIES
-p.datatype = UINT8
-p.window = [0,500]
-p.voxel = [4.0,4.0,3.0]
-
 
 class Test_Time_Slice:
 
-
   def setup_class(self):
-
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
 
   def teardown_class(self):

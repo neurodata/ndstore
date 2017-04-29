@@ -19,7 +19,7 @@ import random
 import numpy as np
 from PIL import Image
 import makeunitdb
-from ndlib.ndtype import IMAGE, UINT8, UINT16
+from ndlib.ndtype import UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
 from postmethods import putAnnotation, getAnnotation, getURL, postURL

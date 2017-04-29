@@ -132,8 +132,8 @@ sudo ln -s /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/
 if [ -z "$2" ]; then
   sudo mkdir /etc/nginx/ssl
   cd /home/neurodata/ndstore/setup/
-  sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key -config ssl_config.txt
-  sudo openssl req -key /etc/nginx/ssl/server.key -new -x509 -out /etc/nginx/ssl/server.crt -config ssl_config.txt
+  sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/neurodata.io.key -config ssl_config.txt
+  sudo openssl req -key /etc/nginx/ssl/neurodata.io.key -new -x509 -out /etc/nginx/ssl/neurodata.io.crt -config ssl_config.txt
 else
   if [ "$2" == "PRODUCTION" ]; then
     sudo mkdir /etc/nginx/ssl
@@ -142,8 +142,8 @@ else
     chmod a+x certbot-auto
     echo "y" | sudo ./certbot-auto
     sudo ./certbot-auto certonly --noninteractive --agree-tos --email $4 --webroot -w /usr/share/nginx/html/ -d $3
-    sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
-    sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
+    sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/neurodata.io.key
+    sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/neurodata.io.crt
     sudo ./certbot-auto renew --quiet --no-self-upgrade
   fi
 fi
@@ -161,7 +161,7 @@ sudo service ndmanager restart
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/
-echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token_super','wb'); f.write(token.key); f.close()" | python manage.py shell
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token_super','wb'); f.write(token.key); f.close(); f = open('ND/settings_secret.py', 'r'); lines = f.read().replace('SECRET_TOKEN = \'\'', 'SECRET_TOKEN = \'' + token.key + '\''); f.close(); f.close(); f = open('ND/settings_secret.py', 'w+'); f.write(lines); f.close()" | sudo python manage.py shell
 
 cd /home/neurodata/ndstore/django/
 echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='test'); token = Token.objects.create(user=u); f = open('/tmp/token_user','wb'); f.write(token.key); f.close()" | python manage.py shell

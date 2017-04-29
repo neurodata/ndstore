@@ -23,7 +23,7 @@ Propagated              2
 getPropagate
 ------------
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/getPropagate/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/getPropagate/
 
    :synopsis: Get the :ref:`propagation<nd-propagation>` state of the channel.
 
@@ -42,7 +42,7 @@ getPropagate
 setPropagate
 ------------
 
-.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/setPropagate/(int:propagate_value)/
+.. http:get:: (string:server_name)/nd/sd/(string:token_name)/(string:channel_name)/setPropagate/(int:propagate_value)/
 
    :synopsis: Set the :ref:`propagation<nd-propagation>` state of the channel.
 

@@ -72,10 +72,6 @@ class Project ( models.Model):
   host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
   KVENGINE_CHOICES = (
     (MYSQL, 'MySQL'),
-    (CASSANDRA, 'Cassandra'),
-    (RIAK, 'Riak'),
-    (DYNAMODB, 'DynamoDB'),
-    (REDIS, 'Redis'),
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default=MYSQL)
   KVSERVER_CHOICES = (
@@ -133,7 +129,6 @@ class Channel ( models.Model):
   channel_name = models.CharField(max_length=255)
   channel_description  =  models.CharField(max_length=4096,blank=True)
   CHANNELTYPE_CHOICES = (
-    (IMAGE, 'IMAGES'),
     (ANNOTATION, 'ANNOTATIONS'),
     (TIMESERIES,'TIMESERIES'),
   )

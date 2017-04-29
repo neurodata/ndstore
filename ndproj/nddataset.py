@@ -35,7 +35,6 @@ class NDDataset(NDObject):
 
     self._resolutions = []
     self._cubedim = {}
-    self._supercubedim = {}
     self._image_size = {}
     self._offset = {}
     self._voxelres = {}
@@ -56,24 +55,24 @@ class NDDataset(NDObject):
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
-      xpixels = ((self._ds.ximagesize-1)/2**i)+1
-      ypixels = ((self._ds.yimagesize-1)/2**i)+1
+      xpixels = ((self._ds.ximagesize-1)//2**i)+1
+      ypixels = ((self._ds.yimagesize-1)//2**i)+1
       if self._ds.scalingoption == ZSLICES:
         zpixels = self._ds.zimagesize
       else:
-        zpixels = ((self._ds.zimagesize-1)/2**i)+1
+        zpixels = ((self._ds.zimagesize-1)//2**i)+1
       self._image_size[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
-      xoffseti = 0 if self._ds.xoffset==0 else ((self._ds.xoffset)/2**i)
-      yoffseti = 0 if self._ds.yoffset==0 else ((self._ds.yoffset)/2**i)
+      xoffseti = 0 if self._ds.xoffset==0 else ((self._ds.xoffset)//2**i)
+      yoffseti = 0 if self._ds.yoffset==0 else ((self._ds.yoffset)//2**i)
       if self._ds.zoffset == 0:
         zoffseti = 0
       else:
         if self._ds.scalingoption == ZSLICES:
           zoffseti = self._ds.zoffset
         else:
-         zoffseti = ((self._ds.zoffset)/2**i)
+         zoffseti = ((self._ds.zoffset)//2**i)
 
       self._offset[i] = [ xoffseti, yoffseti, zoffseti ]
 
@@ -86,12 +85,8 @@ class NDDataset(NDObject):
       self._scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
       
       # choose the cubedim as a function of the zscale
-      #self._cubedim[i] = [128, 128, 16]
-      # this may need to be changed.  
       if self._ds.scalingoption == ZSLICES:
-        #self._cubedim[i] = [512, 512, 16]
-        self._cubedim[i] = [128, 128, 16]
-        if float(self._ds.zvoxelres/self._ds.xvoxelres)/(2**i) >  0.5:
+        if float(self._ds.zvoxelres//self._ds.xvoxelres)//(2**i) >  0.5:
           self._cubedim[i] = [128, 128, 16]
         else: 
           self._cubedim[i] = [64, 64, 64]
@@ -100,14 +95,11 @@ class NDDataset(NDObject):
         if self._ds.ximagesize == 135424 and i == 5:
           self._cubedim[i] = [128, 128, 16]
       else:
-        # RB what should we use as a cubedim?
-        self._cubedim[i] = [512, 512, 16]
+        self._cubedim[i] = [64, 64, 64]
       
-      self._supercubedim[i] = map(mul, self._cubedim[i], SUPERCUBESIZE)
-
       if self._scale[i]['xz'] < 1.0:
         scalepixels = 1/self._scale[i]['xz']
-        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
+        if ((math.ceil(scalepixels)-scalepixels)//scalepixels) <= ((scalepixels-math.floor(scalepixels))//scalepixels):
           self.nearisoscaledown[i] = int(math.ceil(scalepixels))
         else:
           self.nearisoscaledown[i] = int(math.floor(scalepixels))
@@ -224,17 +216,9 @@ class NDDataset(NDObject):
     # return Vector3D(self._cubedim[res])
     return self._cubedim[res]
   
-  def get_supercubedim(self, res):
-    # return Vector3D(self._supercubedim[res])
-    return self._supercubedim[res]
-  
   def cube_limit(self, res):
     return None
 
-  def get_supercube_limit(self, res):
-    # return Vector3D(map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3))
-    return map(add, map(floordiv, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3)
-  
   @property
   def scalingoption(self):
     return self._ds.scalingoption
@@ -246,10 +230,6 @@ class NDDataset(NDObject):
   @property
   def scale(self):
     return self._scale
-  
-  @property
-  def supercube_size(self):
-    return SUPERCUBESIZE
   
   def checkCube (self, resolution, corner, dim):
     """Return true if the specified range of values is inside the cube"""

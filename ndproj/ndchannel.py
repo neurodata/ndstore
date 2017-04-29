@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from contextlib import closing
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -169,6 +170,10 @@ class NDChannel(NDObject):
     return [int(self.ch.starttime),int(self.ch.endtime)]
 
   @property
+  def default_time_range(self):
+    return [int(self.ch.starttime),int(self.ch.starttime+1)]
+  
+  @property
   def window_range(self):
     return [int(self.ch.startwindow),int(self.ch.endwindow)]
   
@@ -180,40 +185,11 @@ class NDChannel(NDObject):
   def channel_model ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.project_name)
 
-  # def getDataType ( self ):
-    # return self.ch.channel_datatype
-
-  # def getChannelName ( self ):
-    # return self.ch.channel_name
-
-  # def getChannelType ( self ):
-    # return self.ch.channel_type
-
-  # def getChannelDescription ( self ):
-    # return self.ch.channel_description
-
   def getExceptions ( self ):
     return self.ch.exceptions
 
-  # def getReadOnly (self):
-    # return self.ch.readonly
-
-  # def getResolution (self):
-    # return self.ch.resolution
-
-  # def getWindowRange (self):
-    # return [int(self.ch.startwindow),int(self.ch.endwindow)]
-
-  # def getPropagate (self):
-    # return self.ch.propagate
-
   def isDefault (self):
     return self.ch.default
-
-  def getS3IndexTable (self, resolution):
-    """Return the S3 index table"""
-    if self.pr.kvengine == MYSQL:
-      return '{}_res{}_s3index'.format(self.ch.channel_name, resolution)
 
   def getIdsTable (self):
     if self.pr.nd_version == '0.0':

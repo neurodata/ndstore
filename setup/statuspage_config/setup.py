@@ -1,4 +1,5 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
+# Copyright 2016 Kunal Lillaney (http://kunallillaney.github.io)
+# Alex Eusman 2017
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +15,11 @@
 
 import os
 import sys
-sys.path += [os.path.abspath('../django')]
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from ndlib.ndtype import *
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+"/statuspage-py")
+from statuspage.core.component import Component
 
-DEV_MODE = True
+component_name_list = ['Blosc API', 'Image API', 'Jpeg API', 'Raw API', 'Propagate API', 'Time API', 'Autoingest API', 'Anno IO', 'Anno Query', 'Annoid API', 'Json Ramon', 'HDF5 Ramon', 'Graphgen API', 'Probability API', 'Stats API', 'Info API', 'Resource Manager']
 
-# kvengine settings
-KV_ENGINE = MYSQL
-# KV_ENGINE = REDIS
-
-MD_ENGINE = MYSQL
-
-# kvserver settings
-KV_SERVER = 'mridb.cd623jzehqjj.us-east-1.rds.amazonaws.com'
-
-# server to check against
-SITE_HOST = 'localhost:8000'
-#SITE_HOST = 'localhost/nd'
+for component_name in component_name_list:
+  component = Component()
+  component.create()

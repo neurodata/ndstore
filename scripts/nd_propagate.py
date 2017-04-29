@@ -17,13 +17,13 @@ import os
 import argparse
 
 sys.path.append(os.path.abspath('../django/'))
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 import django
 django.setup()
 
-import ocpcastack
+from webservices.ndstack import buildStack, clearStack
 
 def main():
   """Take arguments from user"""
@@ -31,10 +31,14 @@ def main():
   parser = argparse.ArgumentParser(description="Run the propagate script for OCP")
   parser.add_argument('token', action='store', help="Token Name")
   parser.add_argument('channel', action='store', help="Channel Name")
+  parser.add_argument('--clear', action='store_true')
 
   result = parser.parse_args()
 
-  ocpcastack.buildStack(result.token, result.channel)
+  if result.clear:
+    clearStack(result.token, result.channel) 
+
+  buildStack(result.token, result.channel)
 
 if __name__ == '__main__':
   main()

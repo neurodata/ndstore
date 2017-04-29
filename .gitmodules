@@ -6,11 +6,6 @@
 	path = spdb
   url = https://github.com/neurodata/spdb.git
   branch = master
-[submodule "ndingest"]
-	path = ndingest
-  url = https://github.com/neurodata/ndingest.git
-  branch = master
-[submodule "ingest-client"]
-	path = ingest-client
-	url = https://github.com/neurodata/ingest-client.git
-  branch = master
+[submodule "setup/statuspage_config/statuspage-py"]
+	path = setup/statuspage_config/statuspage-py
+	url = https://github.com/kunallillaney/statuspage-py.git

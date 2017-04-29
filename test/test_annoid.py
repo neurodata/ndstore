@@ -27,7 +27,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from params import Params
 from postmethods import postNPZ, getNPZ, getURL
 import makeunitdb
-from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
+from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION
 from test_settings import *
 
 p = Params()

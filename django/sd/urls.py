@@ -36,11 +36,6 @@ urlpatterns = [
   url(r'(?P<webargs>^public_tokens/)$', views.publictokens),
   # get public datasets 
   url(r'(?P<webargs>^public_datasets/)$', views.publicdatasets),
-  # Create/Delete channel interfaces
-  # url(r'(?P<webargs>^\w+/createChannel/)$', views.createChannel),
-  # url(r'(?P<webargs>^\w+/deleteChannel/)$', views.deleteChannel),
-  # get channel information
-  #url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # reserve identifiers for annotation projects
   url(r'(?P<webargs>^\w+/\w+/reserve/[\w+,/]*)$', views.reserve),
   # get list of multiply labelled voxels in a cutout region
@@ -50,13 +45,10 @@ urlpatterns = [
   # projection services
   url(r'(?P<webargs>^\w+/[\w,]+/(minproj|maxproj)/[\w,/-]+)$', views.minmaxProject),
   # get and put services
-  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|blaze|jpeg|npz|raw|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', views.cutout),
+  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|blaze|jpeg|npz|raw|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w\.,/-]*)$', views.cutout),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', views.getField),
   url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', views.setField),
-  # propagate interfaces
-  url(r'(?P<webargs>^\w+/[\w+,]+/getPropagate/)$', views.getPropagate),
-  url(r'(?P<webargs>^\w+/[\w+,]+/setPropagate/[\d+,]+/)$', views.setPropagate),
   # merge annotations
   url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', views.merge),
   # csv metadata read
@@ -65,6 +57,4 @@ urlpatterns = [
   url(r'(?P<webargs>^\w+/\w+/ramon/[\w,/]*)$', views.jsonramon),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', views.annotation),
-  # JSON interfaces
-  url(r'(?P<webargs>^autoIngest/)$', views.autoIngest),
 ]
