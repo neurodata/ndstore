@@ -62,13 +62,6 @@ class ChannelForm(ModelForm):
                 return token 
             raise forms.ValidationError('Please enter a valid token')
 
-class BackupForm(ModelForm):
-
-    class Meta:
-        model = Backup
-        # add protocol back in when you implement S3
-        exclude = ('datetimestamp', 'status', 'protocol', 'filename', 'jsonfile')
-
 
 class dataUserForm( forms.Form):
 

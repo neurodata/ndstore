@@ -54,6 +54,9 @@ class Dataset ( models.Model):
 
    def __unicode__(self):
      return self.dataset_name
+ 
+   def __str__(self):
+     return self.dataset_name
 
 
 class Project ( models.Model):
@@ -100,6 +103,9 @@ class Project ( models.Model):
   def __unicode__(self):
     return self.project_name
 
+  def __str__(self):
+    return self.project_name
+
 
 class Token ( models.Model):
   token_name = models.CharField(max_length=255, primary_key=True)
@@ -120,6 +126,9 @@ class Token ( models.Model):
     managed = True
 
   def __unicode__(self):
+    return self.token_name
+
+  def __str__(self):
     return self.token_name
 
 
@@ -183,6 +192,9 @@ class Channel ( models.Model):
   def __unicode__(self):
     return self.channel_name
 
+  def __str__(self):
+    return self.channel_name
+
 class Backup ( models.Model):
 
   backup_id = models.AutoField(primary_key=True)
@@ -222,6 +234,9 @@ class Backup ( models.Model):
   def __unicode__(self):
     return self.description
 
+  def __str__(self):
+    return self.description
+
 
 class NIFTIHeader ( models.Model):
 
@@ -237,4 +252,7 @@ class NIFTIHeader ( models.Model):
     managed = True
 
   def __unicode__(self):
+    return self.header
+
+  def __str__(self):
     return self.header

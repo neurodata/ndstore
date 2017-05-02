@@ -32,9 +32,6 @@ urlpatterns = [
     url(r'^updatetoken/$', views.updateToken),
     url(r'^updatechannel/$', views.updateChannel),
     url(r'^updatedataset/$', views.updateDataset),
-    url(r'^backupproject/$', views.backupProject),
-    url(r'^restoreproject/$', views.restoreProject),
-    url(r'^download/$', views.downloadData),
     url(r'^usertoken/$', views.getUserToken),
     url(r'^$', views.default)
 ]
