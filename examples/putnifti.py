@@ -35,19 +35,19 @@ def main():
   if result.annotations:
     url = '{}annotations/'.format(url)
 
-  print url
-
+  print(url)
+  
   try:
 
     requests.packages.urllib3.disable_warnings()
-    response = requests.post(url, open(result.filename).read(), verify=False)
+    response = requests.post(url, open(result.filename, 'rb').read(), verify=False)
     if response.status_code == 200:
-      print "Success for url {}".format(url)
+      print("Success for url {}".format(url))
     else:
-      print "Error for url {}. Status {}. Message {}".format(url,response.status_code,response.text)
+      print("Error for url {}. Status {}. Message {}".format(url,response.status_code,response.text))
       response.raise_for_status()
 
-  except Exception, e:
+  except Exception as e:
 
     raise
 

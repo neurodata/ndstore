@@ -1646,7 +1646,7 @@ def putNIFTI ( webargs, postdata ):
       annotationsflag=False
     
     # check the magic number -- is it a gz file?
-    if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
+    if postdata[0] == int('0x1f',16) and postdata[1] ==  int('0x8b',16):
 
       # Make a named temporary file 
       with closing (tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:

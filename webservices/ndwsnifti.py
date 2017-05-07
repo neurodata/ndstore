@@ -46,24 +46,25 @@ def _RGBto3dby8 ( indata ):
 
 def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annotations=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
+
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 
   nifti_data = np.array(nifti_img.get_data())
 
+  import pdb; pdb.set_trace()
   # FA map 3 8-bit channels
-  if nifti_data.shape[3] == 3:
+  if len(nifti_data.shape)==4 and nifti_data.shape[3] == 3:
     nifti_data = _3dby8toRGB ( nifti_data )
 
   # create the channel if needed
   if create:
 
-   # RBTODO talk to Kunal about using channel creation routines.
    # RBTODO exception handling and cleanup if load fails after channel creation
 
     from nduser.models import Channel
     from ndproj.ndchannel import NDChannel
-    import ndtype
+    from ndlib import ndtype
 
     # 3d or 4d nii file -- set endtime
     if len(nifti_data.shape) == 3:
@@ -73,7 +74,7 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annot
 
     if not annotations:
       # reverse lookup the channel datatype 
-      channel_datatype = (key for key, value in ND_dtypetonp.items() if value == nifti_data.dtype).next()
+      channel_datatype = next((key for key, value in list(ND_dtypetonp.items()) if value == nifti_data.dtype))
       channel_type = ndtype.TIMESERIES
     else:
       # annotation channel 

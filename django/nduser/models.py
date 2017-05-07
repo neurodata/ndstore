@@ -69,18 +69,12 @@ class Project ( models.Model):
   )
   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
   dataset = models.ForeignKey(Dataset)
-  HOST_CHOICES = (
-    ('localhost', 'default'),
-  )
-  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
+  host =  models.CharField(max_length=255, default='localhost')
   KVENGINE_CHOICES = (
     (MYSQL, 'MySQL'),
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default=MYSQL)
-  KVSERVER_CHOICES = (
-    ('localhost', 'default'),
-  )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+  kvserver =  models.CharField(max_length=255, default='localhost')
   MDENGINE_CHOICES = (
     (MYSQL, 'MySQL'),
   )
