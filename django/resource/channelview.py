@@ -24,10 +24,9 @@ from ndproj.ndproject import NDProject
 from nduser.models import Channel
 from ndproj.ndchannel import NDChannel
 
-# @authentication_classes((SessionAuthentication, TokenAuthentication))
-# @permission_classes((IsAuthenticated,))
-# class ChannelView(generics.GenericAPIView):
-class ChannelView(View):
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
+class ChannelView(generics.GenericAPIView):
 
   def get(self, request, dataset_name, project_name, channel_name):
 

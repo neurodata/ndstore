@@ -23,10 +23,9 @@ from ndauth.authentication import PublicAuthentication
 from nduser.models import Dataset
 from ndproj.nddataset import NDDataset
 
-# @authentication_classes((SessionAuthentication, TokenAuthentication))
-# @permission_classes((IsAuthenticated,))
-# class DatasetView(generics.GenericAPIView):
-class DatasetView(View):
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
+class DatasetView(generics.GenericAPIView):
 
   def get(self, request, dataset_name):
     try:

@@ -24,10 +24,9 @@ from ndproj.ndproject import NDProject
 from nduser.models import Token
 from ndproj.ndtoken import NDToken
 
-# @authentication_classes((SessionAuthentication, TokenAuthentication))
-# @permission_classes((IsAuthenticated,))
-# class TokenView(generics.GenericAPIView):
-class TokenView(View):
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
+class TokenView(generics.GenericAPIView):
 
   def get(self, request, dataset_name, project_name, token_name):
 

@@ -25,7 +25,7 @@ from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from ndproj.ndtoken import NDToken
 
-#@api_view(['GET'])
+@api_view(['GET'])
 class DatasetPublicView(View):
 
   def get(self, request):
@@ -34,7 +34,7 @@ class DatasetPublicView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
-#@api_view(['GET'])
+@api_view(['GET'])
 class ProjectPublicView(View):
 
   def get(self, request):
@@ -43,7 +43,7 @@ class ProjectPublicView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
-#@api_view(['GET'])
+@api_view(['GET'])
 class TokenPublicView(View):
 
   def get(self, request):
