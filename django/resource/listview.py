@@ -22,7 +22,6 @@ from rest_framework.permissions import IsAuthenticated
 from ndproj.nddataset import NDDataset
 from ndproj.ndproject import NDProject
 
-@api_view(['GET'])
 class DatasetListView(View):
 
   def get(self, request):
@@ -31,7 +30,6 @@ class DatasetListView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
-@api_view(['GET'])
 class ProjectListView(View):
 
   def get(self, request, dataset_name):
@@ -40,7 +38,6 @@ class ProjectListView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
-@api_view(['GET'])
 class ChannelListView(View):
 
   def get(self, request, dataset_name, project_name):
@@ -49,7 +46,6 @@ class ChannelListView(View):
     except Exception as e:
       return HttpResponseBadRequest()
 
-@api_view(['GET'])
 class TokenListView(View):
 
   def get(self, request, dataset_name, project_name):
