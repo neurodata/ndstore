@@ -31,5 +31,6 @@ MD_ENGINE = MYSQL
 KV_SERVER = 'mridb.cd623jzehqjj.us-east-1.rds.amazonaws.com'
 
 # server to check against
-SITE_HOST = 'localhost:8000'
+#SITE_HOST = 'localhost:8000'
 #SITE_HOST = 'localhost/nd'
+SITE_HOST = 'mri.neurodata.io/nd'

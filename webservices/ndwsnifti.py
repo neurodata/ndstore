@@ -52,7 +52,6 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False, annot
 
   nifti_data = np.array(nifti_img.get_data())
 
-  import pdb; pdb.set_trace()
   # FA map 3 8-bit channels
   if len(nifti_data.shape)==4 and nifti_data.shape[3] == 3:
     nifti_data = _3dby8toRGB ( nifti_data )
