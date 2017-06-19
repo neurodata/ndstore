@@ -17,19 +17,13 @@ blosc
 uwsgi
 django
 django-registration
-django-celery
 django-cors-headers
 djangorestframework
 django-cors-middleware
 django-sslserver
 #
 # Key value engines
-boto3
 mysqlclient
-# cassandra-driver
-riak
-redis
-hiredis
 #
 # Imaging and packaging libraries
 pillow
@@ -42,12 +36,10 @@ jsonschema
 json-spec
 #
 # Misc packages
-celery
 pytest
 posix-ipc
 networkx
 requests
 anyjson
-amqp
 pylibmc
 toolz
