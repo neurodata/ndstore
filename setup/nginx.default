@@ -24,8 +24,8 @@ upstream ndstore-wsgi {
 
 server {
   listen 443 ssl;
-  ssl_certificate        /etc/nginx/ssl/neurodata.io.crt;
-  ssl_certificate_key    /etc/nginx/ssl/neurodata.io.key;
+  ssl_certificate        [TODO put key here]
+  ssl_certificate_key    [TODO put key here]
 
 	root /usr/share/nginx/html;
 	index index.html index.htm;
