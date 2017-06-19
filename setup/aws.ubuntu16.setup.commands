@@ -1,0 +1,67 @@
+# update your new system before installing
+sudo apt-get update
+
+# apt-get install mysql packages
+sudo apt-get -y install libhdf5-serial-dev mysql-client
+
+# apt-get install packages
+sudo apt-get -qq -y install nginx git python3-venv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev python3-dev libmysqlclient-dev make uwsgi uwsgi-plugin-python3 liblapack-dev memcached libffi-dev libssl-dev 
+
+# create the log directory
+sudo mkdir /var/log/neurodata
+sudo touch /var/log/neurodata/ndstore.log
+sudo chown -R www-data:www-data /var/log/neurodata
+sudo chmod -R 777 /var/log/neurodata/
+
+# create neurodata user
+sudo addgroup neurodata
+sudo useradd -m -g neurodata -s /bin/bash neurodata
+
+# clone as neurodata user
+cd /home/neurodata
+sudo -u neurodata git clone https://github.com/neurodata/ndstore.git
+cd ndstore
+sudo -u neurodata git checkout rbpy3
+
+sudo -u neurodata git submodule init
+sudo -u neurodata git submodule update
+
+cd ndlib/c_version
+sudo -u neurodata make -f makefile_LINUX
+
+# create and activate a virtualenv
+cd /home/neurdata/ndstore
+sudo -u neurodata python3 -m venv /home/neurodata/.virtualenvs/nd3
+
+# populate the virtualenv
+sudo -H -u neurodata /home/neurodata/.virtualenvs/nd3/bin/pip install -U cython numpy
+sudo -H -u neurodata /home/neurodata/.virtualenvs/nd3/bin/pip install -r /home/neurodata/ndstore/setup/requirements.txt
+
+# django settings
+cd /home/neurodata/ndstore/django/ND
+sudo -u neurodata cp settings.py.example settings.py
+sudo -u neurodata cp settings_secret.py.example settings_secret.py
+
+# collect static files for django
+cd /home/neurodata/ndstore/django
+sudo -u neurodata /home/neurodata/.virtualenvs/nd3/bin/python manage.py collectstatic
+
+# Update settings
+#
+#  Set the allowed hosts.  On AWS you may need to use the physical IP if you connect by IP.
+#   ALLOWED_HOSTS = ["mri.neurodata.io","localhost"]
+#
+#  Populate settings_secret 
+#
+# Copy setup/ndstore.ini to /etc/uwsgi/apps-enabled/ndstore.ini
+# Copy setup/nginx.default to /etc/nginx/sites-enabled/default
+#
+# Restart uwsgi and nginx.
+
+sudo cp /home/neurodata/ndstore/setup/nginx.default /etc/nginx/sites-enabled/default
+sudo cp /home/neurodata/ndstore/setup/ndstore.ini /etc/uwsgi/apps-enabled/ndstore.ini
+
+# You need to configure the ssl keys in the nginx file.  BAD MOJO TODO
+
+sudo /etc/init.d/uwsgi restart
+sudo /etc/init.d/nginx restart
