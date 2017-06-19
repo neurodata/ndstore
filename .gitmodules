@@ -1,8 +1,8 @@
 [submodule "ndlib"]
 	path = ndlib
   url = https://github.com/neurodata/ndlib.git
-  branch = master
+  branch = rbpy3
 [submodule "spdb"]
 	path = spdb
   url = https://github.com/neurodata/spdb.git
-  branch = master
+  branch = rbpy3
